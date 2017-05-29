@@ -235,7 +235,7 @@ function fillWords() {
 
 	var textArea = document.getElementById('transcript-area');
 	var currentSpeaker, nextSpeaker, div, speakerName, word;
-	for(var i = 0; i < words.length - 1; i++) {
+	for(var i = 0; i < words.length - 1;) {
 		currentSpeaker = speakers[i].speaker;
 		nextSpeaker = speakers[i + 1].speaker;
 		div = document.createElement('div');
@@ -244,7 +244,6 @@ function fillWords() {
 		speakerName = document.createElement('input');
 		speakerName.value = currentSpeaker;
 		speakerName.setAttribute('readonly', '');
-		//speakerName.setAttribute('onclick', 'enableInput(this);');
 		speakerName.addEventListener('click', function() { enableInput(this); });
 		speakerName.addEventListener('blur', function() { disableInput(this); });
 		speakerName.addEventListener('keypress', function() { resizeInput(this); });
@@ -252,7 +251,7 @@ function fillWords() {
 		speakerName.setAttribute('style', 'width: ' + ((speakerName.value.length + 0.5) * 8) + 'px');
 		div.appendChild(speakerName);
 		div.appendChild(document.createElement('br'));
-		while(currentSpeaker == nextSpeaker && i < words.length - 1) {
+		do {
 			nextSpeaker = speakers[i + 1].speaker;
 			word = document.createElement('input');
 			word.setAttribute('value', words[i][0]);
@@ -268,7 +267,7 @@ function fillWords() {
 			word.setAttribute('style', 'width: ' + ((word.value.length + 1) * 8) + 'px');
 			div.appendChild(word);
 			i++;
-		}
+		} while(currentSpeaker == nextSpeaker && i < words.length - 1);
 		textArea.appendChild(div);
 	}
 }
