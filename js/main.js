@@ -244,7 +244,7 @@ function fillWords() {
 		speakerName = document.createElement('input');
 		speakerName.value = currentSpeaker;
 		speakerName.setAttribute('readonly', '');
-		speakerName.addEventListener('click', function() { enableInput(this); });
+		speakerName.addEventListener('focus', function() { enableInput(this); });
 		speakerName.addEventListener('blur', function() { disableInput(this); });
 		speakerName.addEventListener('keypress', function() { resizeInput(this); });
 		speakerName.classList.add('speaker');
@@ -260,7 +260,7 @@ function fillWords() {
 			word.setAttribute('title', words[i][1] + " - " + words[i][2]);
 			word.setAttribute('id', words[i][1]);
 			word.setAttribute('readonly', '');
-			word.addEventListener('click', function() { enableInput(this); });
+			word.addEventListener('focus', function() { enableInput(this); });
 			word.addEventListener('blur', function() { disableInput(this); });
 			word.addEventListener('keypress', function() { resizeInput(this); });
 			word.classList.add('word');
