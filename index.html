@@ -22,38 +22,44 @@
 </head>
 
 <body onresize="resizeBody();">
-		<div id="main-container-mask"><i id="loader" class="fa fa-refresh fa-2x spinning"></i></div>
+	<div id="main-container-mask">
+		<i id="loader" class="fa fa-refresh fa-2x spinning"></i>
+		<br />
+		<br />
+		<br />
+		<span id="loading-percentage"></span>
+	</div>
 	<center>
-	<div class="main-container">
-		<div id="audioclip"></div>
+		<div class="main-container">
+			<div id="audioclip"></div>
 
-		<div id="controls">
-			<button class="actionbutton" data-action="rewind"><i class="fa fa-step-backward fa-2x"></i></button>
-			<button class="actionbutton" data-action="play"><i class="fa fa-play fa-2x" id="playpause"></i></button>
-			<span class="actionbutton"><i class="fa fa-volume-up fa-lg"></i><input id="volumerange" type="range" min="0" max="100" value="100"></span>
-			<span id="speedcontrols">
-				<button class="actionbutton speed" data-action="speedx05">x0.5</button>
-				<button class="actionbutton speed" data-action="speedx1">x1</button>
-				<button class="actionbutton speed" data-action="speedx2">x2</button>
-				<button class="actionbutton speed" data-action="speedx4">x4</button>
-			</span>
-			<button class="actionbutton specialbutton" id="bt-skipsilence" data-action="skipsilence">Skip Silence</button>
-			<button class="actionbutton specialbutton" data-action="">Play Highlights</button>
+			<div id="controls">
+				<button class="actionbutton" data-action="rewind"><i class="fa fa-step-backward fa-2x"></i></button>
+				<button class="actionbutton" data-action="play"><i class="fa fa-play fa-2x" id="playpause"></i></button>
+				<span class="actionbutton"><i class="fa fa-volume-up fa-lg"></i><input id="volumerange" type="range" min="0" max="100" value="100"></span>
+				<span id="speedcontrols">
+					<button class="actionbutton speed" data-action="speedx05">x0.5</button>
+					<button class="actionbutton speed" data-action="speedx1">x1</button>
+					<button class="actionbutton speed" data-action="speedx2">x2</button>
+					<button class="actionbutton speed" data-action="speedx4">x4</button>
+				</span>
+				<button class="actionbutton specialbutton" id="bt-skipsilence" data-action="skipsilence">Skip Silence</button>
+				<button class="actionbutton specialbutton" data-action="">Play Highlights</button>
+			</div>
 		</div>
-	</div>
 
 
-	<div class="transcript-container">
-		<div id="text-options">
-			<button class="text-action" data-action="save" title="Save"><i class="fa fa-save fa-2x"></i></button>
-			<button class="text-action" data-action="undo" title="Undo"><i class="fa fa-undo fa-2x"></i></button>
-			<button class="text-action" data-action="redo" title="Redo"><i class="fa fa-repeat fa-2x"></i></button>
-			<button class="text-action" data-action="strike" title="Strikethrough"><i class="fa fa-strikethrough fa-2x"></i></button>
-			<button class="text-action" data-action="highlight" title="Highlight"><i class="fa fa-bookmark fa-2x"></i></button>
-			<button class="text-action" data-action="help" title="Help"><i class="fa fa-question fa-2x"></i></button>
+		<div class="transcript-container">
+			<div id="text-options">
+				<button class="text-action" data-action="save" title="Save"><i class="fa fa-save fa-2x"></i></button>
+				<button class="text-action" data-action="undo" title="Undo"><i class="fa fa-undo fa-2x"></i></button>
+				<button class="text-action" data-action="redo" title="Redo"><i class="fa fa-repeat fa-2x"></i></button>
+				<button class="text-action" data-action="strike" title="Strikethrough"><i class="fa fa-strikethrough fa-2x"></i></button>
+				<button class="text-action" data-action="highlight" title="Highlight"><i class="fa fa-bookmark fa-2x"></i></button>
+				<button class="text-action" data-action="help" title="Help"><i class="fa fa-question fa-2x"></i></button>
+			</div>
+			<div id="transcript-area"></div>
 		</div>
-		<div id="transcript-area"></div>
-	</div>
 	</center>
 </body>
 

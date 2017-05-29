@@ -149,6 +149,7 @@ function enableUI() {
 	document.getElementById('main-container-mask').classList.toggle('invisible');
 	setInterval(function() {
 		document.getElementById('main-container-mask').setAttribute('style', 'display: none');
+		document.getElementById('loading-percentage').innerHTML = '';
 	}, 300);
 }
 
@@ -290,6 +291,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	wavesurfer.on('seek', function() {
 		readWords();
+	});
+
+	wavesurfer.on('loading', function(callback) {
+		document.getElementById('loading-percentage').innerHTML = callback + '%';
 	});
 
 	wavesurfer.on('ready', function() {

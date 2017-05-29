@@ -54,7 +54,7 @@ div#main-container-mask {
 	height: 100%;
 	width: 100%;
 	box-sizing: border-box;
-	padding-top: 1.5em;
+	padding-top: 4em;
 	color: #111;
 	position: absolute;
 	z-index: 4;
@@ -266,6 +266,11 @@ input.highlight {
 
 input.strike {
 	text-decoration: line-through;
+}
+
+span#loading-percentage {
+	font-family: 'Allerta Stencil';
+	font-size: 1.2em;
 }
 
 div.speaker-div {
