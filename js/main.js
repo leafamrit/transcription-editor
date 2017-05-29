@@ -171,6 +171,36 @@ function enableInput(caller) {
 
 function disableInput(caller) {
 	caller.setAttribute('readonly', '');
+	if(/\s/g.test(caller.value.trim())) {
+		var newWords = caller.value.trim().split(' ');
+		var parentDiv = caller.parentNode;
+		var indexOfCurrentNode = Array.from(parentDiv.children).indexOf(caller);
+		var wordDuration = ((caller.getAttribute('endtime') - caller.getAttribute('starttime')) / newWords.length).toFixed(2);
+		var newEnd = caller.getAttribute('endtime');
+		var newStart = (Number(newEnd) - Number(wordDuration)).toFixed(2);
+		var newWord;
+		caller.value = newWords[newWords.length - 1];
+		caller.setAttribute('starttime', newStart);
+		caller.setAttribute('id', newStart);
+		caller.setAttribute('title', newStart + " - " + newEnd);
+		for(var i = newWords.length - 2; i >= 0; i--) {
+			newEnd = newStart;
+			newStart = (Number(newEnd) - Number(wordDuration)).toFixed(2);
+			newWord = document.createElement('input');
+			newWord.setAttribute('value', newWords[i]);
+			newWord.setAttribute('starttime', newStart);
+			newWord.setAttribute('endtime', newEnd);
+			newWord.setAttribute('title', newStart + " - " + newEnd);
+			newWord.setAttribute('id', newStart);
+			newWord.setAttribute('readonly', '');
+			newWord.addEventListener('click', function() { enableInput(this); });
+			newWord.addEventListener('blur', function() { disableInput(this); });
+			newWord.addEventListener('keypress', function() { resizeInput(this); });
+			newWord.classList.add('word');
+			newWord.setAttribute('style', 'width: ' + ((newWord.value.length + 1) * 8) + 'px');
+			parentDiv.insertBefore(newWord, parentDiv.childNodes[indexOfCurrentNode]);
+		}
+	}
 }
 
 function resizeInput(caller) {
