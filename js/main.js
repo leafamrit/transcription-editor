@@ -52,11 +52,12 @@ var GLOBAL_ACTIONS = {
 	'strike': function() {
 		try {
 			lastFocussedInput.classList.toggle('strike');
-			if(lastFocussedInput.id in wavesurfer.regions.list) {
-				wavesurfer.regions.list[lastFocussedInput.id].remove();
+			var eleId = 'h' + lastFocussedInput.id;
+			if(eleId in wavesurfer.regions.list) {
+				wavesurfer.regions.list[eleId].remove();
 			} else {
 				wavesurfer.addRegion({
-					id: lastFocussedInput.id,
+					id: eleId,
 					start: lastFocussedInput.getAttribute('starttime'),
 					end: lastFocussedInput.getAttribute('endtime'),
 					color: 'rgba(100, 100, 100, 0.5)',
@@ -70,11 +71,12 @@ var GLOBAL_ACTIONS = {
 	'highlight': function() {
 		try {
 			lastFocussedInput.classList.toggle('highlight');
-			if(lastFocussedInput.id in wavesurfer.regions.list) {
-				wavesurfer.regions.list[lastFocussedInput.id].remove();
+			var eleId = 's' + lastFocussedInput.id;
+			if(eleId in wavesurfer.regions.list) {
+				wavesurfer.regions.list[eleId].remove();
 			} else {
 				wavesurfer.addRegion({
-					id: lastFocussedInput.id,
+					id: eleId,
 					start: lastFocussedInput.getAttribute('starttime'),
 					end: lastFocussedInput.getAttribute('endtime'),
 					color: 'rgba(255, 255, 0, 0.3)',
