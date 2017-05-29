@@ -239,7 +239,7 @@ input.word {
 	margin: 2px;
 	background-color: rgba(0,0,0,0);
 	border: none;
-	font-family: 'Arial';
+	font-family: monospace;
 	color: #282d30;
 	cursor: text;
 }

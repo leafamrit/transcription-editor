@@ -183,6 +183,7 @@ function disableInput(caller) {
 		caller.setAttribute('starttime', newStart);
 		caller.setAttribute('id', newStart);
 		caller.setAttribute('title', newStart + " - " + newEnd);
+		resizeInput(caller);
 		for(var i = newWords.length - 2; i >= 0; i--) {
 			newEnd = newStart;
 			newStart = (Number(newEnd) - Number(wordDuration)).toFixed(2);
@@ -197,7 +198,7 @@ function disableInput(caller) {
 			newWord.addEventListener('blur', function() { disableInput(this); });
 			newWord.addEventListener('keypress', function() { resizeInput(this); });
 			newWord.classList.add('word');
-			newWord.setAttribute('style', 'width: ' + ((newWord.value.length + 1) * 8) + 'px');
+			resizeInput(newWord);
 			parentDiv.insertBefore(newWord, parentDiv.childNodes[indexOfCurrentNode]);
 		}
 	}
@@ -244,11 +245,12 @@ function fillWords() {
 		speakerName = document.createElement('input');
 		speakerName.value = currentSpeaker;
 		speakerName.setAttribute('readonly', '');
+		speakerName.setAttribute('id', speakers[i].from);
 		speakerName.addEventListener('focus', function() { enableInput(this); });
 		speakerName.addEventListener('blur', function() { disableInput(this); });
 		speakerName.addEventListener('keypress', function() { resizeInput(this); });
 		speakerName.classList.add('speaker');
-		speakerName.setAttribute('style', 'width: ' + ((speakerName.value.length + 0.5) * 8) + 'px');
+		resizeInput(speakerName);
 		div.appendChild(speakerName);
 		div.appendChild(document.createElement('br'));
 		do {
@@ -264,7 +266,7 @@ function fillWords() {
 			word.addEventListener('blur', function() { disableInput(this); });
 			word.addEventListener('keypress', function() { resizeInput(this); });
 			word.classList.add('word');
-			word.setAttribute('style', 'width: ' + ((word.value.length + 1) * 8) + 'px');
+			resizeInput(word);
 			div.appendChild(word);
 			i++;
 		} while(currentSpeaker == nextSpeaker && i < words.length - 1);
