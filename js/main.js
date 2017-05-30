@@ -34,13 +34,23 @@ var GLOBAL_ACTIONS = {
 		activeSpeed();
 	},
 
-	'speedx2': function() {
-		wavesurfer.setPlaybackRate(2);
+	'speedx125': function() {
+		wavesurfer.setPlaybackRate(1.25);
 		activeSpeed();
 	},
 
-	'speedx4': function() {
-		wavesurfer.setPlaybackRate(4);
+	'speedx15': function() {
+		wavesurfer.setPlaybackRate(1.5);
+		activeSpeed();
+	},
+
+	'speedx175': function() {
+		wavesurfer.setPlaybackRate(1.75);
+		activeSpeed();
+	},
+
+	'speedx2': function() {
+		wavesurfer.setPlaybackRate(2);
 		activeSpeed();
 	},
 
@@ -104,8 +114,10 @@ function activeSpeed() {
 	var map = {
 		0.5: 0,
 		1: 1,
-		2: 2,
-		4: 3
+		1.25: 2,
+		1.5: 3,
+		1.75: 4,
+		2: 5
 	}
 	var speedButtons = document.querySelectorAll('.speed');
 	[].forEach.call(speedButtons, function(el) {
@@ -171,7 +183,7 @@ function enableInput(caller) {
 
 function disableInput(caller) {
 	caller.setAttribute('readonly', '');
-	if(/\s/g.test(caller.value.trim())) {
+	if(/\s/g.test(caller.value.trim()) && caller.classList[0] != "speaker") {
 		var newWords = caller.value.trim().split(' ');
 		var parentDiv = caller.parentNode;
 		var indexOfCurrentNode = Array.from(parentDiv.children).indexOf(caller);
@@ -194,7 +206,7 @@ function disableInput(caller) {
 			newWord.setAttribute('title', newStart + " - " + newEnd);
 			newWord.setAttribute('id', newStart);
 			newWord.setAttribute('readonly', '');
-			newWord.addEventListener('click', function() { enableInput(this); });
+			newWord.addEventListener('focus', function() { enableInput(this); });
 			newWord.addEventListener('blur', function() { disableInput(this); });
 			newWord.addEventListener('keypress', function() { resizeInput(this); });
 			newWord.classList.add('word');
@@ -235,7 +247,7 @@ function fillWords() {
 	});
 
 	var textArea = document.getElementById('transcript-area');
-	var currentSpeaker, nextSpeaker, div, speakerName, word;
+	var currentSpeaker, nextSpeaker, div, speakerName, word, colonSpan;
 	for(var i = 0; i < words.length - 1;) {
 		currentSpeaker = speakers[i].speaker;
 		nextSpeaker = speakers[i + 1].speaker;
@@ -252,7 +264,10 @@ function fillWords() {
 		speakerName.classList.add('speaker');
 		resizeInput(speakerName);
 		div.appendChild(speakerName);
-		div.appendChild(document.createElement('br'));
+		console.log(colonSpan);
+		colonSpan = document.createElement('span');
+		colonSpan.innerText = ": ";
+		div.appendChild(colonSpan);
 		do {
 			nextSpeaker = speakers[i + 1].speaker;
 			word = document.createElement('input');
@@ -295,7 +310,8 @@ document.addEventListener('DOMContentLoaded', function() {
 		waveColor: '#3f88c5',
 		cursorWidth: 2,
 		cursorColor: '#3f88c5',
-		hideScrollbar: true
+		hideScrollbar: true,
+		height: 95
 	};
 
 	wavesurfer.init(options);
@@ -380,6 +396,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			90: '', 			// Z
 			83: '', 			// S
 		}
+
 		if(e.ctrlKey) {
 			var action = map[e.keyCode];
 			if(action in GLOBAL_ACTIONS) {
@@ -387,6 +404,30 @@ document.addEventListener('DOMContentLoaded', function() {
 				GLOBAL_ACTIONS[action]();
 			}
 		}
+
+		currentElement = document.activeElement;
+		if(currentElement.classList[0] == 'word') {
+			if(currentElement.selectionEnd == currentElement.value.length) {
+				document.addEventListener('keydown', function(e2) {
+					if(e2.keyCode == 39) {
+						currentElement.nextSibling.focus();
+					}
+				});
+			}
+		}
 	});
+
+	/*document.addEventListener('keydown', function(e) {
+		if(e.keyCode == 37 || e.keyCode == 39) {
+			currentElement = document.activeElement;
+			if(currentElement.classList[0] == 'word') {
+				if(currentElement.selectionEnd == currentElement.value.length) {
+					document.addEventListener('keydown', function(e2) {
+						if(e2.keyCode == 37) {}
+					})
+				}
+			}
+		}
+	})*/
 });
 

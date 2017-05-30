@@ -44,6 +44,11 @@ div#transcript-area {
 	overflow-y: scroll;
 	height: 80%;
 	box-sizing: border-box;
+	border: 1px solid #393e41;
+	border-radius: 2px;
+	background-color: #fff;
+	cursor: text;
+	padding: 1em;
 }
 
 div#text-options {
@@ -81,12 +86,18 @@ i.spinning {
 
 div#controls {
 	width: 100%;
+	text-align: center;
 }
 
 span#speedcontrols {
 	border: 2px solid #282d30;
-	padding: 1em;
+	height: 100%;
 	border-radius: 0.2em;
+	float: left;
+}
+
+.speed {
+	font-size: 100%;
 }
 
 .actionbutton {
@@ -241,7 +252,6 @@ input.word {
 	border: none;
 	font-family: monospace;
 	color: #282d30;
-	cursor: text;
 	outline: none;
 }
 
@@ -253,7 +263,6 @@ input.speaker {
 	color: #111;
 	cursor: text;
 	text-decoration: bold;
-	font-size: 1.1em;
 }
 
 
@@ -275,9 +284,5 @@ span#loading-percentage {
 }
 
 div.speaker-div {
-	margin: 0.5em;
 	text-align: left;
-	padding: 1em;
-	border-top: 1px dashed #393e41;
-	border-bottom: 1px dashed #393e41;
 }
