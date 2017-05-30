@@ -261,7 +261,7 @@ input.read {
 }
 
 input.highlight {
-	color: #aa0;
+	background-color: #aa0;
 }
 
 input.strike {
