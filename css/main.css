@@ -242,6 +242,7 @@ input.word {
 	font-family: monospace;
 	color: #282d30;
 	cursor: text;
+	outline: none;
 }
 
 input.speaker {
