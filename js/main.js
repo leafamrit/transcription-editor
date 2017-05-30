@@ -6,6 +6,7 @@ var duration;
 var lastFocussedInput;
 
 var skipSilences = false;
+var playHighlights = false;
 
 var GLOBAL_ACTIONS = {
 	
@@ -59,42 +60,63 @@ var GLOBAL_ACTIONS = {
 		toggleActive(document.getElementById('bt-skipsilence'));
 	},
 
+	'playhighlight': function() {
+		playHighlights = !playHighlights;
+		toggleActive(document.getElementById('bt-playhighlight'));
+	},
+
 	'strike': function() {
-		try {
-			lastFocussedInput.classList.toggle('strike');
-			var eleId = 'h' + lastFocussedInput.id;
-			if(eleId in wavesurfer.regions.list) {
-				wavesurfer.regions.list[eleId].remove();
+		if(window.getSelection) {
+			var startElement = window.getSelection().anchorNode.parentElement;
+			var endElement = window.getSelection().extentNode.parentElement;
+			var waveId = 's' + startElement.id;
+			//paint words
+			var currentNode = document.getElementById(startElement.id);
+			while(Number(currentNode.id) <= Number(endElement.id)) {
+				currentNode.classList.add('strike');
+				currentNode = currentNode.nextSibling;
+			}
+			//paint waveform
+			if(waveId in wavesurfer.regions.list) {
+				wavesurfer.regions.list[waveId].remove();
 			} else {
 				wavesurfer.addRegion({
-					id: eleId,
-					start: lastFocussedInput.getAttribute('starttime'),
-					end: lastFocussedInput.getAttribute('endtime'),
+					id: waveId,
+					start: startElement.getAttribute('starttime'),
+					end: endElement.getAttribute('endtime'),
 					color: 'rgba(100, 100, 100, 0.5)',
 					drag: false,
 					resize: false
 				});
 			}
-		} catch(exception) {}
+		}
 	},
 
 	'highlight': function() {
-		try {
-			lastFocussedInput.classList.toggle('highlight');
-			var eleId = 's' + lastFocussedInput.id;
-			if(eleId in wavesurfer.regions.list) {
-				wavesurfer.regions.list[eleId].remove();
+		if(window.getSelection) {
+			var startElement = window.getSelection().anchorNode.parentElement;
+			var endElement = window.getSelection().extentNode.parentElement;
+			var waveId = 'h' + startElement.id;
+			//paint words
+			var currentNode = document.getElementById(startElement.id);
+			while(Number(currentNode.id) <= Number(endElement.id)) {
+				currentNode.classList.add('highlight');
+				currentNode = currentNode.nextSibling;
+			}
+			//paint waveform
+			if(waveId in wavesurfer.regions.list) {
+				wavesurfer.regions.list[waveId].remove();
 			} else {
 				wavesurfer.addRegion({
-					id: eleId,
-					start: lastFocussedInput.getAttribute('starttime'),
-					end: lastFocussedInput.getAttribute('endtime'),
+					id: waveId,
+					start: startElement.getAttribute('starttime'),
+					end: endElement.getAttribute('endtime'),
 					color: 'rgba(255, 255, 0, 0.3)',
 					drag: false,
 					resize: false
 				});
 			}
-		} catch(exception) {}
+		}
 	}
 
 }
@@ -147,11 +169,14 @@ function getSilences() {
 	var start, end;
 	for(var i = 0; i < peaks.length; i++) {
 		if(peaks[i] < 0.01) {
-			start = (unit * i).toFixed(1);
+			start = ((unit * i) + 0.01).toFixed(1);
 			while(peaks[i] < 0.01) {i++;}
-			end = (unit * i).toFixed(1);
-			//paintSilence(start, end);
-			silences[start] = Number((end - start).toFixed(1));
+			end = ((unit * i) - 0.01).toFixed(1);
+			if(end > start) {
+				paintSilence(start, end);
+				console.log(start + " " + end);
+				silences[start] = Number((end - start).toFixed(1));
+			}
 		}
 	}
 }
@@ -227,6 +252,12 @@ function resizeBody() {
 	document.getElementById('text-options').setAttribute('style', 'margin-top: ' + off + 'px');
 }
 
+function getSelectedIdRange() {
+	if(window.getSelection) {
+		console.log(window.getSelection().anchorNode.parentElement.id + " " + window.getSelection().extentNode.parentElement.id);
+	}
+}
+
 function fillWords() {
 	var results = transcript.results;
 	var speakers = transcript.speaker_labels;
@@ -253,35 +284,40 @@ function fillWords() {
 		nextSpeaker = speakers[i + 1].speaker;
 		div = document.createElement('div');
 		div.setAttribute('title', currentSpeaker);
+		div.setAttribute('contenteditable', 'true');
 		div.classList.add('speaker-div');
-		speakerName = document.createElement('input');
-		speakerName.value = currentSpeaker;
-		speakerName.setAttribute('readonly', '');
+		//speakerName = document.createElement('input');
+		speakerName = document.createElement('span');
+		//speakerName.value = currentSpeaker;
+		speakerName.innerText = currentSpeaker + ": ";
+		//speakerName.setAttribute('readonly', '');
 		speakerName.setAttribute('id', speakers[i].from);
-		speakerName.addEventListener('focus', function() { enableInput(this); });
-		speakerName.addEventListener('blur', function() { disableInput(this); });
-		speakerName.addEventListener('keypress', function() { resizeInput(this); });
+		//speakerName.addEventListener('focus', function() { enableInput(this); });
+		//speakerName.addEventListener('blur', function() { disableInput(this); });
+		//speakerName.addEventListener('keypress', function() { resizeInput(this); });
 		speakerName.classList.add('speaker');
-		resizeInput(speakerName);
+		//resizeInput(speakerName);
 		div.appendChild(speakerName);
-		console.log(colonSpan);
+		/*console.log(colonSpan);
 		colonSpan = document.createElement('span');
 		colonSpan.innerText = ": ";
-		div.appendChild(colonSpan);
+		div.appendChild(colonSpan);*/
 		do {
 			nextSpeaker = speakers[i + 1].speaker;
-			word = document.createElement('input');
-			word.setAttribute('value', words[i][0]);
+			//word = document.createElement('input');
+			word = document.createElement('span');
+			//word.setAttribute('value', words[i][0]);
+			word.innerText = words[i][0] + " ";
 			word.setAttribute('starttime', words[i][1]);
 			word.setAttribute('endtime', words[i][2]);
 			word.setAttribute('title', words[i][1] + " - " + words[i][2]);
 			word.setAttribute('id', words[i][1]);
-			word.setAttribute('readonly', '');
-			word.addEventListener('focus', function() { enableInput(this); });
-			word.addEventListener('blur', function() { disableInput(this); });
-			word.addEventListener('keypress', function() { resizeInput(this); });
+			//word.setAttribute('readonly', '');
+			//word.addEventListener('focus', function() { enableInput(this); });
+			//word.addEventListener('blur', function() { disableInput(this); });
+			//word.addEventListener('keypress', function() { resizeInput(this); });
 			word.classList.add('word');
-			resizeInput(word);
+			//resizeInput(word);
 			div.appendChild(word);
 			i++;
 		} while(currentSpeaker == nextSpeaker && i < words.length - 1);

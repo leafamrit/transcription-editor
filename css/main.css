@@ -246,7 +246,7 @@ input[type=range]:focus::-ms-fill-upper {
 	font-family: 'Allerta Stencil';
 }
 
-input.word {
+.word {
 	margin: 2px;
 	background-color: rgba(0,0,0,0);
 	border: none;
@@ -255,26 +255,26 @@ input.word {
 	outline: none;
 }
 
-input.speaker {
+.speaker {
 	margin: 2px;
 	background-color: rgba(0,0,0,0);
 	border: none;
-	font-family: 'Arial';
+	font-family: monospace;
 	color: #111;
 	cursor: text;
 	text-decoration: bold;
 }
 
 
-input.read {
+.read {
 	color: #f4364c;
 }
 
-input.highlight {
+.highlight {
 	background-color: #ff0;
 }
 
-input.strike {
+.strike {
 	text-decoration: line-through;
 }
 
@@ -285,4 +285,5 @@ span#loading-percentage {
 
 div.speaker-div {
 	text-align: left;
+	outline: none;
 }
