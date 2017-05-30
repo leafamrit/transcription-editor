@@ -169,9 +169,9 @@ function getSilences() {
 	var start, end;
 	for(var i = 0; i < peaks.length; i++) {
 		if(peaks[i] < 0.01) {
-			start = ((unit * i) + 0.01).toFixed(1);
+			start = ((unit * i) + 0.02).toFixed(1);
 			while(peaks[i] < 0.01) {i++;}
-			end = ((unit * i) - 0.01).toFixed(1);
+			end = ((unit * i) - 0.02).toFixed(1);
 			if(end > start) {
 				paintSilence(start, end);
 				console.log(start + " " + end);
