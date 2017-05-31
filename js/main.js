@@ -2,7 +2,11 @@ var wavesurfer = Object.create(WaveSurfer);
 var transcript;
 var wordStarts = Array();
 var silences = Array();
+var highlights = Array();
+var strikes = Array();
 var duration;
+var takeFromSelection = false;
+var currEle;
 var lastFocussedInput;
 
 var skipSilences = false;
@@ -61,56 +65,173 @@ var GLOBAL_ACTIONS = {
 	},
 
 	'playhighlight': function() {
+		if(!playHighlights) {
+			for(var i in wavesurfer.regions.list) {
+				if(/^h/i.test(i)) {
+					wavesurfer.seekTo(wavesurfer.regions.list[i].start / wavesurfer.getDuration());
+					break;
+				}
+			}
+		}
 		playHighlights = !playHighlights;
+		getHighlights();
 		toggleActive(document.getElementById('bt-playhighlight'));
 	},
 
 	'strike': function() {
-		if(window.getSelection) {
+		//console.log(window.getSelection + " " + window.getSelection().toString().split('').length);
+		if(window.getSelection && window.getSelection().toString().split('').length > 1) {
+			//console.log('condition 1 active');
 			var startElement = window.getSelection().anchorNode.parentElement;
-			var endElement = window.getSelection().extentNode.parentElement;
-			var waveId = 's' + startElement.id;
-			//paint words
-			var currentNode = document.getElementById(startElement.id);
-			while(Number(currentNode.id) <= Number(endElement.id)) {
-				currentNode.classList.add('strike');
-				currentNode = currentNode.nextSibling;
+			if(startElement.classList[0] != 'word') {
+				startElement = startElement.nextSibling;
 			}
-			//paint waveform
+			//console.log('startElement: ' + startElement.id)
+			var endElement = window.getSelection().extentNode.parentElement;
+			if(endElement.classList[0] != 'word') {
+				endElement = endElement.nextSibling;
+			}
+			//console.log('endElement: ' + endElement.id);
+			if(Number(startElement.id) > Number(endElement.id)) {
+				var temp = startElement;
+				startElement = endElement;
+				endElement = temp;
+				//console.log('swapping');
+			}
+			//console.log('after swipe: ' + startElement.id + ' ' + endElement.id);
+			var waveId = 's' + startElement.id;
+			var currentNode = document.getElementById(startElement.id);
+			//console.log('currentNode: ' + currentNode.id + ' endElement: ' + endElement.id);
+			while(Number(currentNode.id) <= Number(endElement.id)) {
+				//console.log('in while');
+				//console.log('currentNode: ' + currentNode.id);
+				currentNode.classList.toggle('strike');
+				waveId = 's' + currentNode.id;
+				if(waveId in wavesurfer.regions.list) {
+					wavesurfer.regions.list[waveId].remove();
+				} else {
+					wavesurfer.addRegion({
+						id: waveId,
+						start: currentNode.getAttribute('starttime'),
+						end: currentNode.getAttribute('endtime'),
+						color: 'rgba(100, 100, 100, 0.5)',
+						drag: false,
+						resize: false
+					});
+				}
+				if(currentNode.nextSibling) {
+					currentNode = currentNode.nextSibling;
+					//console.log('nextSibling: ' + currentNode.id);
+				} else {
+					//console.log('nextSibling break');
+					break;
+				}
+			}
+			//console.log('while end');
+		} else {
+			//console.log('condition 2 active');
+			var readEle = document.getElementsByClassName('read');
+			
+			if(readEle[readEle.length - 1].nextSibling) {
+				currentNode = readEle[readEle.length - 1].nextSibling;
+			} else if (readEle[readEle.length - 1].parentNode.nextSibling) {
+				currentNode = readEle[readEle.length - 1].parentNode.nextSibling.firstChild.nextSibling;
+			} else {
+				currentNode = readEle[readEle.length - 1];
+			}
+			//console.log('currentNode: ' + currentNode.id);
+			currentNode.classList.toggle('strike');
+			waveId = 's' + currentNode.id;
+			
 			if(waveId in wavesurfer.regions.list) {
 				wavesurfer.regions.list[waveId].remove();
 			} else {
 				wavesurfer.addRegion({
 					id: waveId,
-					start: startElement.getAttribute('starttime'),
-					end: endElement.getAttribute('endtime'),
+					start: currentNode.getAttribute('starttime'),
+					end: currentNode.getAttribute('endtime'),
 					color: 'rgba(100, 100, 100, 0.5)',
 					drag: false,
 					resize: false
 				});
 			}
 		}
+
+		getStrikes();
 	},
 
 	'highlight': function() {
-		if(window.getSelection) {
+		//console.log(window.getSelection + " " + window.getSelection().toString().split('').length);
+		if(window.getSelection && window.getSelection().toString().split('').length > 1) {
+			//console.log('condition 1 active');
 			var startElement = window.getSelection().anchorNode.parentElement;
-			var endElement = window.getSelection().extentNode.parentElement;
-			var waveId = 'h' + startElement.id;
-			//paint words
-			var currentNode = document.getElementById(startElement.id);
-			while(Number(currentNode.id) <= Number(endElement.id)) {
-				currentNode.classList.add('highlight');
-				currentNode = currentNode.nextSibling;
+			if(startElement.classList[0] != 'word') {
+				startElement = startElement.nextSibling;
 			}
-			//paint waveform
+			//console.log('startElement: ' + startElement.id)
+			var endElement = window.getSelection().extentNode.parentElement;
+			if(endElement.classList[0] != 'word') {
+				endElement = endElement.nextSibling;
+			}
+			//console.log('endElement: ' + endElement.id);
+			if(Number(startElement.id) > Number(endElement.id)) {
+				var temp = startElement;
+				startElement = endElement;
+				endElement = temp;
+				//console.log('swapping');
+			}
+			//console.log('after swipe: ' + startElement.id + ' ' + endElement.id);
+			var waveId = 'h' + startElement.id;
+			var currentNode = document.getElementById(startElement.id);
+			//console.log('currentNode: ' + currentNode.id + ' endElement: ' + endElement.id);
+			while(Number(currentNode.id) <= Number(endElement.id)) {
+				//console.log('in while');
+				//console.log('currentNode: ' + currentNode.id);
+				currentNode.classList.toggle('highlight');
+				waveId = 'h' + currentNode.id;
+				if(waveId in wavesurfer.regions.list) {
+					wavesurfer.regions.list[waveId].remove();
+				} else {
+					wavesurfer.addRegion({
+						id: waveId,
+						start: currentNode.getAttribute('starttime'),
+						end: currentNode.getAttribute('endtime'),
+						color: 'rgba(255, 255, 0, 0.3)',
+						drag: false,
+						resize: false
+					});
+				}
+				if(currentNode.nextSibling) {
+					currentNode = currentNode.nextSibling;
+					//console.log('nextSibling: ' + currentNode.id);
+				} else {
+					//console.log('nextSibling break');
+					break;
+				}
+			}
+			//console.log('while end');
+		} else {
+			//console.log('condition 2 active');
+			var readEle = document.getElementsByClassName('read');
+			
+			if(readEle[readEle.length - 1].nextSibling) {
+				currentNode = readEle[readEle.length - 1].nextSibling;
+			} else if (readEle[readEle.length - 1].parentNode.nextSibling) {
+				currentNode = readEle[readEle.length - 1].parentNode.nextSibling.firstChild.nextSibling;
+			} else {
+				currentNode = readEle[readEle.length - 1];
+			}
+			//console.log('currentNode: ' + currentNode.id);
+			currentNode.classList.toggle('highlight');
+			waveId = 'h' + currentNode.id;
+			
 			if(waveId in wavesurfer.regions.list) {
 				wavesurfer.regions.list[waveId].remove();
 			} else {
 				wavesurfer.addRegion({
 					id: waveId,
-					start: startElement.getAttribute('starttime'),
-					end: endElement.getAttribute('endtime'),
+					start: currentNode.getAttribute('starttime'),
+					end: currentNode.getAttribute('endtime'),
 					color: 'rgba(255, 255, 0, 0.3)',
 					drag: false,
 					resize: false
@@ -118,13 +239,13 @@ var GLOBAL_ACTIONS = {
 			}
 		}
 	}
-
 }
 
 // change play pause icon
 function togglePlayPause() {
 	document.getElementById('playpause').classList.toggle('fa-play');
 	document.getElementById('playpause').classList.toggle('fa-pause');
+	takeFromSelection = !takeFromSelection;
 }
 
 // set colors to active elements
@@ -169,14 +290,52 @@ function getSilences() {
 	var start, end;
 	for(var i = 0; i < peaks.length; i++) {
 		if(peaks[i] < 0.01) {
-			start = ((unit * i) + 0.02).toFixed(1);
+			start = Number(((unit * i) + 0.02).toFixed(1));
 			while(peaks[i] < 0.01) {i++;}
-			end = ((unit * i) - 0.02).toFixed(1);
+			end = Number(((unit * i) - 0.02).toFixed(1));
 			if(end > start) {
 				paintSilence(start, end);
-				console.log(start + " " + end);
 				silences[start] = Number((end - start).toFixed(1));
 			}
+		}
+	}
+}
+
+function getHighlights() {
+	var keys = Array();
+	for(var i in wavesurfer.regions.list) {
+		if(/^h/i.test(i)) {
+			keys.push(wavesurfer.regions.list[i]);
+		}
+	}
+	
+	highlights['0'] = Number((keys[0].start).toFixed(1));
+	for(var i = 1; i < keys.length - 1; i++) {
+		var duration = Number((keys[i + 1].start - keys[i].end).toFixed(1));
+		if(duration > 0) {
+			highlights[(keys[i].end).toFixed(1)] = duration;
+		}
+	}
+	highlights[keys[i].end.toFixed(1)] = Number((wavesurfer.getDuration() - keys[i].end).toFixed(1));
+}
+
+function getStrikes() {
+	var keys = Array();
+	for(var i in wavesurfer.regions.list) {
+		if(/^s/i.test(i)) {
+			keys.push(wavesurfer.regions.list[i]);
+		}
+	}
+
+	j = 1;
+	for(var i = 0; i < keys.length - 1; i++) {
+		var duration = Number((keys[i].end - keys[i].start).toFixed(1));
+		if(keys[i].end.toFixed(1) == keys[i + j].start.toFixed(1)) {
+			strikes[(keys[i].start).toFixed(1)] = Number((duration + (keys[i + j].end - keys[i + j].start)).toFixed(1));
+			i + j;
+		} else {
+			strikes[(keys[i].start).toFixed(1)] = duration;
+			j = 1;
 		}
 	}
 }
@@ -201,9 +360,9 @@ function paintSilence(s, e) {
 }
 
 function enableInput(caller) {
-	lastFocussedInput = caller;
+	//lastFocussedInput = caller;
 	wavesurfer.seekTo(caller.id / duration);
-	caller.removeAttribute('readonly');
+	//caller.removeAttribute('readonly');
 }
 
 function disableInput(caller) {
@@ -252,12 +411,6 @@ function resizeBody() {
 	document.getElementById('text-options').setAttribute('style', 'margin-top: ' + off + 'px');
 }
 
-function getSelectedIdRange() {
-	if(window.getSelection) {
-		console.log(window.getSelection().anchorNode.parentElement.id + " " + window.getSelection().extentNode.parentElement.id);
-	}
-}
-
 function fillWords() {
 	var results = transcript.results;
 	var speakers = transcript.speaker_labels;
@@ -286,38 +439,24 @@ function fillWords() {
 		div.setAttribute('title', currentSpeaker);
 		div.setAttribute('contenteditable', 'true');
 		div.classList.add('speaker-div');
-		//speakerName = document.createElement('input');
 		speakerName = document.createElement('span');
-		//speakerName.value = currentSpeaker;
 		speakerName.innerText = currentSpeaker + ": ";
-		//speakerName.setAttribute('readonly', '');
-		speakerName.setAttribute('id', speakers[i].from);
-		//speakerName.addEventListener('focus', function() { enableInput(this); });
-		//speakerName.addEventListener('blur', function() { disableInput(this); });
-		//speakerName.addEventListener('keypress', function() { resizeInput(this); });
 		speakerName.classList.add('speaker');
-		//resizeInput(speakerName);
 		div.appendChild(speakerName);
-		/*console.log(colonSpan);
-		colonSpan = document.createElement('span');
-		colonSpan.innerText = ": ";
-		div.appendChild(colonSpan);*/
 		do {
 			nextSpeaker = speakers[i + 1].speaker;
-			//word = document.createElement('input');
 			word = document.createElement('span');
-			//word.setAttribute('value', words[i][0]);
 			word.innerText = words[i][0] + " ";
 			word.setAttribute('starttime', words[i][1]);
 			word.setAttribute('endtime', words[i][2]);
 			word.setAttribute('title', words[i][1] + " - " + words[i][2]);
+			word.setAttribute('tabindex', '-1');
+			//word.addEventListener('click', function() { console.log('click'); });
+			word.addEventListener('focus', function() { enableInput(this); });
+			//word.addEventListener('blur', function() { console.log('blur'); });
+			//word.addEventListener('keypress', function() { console.log('keypress'); });
 			word.setAttribute('id', words[i][1]);
-			//word.setAttribute('readonly', '');
-			//word.addEventListener('focus', function() { enableInput(this); });
-			//word.addEventListener('blur', function() { disableInput(this); });
-			//word.addEventListener('keypress', function() { resizeInput(this); });
 			word.classList.add('word');
-			//resizeInput(word);
 			div.appendChild(word);
 			i++;
 		} while(currentSpeaker == nextSpeaker && i < words.length - 1);
@@ -361,10 +500,21 @@ document.addEventListener('DOMContentLoaded', function() {
 	wavesurfer.on('audioprocess', function() {
 		curr = wavesurfer.getCurrentTime().toFixed(1);
 		readWords();
+		
 		if(skipSilences) {
 			if( curr in silences ) {
 				wavesurfer.skip(silences[curr]);
 			}
+		}
+
+		if(playHighlights) {
+			if( curr in highlights ) {
+				wavesurfer.skip(highlights[curr]);
+			}
+		}
+
+		if( curr in strikes ) {
+			wavesurfer.skip(strikes[curr]);
 		}
 	});
 
@@ -375,6 +525,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	wavesurfer.on('seek', function() {
 		readWords();
 	});
+
 
 	wavesurfer.on('loading', function(callback) {
 		document.getElementById('loading-percentage').innerHTML = callback + '%';
@@ -452,18 +603,5 @@ document.addEventListener('DOMContentLoaded', function() {
 			}
 		}
 	});
-
-	/*document.addEventListener('keydown', function(e) {
-		if(e.keyCode == 37 || e.keyCode == 39) {
-			currentElement = document.activeElement;
-			if(currentElement.classList[0] == 'word') {
-				if(currentElement.selectionEnd == currentElement.value.length) {
-					document.addEventListener('keydown', function(e2) {
-						if(e2.keyCode == 37) {}
-					})
-				}
-			}
-		}
-	})*/
 });
 

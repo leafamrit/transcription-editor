@@ -247,7 +247,6 @@ input[type=range]:focus::-ms-fill-upper {
 }
 
 .word {
-	margin: 2px;
 	background-color: rgba(0,0,0,0);
 	border: none;
 	font-family: monospace;
