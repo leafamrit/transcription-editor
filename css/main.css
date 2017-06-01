@@ -46,6 +46,7 @@ div#transcript-area {
 	box-sizing: border-box;
 	border: 1px solid #393e41;
 	border-radius: 2px;
+	box-shadow: 0 0 2px 0 #393e41;
 	background-color: #fff;
 	cursor: text;
 	padding: 1em;
