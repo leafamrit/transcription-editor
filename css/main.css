@@ -259,10 +259,13 @@ input[type=range]:focus::-ms-fill-upper {
 	margin: 2px;
 	background-color: rgba(0,0,0,0);
 	border: none;
+	border-bottom: 1px solid #393e41;
 	font-family: monospace;
 	color: #111;
 	cursor: text;
+	float: left;
 	text-decoration: bold;
+	min-width: 10px;
 }
 
 
