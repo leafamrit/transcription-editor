@@ -65,6 +65,10 @@ var GLOBAL_ACTIONS = {
 		toggleActive(document.getElementById('bt-skipsilence'));
 	},
 
+	'save': function() {
+		saveJSON();
+	},
+
 	'playhighlight': function() {
 		if(!playHighlights) {
 			for(var i in wavesurfer.regions.list) {
@@ -496,8 +500,16 @@ function loadJSON(filepath, callback) {
 	xhttp.send();
 }
 
-function saveJSON(filepath, callback) {
-
+function saveJSON() {
+	var xhttp = new XMLHttpRequest();
+	xhttp.onreadystatechange = function() {
+		if(this.readyState === 4 && this.status === 200) {
+			console.log(this.responseText);
+		}
+	}
+	xhttp.open('POST', './test.php', true);
+	xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+	xhttp.send('transcript=' + JSON.stringify(transcript));
 }
 
 function getSilences() {
@@ -858,7 +870,6 @@ document.addEventListener('DOMContentLoaded', function() {
 		readWords();
 	});
 
-
 	wavesurfer.on('loading', function(callback) {
 		document.getElementById('loading-percentage').innerHTML = callback + '%';
 	});
@@ -870,6 +881,9 @@ document.addEventListener('DOMContentLoaded', function() {
 		fillWords();
 		resizeBody();
 		enableUI();
+		setInterval(function() {
+			saveJSON();
+		}, 30000)
 	});
 
 	// dummy region ( to startup regions plugin )
@@ -913,7 +927,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			72: 'highlight',	// H
 			74: 'strike',		// J
 			90: 'undo',			// Z
-			83: '', 			// S
+			83: 'save', 			// S
 		}
 
 		if(e.ctrlKey) {
