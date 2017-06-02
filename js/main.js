@@ -561,7 +561,7 @@ function getStrikes() {
 	}
 
 	temp.sort(function(a, b) { return a - b; });
-	temp = temp.map(function(item) { return 'h' + item; });
+	temp = temp.map(function(item) { return 's' + item; });
 
 	temp.forEach(function(item) {
 		keys.push(wavesurfer.regions.list[item]);
@@ -651,8 +651,11 @@ function fillWords() {
 		//speakerName.innerText = currentSpeaker;
 		speakerName.value = currentSpeaker;
 		speakerName.classList.add('speaker');
+		speakerName.setAttribute('speakername', currentSpeaker);
+		speakerName.setAttribute('speakerindex', i);
 		speakerName.setAttribute('style', 'width: ' + ((speakerName.value.length * 8) + 2) + 'px');
 		speakerName.setAttribute('onkeypress', 'resizeInput(this);');
+		speakerName.setAttribute('onchange', 'changeInput(this);');
 		textArea.appendChild(speakerName);
 		colonSpan = document.createElement('input');
 		colonSpan.setAttribute('disabled', '');
@@ -781,6 +784,21 @@ function readWords() {
 			el.classList.add('read');
 		} else {
 			el.classList.remove('read');
+		}
+	});
+}
+
+function changeInput(caller) {
+	pastStack.push(JSON.stringify(transcript));
+	var speakers = document.getElementsByClassName('speaker');
+	var inputLength = (caller.value.length * 8) + 2;
+	var input = caller.value;
+	[].forEach.call(document.querySelectorAll('.speaker'), function(el) {
+		if(el.getAttribute('speakername') ==  caller.getAttribute('speakername')) {
+			var s_i = Number(el.getAttribute('speakerindex'));
+			el.value = input;
+			el.setAttribute('style', 'width: ' + inputLength + 'px');
+			transcript.speaker_labels[s_i].speaker = input;
 		}
 	});
 }
