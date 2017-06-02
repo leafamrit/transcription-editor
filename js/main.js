@@ -495,13 +495,15 @@ function getHighlights() {
 	highlights = [];
 	if(keys.length > 0) {
 		highlights['0'] = Number((keys[0].start).toFixed(1));
-		for(var i = 1; i < keys.length - 2; i++) {
+		for(var i = 1; i < keys.length - 1; i++) {
 			var duration = Number((keys[i + 1].start - keys[i].end).toFixed(1));
 			if(duration >= 0) {
 				highlights[(keys[i].end).toFixed(1)] = duration;
 			}
 		}
-		highlights[keys[i].end.toFixed(1)] = Number((wavesurfer.getDuration() - keys[i].end).toFixed(1));
+		if(keys.length > 1) {
+			highlights[keys[i].end.toFixed(1)] = Number((wavesurfer.getDuration() - keys[i].end).toFixed(1));
+		}
 	}
 }
 
@@ -637,6 +639,14 @@ function fillWords() {
 				transcript.results[r_i].alternatives[a_i].timestamps[w_i][2] = endTime;
 				this.setAttribute('endtime', endTime);
 				this.setAttribute('title', this.getAttribute('starttime') + ' - ' + endTime);
+				if(/highlight/i.test(this.classList.value)) {
+					GLOBAL_ACTIONS['highlight']();
+					GLOBAL_ACTIONS['highlight']();
+				}
+				if(/strike/i.test(this.classList.value)) {
+					GLOBAL_ACTIONS['strike']();
+					GLOBAL_ACTIONS['strike']();
+				}
 			}
 			if(!undoAction) {
 				pastStack.push(['e', this.id, oldValue, newValue]);
