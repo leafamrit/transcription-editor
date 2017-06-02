@@ -125,14 +125,17 @@ var GLOBAL_ACTIONS = {
 				var a_i = currentNode.getAttribute('alternativeindex');
 				var w_i = currentNode.getAttribute('wordindex');
 				
-				if(transcript.results[r_i].alternatives[a_i].timestamps[w_i].strike) {
-					transcript.results[r_i].alternatives[a_i].timestamps[w_i].strike = false;	
+				pastStack.push(JSON.stringify(transcript));
+				if(transcript.results[r_i].alternatives[a_i].timestamps[w_i][3]) {
+					if(transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].strike) {
+						transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].strike = false;
+					} else {
+						transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].strike = true;
+					}
 				} else {
-					//console.log('initializing');
-					transcript.results[r_i].alternatives[a_i].timestamps[w_i].strike = true;
+					transcript.results[r_i].alternatives[a_i].timestamps[w_i][3] = {};
+					transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].strike = true;
 				}
-
-				pastStack.push(['s', currentNode.id]);
 
 				if(currentNode.nextSibling) {
 					currentNode = currentNode.nextSibling;
@@ -147,7 +150,9 @@ var GLOBAL_ACTIONS = {
 			//console.log('condition 2 active');
 			var readEle = document.getElementsByClassName('read');
 			
-			if(readEle[readEle.length - 1].nextSibling) {
+			if(readEle.length <= 0) {
+				currentNode = document.getElementsByClassName('word')[0];
+			} else if(readEle[readEle.length - 1].nextSibling) {
 				currentNode = readEle[readEle.length - 1].nextSibling;
 			} else if (readEle[readEle.length - 1].parentNode.nextSibling) {
 				currentNode = readEle[readEle.length - 1].parentNode.nextSibling.firstChild.nextSibling;
@@ -174,15 +179,18 @@ var GLOBAL_ACTIONS = {
 			var r_i = currentNode.getAttribute('resultindex');
 			var a_i = currentNode.getAttribute('alternativeindex');
 			var w_i = currentNode.getAttribute('wordindex');
-			
-			if(transcript.results[r_i].alternatives[a_i].timestamps[w_i].strike) {
-				transcript.results[r_i].alternatives[a_i].timestamps[w_i].strike = false;	
-			} else {
-				//console.log('initializing');
-				transcript.results[r_i].alternatives[a_i].timestamps[w_i].strike = true;
-			}
 
-			pastStack.push(['s', currentNode.id]);
+			pastStack.push(JSON.stringify(transcript));
+			if(transcript.results[r_i].alternatives[a_i].timestamps[w_i][3]) {
+				if(transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].strike) {
+					transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].strike = false;
+				} else {
+					transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].strike = true;
+				}
+			} else {
+				transcript.results[r_i].alternatives[a_i].timestamps[w_i][3] = {};
+				transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].strike = true;
+			}
 		}
 
 		getStrikes();
@@ -193,12 +201,12 @@ var GLOBAL_ACTIONS = {
 		if(window.getSelection && window.getSelection().toString().split('').length > 1) {
 			//console.log('condition 1 active');
 			var startElement = window.getSelection().anchorNode.parentElement;
-			if(startElement.classList[0] != 'word') {
+			while(startElement.classList[0] != 'word') {
 				startElement = startElement.nextSibling;
 			}
 			//console.log('startElement: ' + startElement.id)
 			var endElement = window.getSelection().extentNode.parentElement;
-			if(endElement.classList[0] != 'word') {
+			while(endElement.classList[0] != 'word') {
 				endElement = endElement.nextSibling;
 			}
 			//console.log('endElement: ' + endElement.id);
@@ -234,14 +242,21 @@ var GLOBAL_ACTIONS = {
 				var a_i = currentNode.getAttribute('alternativeindex');
 				var w_i = currentNode.getAttribute('wordindex');
 				
-				if(transcript.results[r_i].alternatives[a_i].timestamps[w_i].highlight) {
-					transcript.results[r_i].alternatives[a_i].timestamps[w_i].highlight = false;	
+				pastStack.push(JSON.stringify(transcript));
+				//console.log(transcript.results[r_i].alternatives[a_i].timestamps[w_i][3]);
+				if(transcript.results[r_i].alternatives[a_i].timestamps[w_i][3]) {
+					//console.log('predefined');
+					if(transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].highlight) {
+						transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].highlight = false;
+					} else {
+						transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].highlight = true;
+					}
 				} else {
-					//console.log('initializing');
-					transcript.results[r_i].alternatives[a_i].timestamps[w_i].highlight = true;
+					//console.log('defining');
+					transcript.results[r_i].alternatives[a_i].timestamps[w_i][3] = {};
+					transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].highlight = true;
+					//console.log(transcript.results[r_i].alternatives[a_i].timestamps[w_i][3]);
 				}
-
-				pastStack.push(['h', currentNode.id]);
 
 				if(currentNode.nextSibling) {
 					currentNode = currentNode.nextSibling;
@@ -256,7 +271,9 @@ var GLOBAL_ACTIONS = {
 			//console.log('condition 2 active');
 			var readEle = document.getElementsByClassName('read');
 			
-			if(readEle[readEle.length - 1].nextSibling) {
+			if(readEle.length <= 0) {
+				currentNode = document.getElementsByClassName('word')[0];
+			} else if(readEle[readEle.length - 1].nextSibling) {
 				currentNode = readEle[readEle.length - 1].nextSibling;
 			} else if (readEle[readEle.length - 1].parentNode.nextSibling) {
 				currentNode = readEle[readEle.length - 1].parentNode.nextSibling.firstChild.nextSibling;
@@ -284,14 +301,21 @@ var GLOBAL_ACTIONS = {
 			var a_i = currentNode.getAttribute('alternativeindex');
 			var w_i = currentNode.getAttribute('wordindex');
 			
-			if(transcript.results[r_i].alternatives[a_i].timestamps[w_i].highlight) {
-				transcript.results[r_i].alternatives[a_i].timestamps[w_i].highlight = false;	
+			pastStack.push(JSON.stringify(transcript));
+			//console.log(transcript.results[r_i].alternatives[a_i].timestamps[w_i][3]);
+			if(transcript.results[r_i].alternatives[a_i].timestamps[w_i][3]) {
+				//console.log('predefined');
+				if(transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].highlight) {
+					transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].highlight = false;
+				} else {
+					transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].highlight = true;
+				}
 			} else {
-				//console.log('initializing');
-				transcript.results[r_i].alternatives[a_i].timestamps[w_i].highlight = true;
+				//console.log('defining');
+				transcript.results[r_i].alternatives[a_i].timestamps[w_i][3] = {};
+				transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].highlight = true;
+				//console.log(transcript.results[r_i].alternatives[a_i].timestamps[w_i][3]);
 			}
-
-			pastStack.push(['h', currentNode.id]);
 		}
 
 		getHighlights();
@@ -300,9 +324,14 @@ var GLOBAL_ACTIONS = {
 	'undo': function() {
 		var currAction;
 		if(pastStack.length > 0) {
+			futureStack.push(JSON.stringify(transcript));
 			currAction = pastStack.pop()
-			futureStack.push(currAction);
-			var ele = document.getElementById(currAction[1]);
+			transcript = {};
+			//console.log(transcript);
+			transcript = JSON.parse(currAction);
+			fillWords();
+			readWords();
+			/*var ele = document.getElementById(currAction[1]);
 			var r_i = ele.getAttribute('resultindex');
 			var a_i = ele.getAttribute('alternativeindex');
 			var w_i = ele.getAttribute('wordindex');
@@ -357,16 +386,19 @@ var GLOBAL_ACTIONS = {
 				}
 
 				getStrikes();
-			}
+			}*/
 		}
 	},
 
 	'redo': function() {
 		var currAction;
 		if(futureStack.length > 0) {
+			pastStack.push(JSON.stringify(transcript));
 			currAction = futureStack.pop()
-			pastStack.push(currAction);
-			var ele = document.getElementById(currAction[1]);
+			transcript = JSON.parse(currAction);
+			fillWords();
+			readWords();
+			/*var ele = document.getElementById(currAction[1]);
 			var r_i = ele.getAttribute('resultindex');
 			var a_i = ele.getAttribute('alternativeindex');
 			var w_i = ele.getAttribute('wordindex');
@@ -421,7 +453,7 @@ var GLOBAL_ACTIONS = {
 				}
 
 				getStrikes();
-			}
+			}*/
 		}
 	}
 }
@@ -487,12 +519,23 @@ function getSilences() {
 
 function getHighlights() {
 	var keys = Array();
+	var temp = Array();
+	
 	for(var i in wavesurfer.regions.list) {
 		if(/^h/i.test(i)) {
-			keys.push(wavesurfer.regions.list[i]);
+			temp.push(wavesurfer.regions.list[i].start);
 		}
 	}
+
+	temp.sort(function(a, b) { return a - b; });
+	temp = temp.map(function(item) { return 'h' + item; });
+
+	temp.forEach(function(item) {
+		keys.push(wavesurfer.regions.list[item]);
+	});
+
 	highlights = [];
+
 	if(keys.length > 0) {
 		highlights['0'] = Number((keys[0].start).toFixed(1));
 		for(var i = 1; i < keys.length - 1; i++) {
@@ -509,11 +552,20 @@ function getHighlights() {
 
 function getStrikes() {
 	var keys = Array();
+	var temp = Array();
+
 	for(var i in wavesurfer.regions.list) {
 		if(/^s/i.test(i)) {
-			keys.push(wavesurfer.regions.list[i]);
+			temp.push(wavesurfer.regions.list[i].start);
 		}
 	}
+
+	temp.sort(function(a, b) { return a - b; });
+	temp = temp.map(function(item) { return 'h' + item; });
+
+	temp.forEach(function(item) {
+		keys.push(wavesurfer.regions.list[item]);
+	});
 	
 	strikes = [];
 
@@ -584,6 +636,9 @@ function fillWords() {
 	});
 
 	var textArea = document.getElementById('transcript-area');
+	while(textArea.hasChildNodes()) {
+		textArea.removeChild(textArea.lastChild);
+	}
 	var currentSpeaker, nextSpeaker, div, speakerName, word, colonSpan;
 	for(var i = 0; i < words.length - 1;) {
 		currentSpeaker = speakers[i].speaker;
@@ -619,15 +674,79 @@ function fillWords() {
 			word.addEventListener('focus', function() { enableInput(this); });
 			word.setAttribute('id', words[i][1]);
 			word.classList.add('word');
+			var hWaveId = 'h' + words[i][1];
+			var sWaveId = 's' + words[i][1];
+			if(words[i][3]) {
+				//console.log('object defined');
+				if(words[i][3].highlight) {
+					//console.log('highlighting');
+					word.classList.add('highlight');
+					//console.log(word.classList);
+					if(hWaveId in wavesurfer.regions.list) {
+
+					} else {
+						wavesurfer.addRegion({
+							id: hWaveId,
+							start: word.getAttribute('starttime'),
+							end: word.getAttribute('endtime'),
+							color: 'rgba(255, 255, 0, 0.3)',
+							drag: false,
+							resize: false
+						});
+					}
+				} else {
+					//console.log('unlighting');
+					if(hWaveId in wavesurfer.regions.list) {
+						wavesurfer.regions.list[hWaveId].remove();
+					}
+				}
+			} else {
+				//console.log('unlighting2');
+				if(hWaveId in wavesurfer.regions.list) {
+					wavesurfer.regions.list[hWaveId].remove();
+				}
+			}
+			if(words[i][3]) {
+				if(words[i][3].strike) {
+					word.classList.add('strike');
+					if(sWaveId in wavesurfer.regions.list) {
+
+					} else {
+						wavesurfer.addRegion({
+							id: sWaveId,
+							start: word.getAttribute('starttime'),
+							end: word.getAttribute('endtime'),
+							color: 'rgba(100, 100, 100, 0.5)',
+							drag: false,
+							resize: false
+						});
+					}
+				} else {
+					if(sWaveId in wavesurfer.regions.list) {
+						wavesurfer.regions.list[sWaveId].remove();
+					}
+				}
+			} else {
+				if(sWaveId in wavesurfer.regions.list) {
+					wavesurfer.regions.list[sWaveId].remove();
+				}
+			}
 			div.appendChild(word);
 			i++;
 		} while(currentSpeaker == nextSpeaker && i < words.length - 1);
 
 		textArea.appendChild(div);
+		var specialBreak = document.createElement('br');
+		specialBreak.classList.add('special-break');
+		textArea.appendChild(specialBreak);
 	}
 
 	[].forEach.call(document.getElementsByClassName('word'), function(el) {
 		el.addEventListener('DOMSubtreeModified', function() {
+			if(!undoAction) {
+				pastStack.push(JSON.stringify(transcript));
+			}
+			undoAction = false;
 			var r_i = this.getAttribute('resultindex');
 			var a_i = this.getAttribute('alternativeindex');
 			var w_i = this.getAttribute('wordindex');
@@ -648,13 +767,12 @@ function fillWords() {
 					GLOBAL_ACTIONS['strike']();
 				}
 			}
-			if(!undoAction) {
-				pastStack.push(['e', this.id, oldValue, newValue]);
-			}
 
-			undoAction = false;
 		});
 	});
+
+	getHighlights();
+	getStrikes();
 }
 
 function readWords() {
@@ -687,8 +805,8 @@ document.addEventListener('DOMContentLoaded', function() {
 	wavesurfer.init(options);
 	
 	// load audio
-	wavesurfer.load('audio/1.wav');
-	loadJSON('transcript/1.json', function(text) {
+	wavesurfer.load('audio/2.wav');
+	loadJSON('transcript/2.json', function(text) {
 		transcript = JSON.parse(text);
 	});
 
@@ -784,7 +902,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			var action = map[e.keyCode];
 			if(action in GLOBAL_ACTIONS) {
 				e.preventDefault();
-				if(e.ShiftKey && action == 'undo') {
+				if(e.shiftKey && action == 'undo') {
 					GLOBAL_ACTIONS['redo']();
 				} else {
 					GLOBAL_ACTIONS[action]();
