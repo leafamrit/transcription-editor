@@ -651,7 +651,9 @@ function fillWords() {
 	while(textArea.hasChildNodes()) {
 		textArea.removeChild(textArea.lastChild);
 	}
-	var currentSpeaker, nextSpeaker, div, speakerName, word, colonSpan;
+	var currentSpeaker, nextSpeaker, div, speakerName, word, colonSpan, datalistOption;
+	var datalist = document.createElement('datalist');
+	datalist.id = 'speakerlist';
 	for(var i = 0; i < words.length - 1;) {
 		currentSpeaker = speakers[i].speaker;
 		nextSpeaker = speakers[i + 1].speaker;
@@ -663,6 +665,8 @@ function fillWords() {
 		//speakerName.innerText = currentSpeaker;
 		speakerName.value = currentSpeaker;
 		speakerName.classList.add('speaker');
+		speakerName.setAttribute('list', 'speakerlist');
+		speakerName.setAttribute('name', 'speaker');
 		speakerName.setAttribute('speakername', currentSpeaker);
 		speakerName.setAttribute('speakerindex', i);
 		speakerName.setAttribute('style', 'width: ' + ((speakerName.value.length * 8) + 2) + 'px');
@@ -754,6 +758,7 @@ function fillWords() {
 		var specialBreak = document.createElement('br');
 		specialBreak.classList.add('special-break');
 		textArea.appendChild(specialBreak);
+		textArea.appendChild(datalist);
 	}
 
 	[].forEach.call(document.getElementsByClassName('word'), function(el) {
@@ -805,15 +810,23 @@ function changeInput(caller) {
 	var speakers = document.getElementsByClassName('speaker');
 	var inputLength = (caller.value.length * 8) + 2;
 	var input = caller.value;
+	var oldName = caller.getAttribute('speakername');
 	[].forEach.call(document.querySelectorAll('.speaker'), function(el) {
-		if(el.getAttribute('speakername') ==  caller.getAttribute('speakername')) {
-			var s_i = Number(el.getAttribute('speakerindex'));
+		if(el.getAttribute('speakername') ==  oldName) {
 			el.value = input;
 			el.setAttribute('style', 'width: ' + inputLength + 'px');
-			transcript.speaker_labels[s_i].speaker = input;
+			el.setAttribute('speakername', input);
 		}
 	});
-}
+	transcript.speaker_labels.forEach(function(el) {
+		if(el.speaker == oldName) {
+			el.speaker = input;
+		}
+	});
+	datalistOption = document.createElement('option');
+		datalistOption.value = input;
+		document.getElementById('speakerlist').appendChild(datalistOption);
+	}
 
 function resizeInput(caller) {
 	caller.setAttribute('style', 'width: ' + ((caller.value.length * 8) + 2) + 'px');
