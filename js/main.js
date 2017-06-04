@@ -69,6 +69,13 @@ var GLOBAL_ACTIONS = {
 		saveJSON();
 	},
 
+	'close-find-replace': function() {
+		document.getElementById('find-replace-wrapper').classList.add('hidden');
+		[].forEach.call(document.querySelectorAll('.found'), function(el) {
+			el.classList.remove('found');
+		});
+	},
+
 	'playhighlight': function() {
 		if(!playHighlights) {
 			for(var i in wavesurfer.regions.list) {
@@ -594,6 +601,12 @@ function getStrikes() {
 	}
 }
 
+function showFindReplace(event) {
+	var ele = document.getElementById('find-replace-wrapper');
+	ele.classList.toggle('hidden');
+	ele.setAttribute('style', 'top: ' + event.clientY + 'px; left: ' + event.clientX + 'px;');
+}
+
 function enableUI() {
 	document.getElementById('loader').classList.toggle('spinning');
 	document.getElementById('main-container-mask').classList.toggle('invisible');
@@ -670,7 +683,7 @@ function fillWords() {
 		speakerName.setAttribute('speakername', currentSpeaker);
 		speakerName.setAttribute('speakerindex', i);
 		speakerName.setAttribute('style', 'width: ' + ((speakerName.value.length * 8) + 2) + 'px');
-		speakerName.setAttribute('onkeypress', 'resizeInput(this);');
+		speakerName.setAttribute('onkeyup', 'resizeInput(this);');
 		speakerName.setAttribute('onchange', 'changeInput(this);');
 		textArea.appendChild(speakerName);
 		colonSpan = document.createElement('input');
@@ -824,9 +837,9 @@ function changeInput(caller) {
 		}
 	});
 	datalistOption = document.createElement('option');
-		datalistOption.value = input;
-		document.getElementById('speakerlist').appendChild(datalistOption);
-	}
+	datalistOption.value = input;
+	document.getElementById('speakerlist').appendChild(datalistOption);
+}
 
 function resizeInput(caller) {
 	caller.setAttribute('style', 'width: ' + ((caller.value.length * 8) + 2) + 'px');
@@ -954,6 +967,38 @@ document.addEventListener('DOMContentLoaded', function() {
 				}
 			}
 		}
+
+		document.getElementById('find').addEventListener('keyup', function() {
+			var input = this.value;
+			[].forEach.call(document.querySelectorAll('.word'), function(el) {
+				if(el.innerText.search(input) >= 0) {
+					if(!/found/i.test(el.classList.toString())) {
+						el.classList.add('found');
+					}
+				} else {
+					if(/found/i.test(el.classList.toString())) {
+						el.classList.remove('found');
+					}
+				}
+			});
+		});
+
+		document.getElementById('find-replace-form').addEventListener('submit', function(e) {
+			e.preventDefault();
+			var foundWord = document.getElementById('find').value;
+			var replaceWord = document.getElementById('replace').value;
+			[].forEach.call(document.querySelectorAll('.word'), function(el) {
+				if(el.innerText.search(foundWord) >= 0) {
+					el.innerText = el.innerText.replace(foundWord, replaceWord);
+				}
+			});
+			document.getElementById('find-replace-wrapper').classList.add('hidden');
+			setTimeout(function() {
+				[].forEach.call(document.querySelectorAll('.found'), function(el) {
+					el.classList.remove('found');
+				});
+			}, 1000);
+		});
 /*
 		currentElement = document.activeElement;
 		if(currentElement.classList[0] == 'word') {

@@ -67,10 +67,22 @@
 				<button class="text-action" data-action="highlight" title="Highlight"><i class="fa fa-bookmark fa-2x"></i></button>
 				<button class="text-action" data-action="share" title="Share"><i class="fa fa-share-alt fa-2x"></i></button>
 				<button class="text-action" data-action="export" title="Export"><i class="fa fa-download fa-2x"></i></button>
-				<button class="text-action" data-action="findreplace" title="Find & Replace"><i class="fa fa-search fa-2x"></i></button>
+				<button class="text-action" onclick="showFindReplace(event);" title="Find & Replace"><i class="fa fa-search fa-2x"></i></button>
 				<button class="text-action" data-action="help" title="Help"><i class="fa fa-question fa-2x"></i></button>
 			</div>
 			<div id="transcript-area"></div>
+			<div id="find-replace-wrapper" class="hidden">
+				<div class="close-bt-wrapper">
+					<button class="close-button" data-action="close-find-replace"><i class="fa fa-close"></i></button>
+				</div>
+				<div class="find-replace">
+					<form id="find-replace-form">
+						<input class="find-replace-input" placeholder="Find" type="text" id="find" /><br />
+						<input class="find-replace-input" placeholder="Replace" type="text" id="replace" /><br />
+						<input class="find-replace-input close-button" type="submit" id="replace-found" value="Replace" />
+					</form>
+				</div>
+			</div>
 		</div>
 	</center>
 </body>

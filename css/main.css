@@ -306,3 +306,45 @@ div.speaker-div {
 	text-align: left;
 	outline: none;
 }
+
+div#find-replace-wrapper {
+	position: fixed;
+	padding: 0;
+	border: none;
+	background-color: #393e41;
+	border-radius: 2px;
+	box-shadow: 0 0 0.2em 0 #000;
+}
+
+.close-bt-wrapper {
+	width: 100%;
+}
+
+.find-replace {
+	padding: 0.2em;
+	margin: 0.4em;
+}
+
+.find-replace-input {
+	margin: 0.3em;
+	border: none;
+	outline: none;
+	color: #f6f7eb;
+	background-color: rgba(0,0,0,0);
+	border-bottom: 2px solid #3f88c5; 
+}
+
+.close-button {
+	color: #f6f7eb;
+	float: right;
+	background-color: rgba(0,0,0,0);
+	border: none;
+}
+
+.hidden {
+	display: none;
+}
+
+.found {
+	background-color: rgba(255, 100, 0, 0.5);
+}
