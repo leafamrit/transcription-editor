@@ -66,12 +66,12 @@
 				<button class="text-action" data-action="strike" title="Strikethrough"><i class="fa fa-strikethrough fa-2x"></i></button>
 				<button class="text-action" data-action="highlight" title="Highlight"><i class="fa fa-bookmark fa-2x"></i></button>
 				<button class="text-action" data-action="share" title="Share"><i class="fa fa-share-alt fa-2x"></i></button>
-				<button class="text-action" data-action="export" title="Export"><i class="fa fa-download fa-2x"></i></button>
+				<button class="text-action" onclick="showExport(event);" title="Export"><i class="fa fa-download fa-2x"></i></button>
 				<button class="text-action" onclick="showFindReplace(event);" title="Find & Replace"><i class="fa fa-search fa-2x"></i></button>
 				<button class="text-action" data-action="help" title="Help"><i class="fa fa-question fa-2x"></i></button>
 			</div>
 			<div id="transcript-area"></div>
-			<div id="find-replace-wrapper" class="hidden">
+			<div id="find-replace-wrapper" class="extra-options-wrapper hidden invisible">
 				<div class="close-bt-wrapper">
 					<button class="close-button" data-action="close-find-replace"><i class="fa fa-close"></i></button>
 				</div>
@@ -81,6 +81,23 @@
 						<input class="find-replace-input" placeholder="Replace" type="text" id="replace" /><br />
 						<input class="find-replace-input close-button" type="submit" id="replace-found" value="Replace" />
 					</form>
+				</div>
+			</div>
+			<div id="export-wrapper" class="extra-options-wrapper hidden invisible">
+				<div class="close-bt-wrapper">
+					<button class="close-button" data-action="close-export"><i class="fa fa-close"></i></button>
+				</div>
+				<div class="find-replace">
+					<table>
+						<tr>
+							<td><button class="export-action" title="Save as PDF">PDF</button></td>
+							<td><button class="export-action" title="Save as Word File">DOC</button></td>
+						</tr>
+						<tr>
+							<td><button class="export-action" title="Save as SRT">SRT</button></td>
+							<td><button class="export-action" title="Save as VTT">VTT</i></button></td>
+						</tr>
+					</table>
 				</div>
 			</div>
 		</div>

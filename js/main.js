@@ -69,8 +69,18 @@ var GLOBAL_ACTIONS = {
 		saveJSON();
 	},
 
+	'close-export': function() {
+		document.getElementById('export-wrapper').classList.add('invisible');
+		setTimeout(function() {
+			document.getElementById('export-wrapper').classList.add('hidden');
+		}, 50);
+	},
+
 	'close-find-replace': function() {
-		document.getElementById('find-replace-wrapper').classList.add('hidden');
+		document.getElementById('export-wrapper').classList.add('invisible');
+		setTimeout(function() {
+			document.getElementById('find-replace-wrapper').classList.add('hidden');
+		}, 50);
 		[].forEach.call(document.querySelectorAll('.found'), function(el) {
 			el.classList.remove('found');
 		});
@@ -603,8 +613,20 @@ function getStrikes() {
 
 function showFindReplace(event) {
 	var ele = document.getElementById('find-replace-wrapper');
-	ele.classList.toggle('hidden');
 	ele.setAttribute('style', 'top: ' + event.clientY + 'px; left: ' + event.clientX + 'px;');
+	ele.classList.remove('hidden');
+	setTimeout(function() {
+		ele.classList.remove('invisible');
+	}, 50);
+}
+
+function showExport(event) {
+	var ele = document.getElementById('export-wrapper');
+	ele.setAttribute('style', 'top: ' + event.clientY + 'px; left: ' + event.clientX + 'px;');
+	ele.classList.remove('hidden');
+	setTimeout(function() {
+		ele.classList.remove('invisible');
+	}, 50);
 }
 
 function enableUI() {
