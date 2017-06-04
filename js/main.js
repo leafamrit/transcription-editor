@@ -76,6 +76,39 @@ var GLOBAL_ACTIONS = {
 		}, 50);
 	},
 
+	'export-srt': function() {
+		var results = transcript.results;
+		var speakers = transcript.speaker_labels;
+		var words = Array();
+		var toReach = Array();
+		var maxAlternativeIndex;
+		var counter = 1;
+		var srt = Array();
+
+		results.forEach(function(result, resultIndex) {
+			var maxConfidence = 0;
+			var maxAlternative;
+			result.alternatives.forEach(function(alternative, alternativeIndex) {
+				if(alternative.confidence > maxConfidence) {
+					maxAlternative = alternative;
+					maxAlternativeIndex = alternativeIndex;
+				}
+			});
+			/*maxAlternative.timestamps.forEach(function(word, wordIndex) {
+				words.push(word);
+				toReach.push([resultIndex, maxAlternativeIndex, wordIndex]);
+			});*/
+			srt.push((counter++) + '\n');
+			srt.push(toHHMMssmmm(maxAlternative.timestamps[0][1]) + ' --> ' + toHHMMssmmm(maxAlternative.timestamps[maxAlternative.timestamps.length - 1][2]) + '\n');
+			srt.push(maxAlternative.transcript + '\n\n');
+		});
+
+		var blob = new Blob(srt, {type: 'plain/text'});
+		saveAs(blob, 'transcript.srt');
+
+		GLOBAL_ACTIONS['close-export']();
+	},
+
 	'close-find-replace': function() {
 		document.getElementById('export-wrapper').classList.add('invisible');
 		setTimeout(function() {
@@ -352,62 +385,6 @@ var GLOBAL_ACTIONS = {
 			transcript = JSON.parse(currAction);
 			fillWords();
 			readWords();
-			/*var ele = document.getElementById(currAction[1]);
-			var r_i = ele.getAttribute('resultindex');
-			var a_i = ele.getAttribute('alternativeindex');
-			var w_i = ele.getAttribute('wordindex');
-			if( currAction[0] == 'e' ) {
-				undoAction = true;
-				ele.innerText = currAction[2] + ' ';
-				transcript.results[r_i].alternatives[a_i].timestamps[w_i][0] = currAction[2];
-			} else if (currAction[0] == 'h' ) {
-				ele.classList.toggle('highlight');
-				var waveId = 'h' + ele.id;
-				if(waveId in wavesurfer.regions.list) {
-					wavesurfer.regions.list[waveId].remove();
-				} else {
-					wavesurfer.addRegion({
-						id: waveId,
-						start: ele.getAttribute('starttime'),
-						end: ele.getAttribute('endtime'),
-						color: 'rgba(255, 255, 0, 0.3)',
-						drag: false,
-						resize: false
-					});
-				}
-
-				if(transcript.results[r_i].alternatives[a_i].timestamps[w_i].highlight) {
-					transcript.results[r_i].alternatives[a_i].timestamps[w_i].highlight = false;	
-				} else {
-					transcript.results[r_i].alternatives[a_i].timestamps[w_i].highlight = true;
-				}
-
-				getHighlights();
-
-			} else if (currAction[0] == 's' ) {
-				ele.classList.toggle('strike');
-				var waveId = 's' + ele.id;
-				if(waveId in wavesurfer.regions.list) {
-					wavesurfer.regions.list[waveId].remove();
-				} else {
-					wavesurfer.addRegion({
-						id: waveId,
-						start: ele.getAttribute('starttime'),
-						end: ele.getAttribute('endtime'),
-						color: 'rgba(100, 100, 100, 0.5)',
-						drag: false,
-						resize: false
-					});
-				}
-
-				if(transcript.results[r_i].alternatives[a_i].timestamps[w_i].strike) {
-					transcript.results[r_i].alternatives[a_i].timestamps[w_i].strike = false;	
-				} else {
-					transcript.results[r_i].alternatives[a_i].timestamps[w_i].strike = true;
-				}
-
-				getStrikes();
-			}*/
 		}
 	},
 
@@ -419,64 +396,29 @@ var GLOBAL_ACTIONS = {
 			transcript = JSON.parse(currAction);
 			fillWords();
 			readWords();
-			/*var ele = document.getElementById(currAction[1]);
-			var r_i = ele.getAttribute('resultindex');
-			var a_i = ele.getAttribute('alternativeindex');
-			var w_i = ele.getAttribute('wordindex');
-			if( currAction[0] == 'e' ) {
-				undoAction = true;
-				ele.innerText = currAction[3] + ' ';
-				transcript.results[r_i].alternatives[a_i].timestamps[w_i][0] = currAction[3];
-			} else if (currAction[0] == 'h' ) {
-				ele.classList.toggle('highlight');
-				var waveId = 'h' + ele.id;
-				if(waveId in wavesurfer.regions.list) {
-					wavesurfer.regions.list[waveId].remove();
-				} else {
-					wavesurfer.addRegion({
-						id: waveId,
-						start: ele.getAttribute('starttime'),
-						end: ele.getAttribute('endtime'),
-						color: 'rgba(255, 255, 0, 0.3)',
-						drag: false,
-						resize: false
-					});
-				}
-
-				if(transcript.results[r_i].alternatives[a_i].timestamps[w_i].highlight) {
-					transcript.results[r_i].alternatives[a_i].timestamps[w_i].highlight = false;	
-				} else {
-					transcript.results[r_i].alternatives[a_i].timestamps[w_i].highlight = true;
-				}
-
-				getHighlights();
-
-			} else if (currAction[0] == 's' ) {
-				ele.classList.toggle('strike');
-				var waveId = 's' + ele.id;
-				if(waveId in wavesurfer.regions.list) {
-					wavesurfer.regions.list[waveId].remove();
-				} else {
-					wavesurfer.addRegion({
-						id: waveId,
-						start: ele.getAttribute('starttime'),
-						end: ele.getAttribute('endtime'),
-						color: 'rgba(100, 100, 100, 0.5)',
-						drag: false,
-						resize: false
-					});
-				}
-
-				if(transcript.results[r_i].alternatives[a_i].timestamps[w_i].strike) {
-					transcript.results[r_i].alternatives[a_i].timestamps[w_i].strike = false;	
-				} else {
-					transcript.results[r_i].alternatives[a_i].timestamps[w_i].strike = true;
-				}
-
-				getStrikes();
-			}*/
 		}
 	}
+}
+
+function toHHMMssmmm(seconds) {
+	var milliseconds = parseInt(seconds * 1000, 10);
+	var hr = Math.floor(milliseconds / 3600000);
+	milliseconds %= 3600000;
+	var min = Math.floor(milliseconds / 60000);
+	milliseconds %= 60000;
+	var sec = Math.floor(milliseconds / 1000);
+	milliseconds %= 1000;
+	if( hr < 10 ) { hr = '0' + hr; }
+	if( min < 10 ) { min = '0' + min; }
+	if( sec < 10 ) { sec = '0' + sec; }
+	if( milliseconds < 100 ) { 
+		if( milliseconds < 10 ) {
+			milliseconds = '00' + milliseconds; 
+		} else {
+			milliseconds = '0' + milliseconds; 
+		}
+	}
+	return hr + ':' + min + ':' + sec + ',' + milliseconds;
 }
 
 // change play pause icon
@@ -807,7 +749,12 @@ function fillWords() {
 			var w_i = this.getAttribute('wordindex');
 			var oldValue = transcript.results[r_i].alternatives[a_i].timestamps[w_i][0];
 			var newValue = this.innerText;
+			var newTranscript = '';
 			transcript.results[r_i].alternatives[a_i].timestamps[w_i][0] = newValue;
+			transcript.results[r_i].alternatives[a_i].timestamps.forEach(function(word) {
+				newTranscript += word[0] + ' ';
+			});
+			transcript.results[r_i].alternatives[a_i].transcript = newTranscript;
 			if(this.nextSibling) {
 				var endTime = this.nextSibling.getAttribute('starttime');
 				transcript.results[r_i].alternatives[a_i].timestamps[w_i][2] = endTime;
