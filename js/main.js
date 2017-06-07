@@ -1195,16 +1195,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	wavesurfer.on('loading', function(callback) {
 		document.getElementById('loading-percentage').innerHTML = callback + '%';
-		var messages = [
-			'Loading audio clip...',
-			'Doing some math...',
-			'This only happens the first time...',
-			'Really...'
-		]
-		var i = 0;
-		setInterval(function() {
-			document.getElementById('loading-text').innerHTML = messages[i++];
+		document.getElementById('loading-text').innerHTML = 'Loading audio clip...';
+		setTimeout(function() {
+			document.getElementById('loading-text').innerHTML = 'Doing some math...';
 		}, 2000);
+		setTimeout(function() {
+			document.getElementById('loading-text').innerHTML = 'This only happens the first time...';
+		}, 4000);
+		setTimeout(function() {
+			document.getElementById('loading-text').innerHTML = 'Really...';
+		}, 6000);
 	});
 
 	// startup the page
