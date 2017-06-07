@@ -1217,10 +1217,10 @@ document.addEventListener('DOMContentLoaded', function() {
 	});
 
 	// startup the page
+	fillWords();
 	wavesurfer.on('ready', function() {
 		activeSpeed();
 		getSilences();
-		fillWords();
 		resizeBody();
 		enableUI();
 		setInterval(function() {
