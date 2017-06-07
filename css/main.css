@@ -66,6 +66,8 @@ div#main-container-mask {
 	z-index: 4;
 	text-align: center;
 	background-color: #f6f7eb;
+	opacity: 0.4;
+	cursor: not-allowed;
 	transition: all 0.3s;
 }
 
