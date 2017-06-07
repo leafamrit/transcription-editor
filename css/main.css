@@ -263,20 +263,20 @@ input[type=range]:focus::-ms-fill-upper {
 
 .speaker {
 	margin: 2px;
-	background-color: rgba(0,0,0,0);
+	background-color: rgba(200,200,200,1);
 	border: none;
+	margin-right: 0.6em;
 	font-family: monospace;
 	color: #111;
 	cursor: text;
 	float: left;
-	text-decoration: bold underline;
-	min-width: 10px;
+	/*text-decoration: bold underline;*/
+	min-width: 30px;
 	outline: none;
+	border-bottom-right-radius: 25px;
+	border-top-right-radius: 25px;
+	border-right: 2px solid #393e41;
 }
-
-input::-webkit-calendar-picker-indicator {
-  	display: none;
-} 
 
 br.special-break {
 	content: ' ';
@@ -321,12 +321,12 @@ div.speaker-div {
 	width: 100%;
 }
 
-.find-replace {
+.extra-options {
 	padding: 0.2em;
 	margin: 0.4em;
 }
 
-.find-replace-input {
+.extra-options-input {
 	margin: 0.3em;
 	border: none;
 	outline: none;
@@ -362,4 +362,11 @@ div.speaker-div {
 
 .export-action:hover {
 	color: #3f88c5;
+}
+
+.delete-button {
+	float: left;
+	color: rgba(255, 0, 0, 0.5);
+	font-size: 5px;
+	vertical-align: middle;
 }

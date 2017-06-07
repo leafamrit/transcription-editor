@@ -7,6 +7,7 @@ var highlights = Array();
 var strikes = Array();
 var pastStack = Array();
 var futureStack = Array();
+var lastSpeaker = Array();
 
 var skipSilences = false;
 var playHighlights = false;
@@ -625,12 +626,15 @@ function fillWords() {
 	});
 
 	var textArea = document.getElementById('transcript-area');
+	var datalist = document.getElementById('speakerlist');
 	while(textArea.hasChildNodes()) {
 		textArea.removeChild(textArea.lastChild);
 	}
-	var currentSpeaker, nextSpeaker, div, speakerName, word, colonSpan, datalistOption;
-	var datalist = document.createElement('datalist');
-	datalist.id = 'speakerlist';
+	textArea.appendChild(datalist);
+	var currentSpeaker, nextSpeaker, div, speakerName, word, colonSpan, deleteSpeaker;
+	//var datalist = document.createElement('datalist');
+	var datalist = document.getElementById('speakerlist');
+	//datalist.id = 'speakerlist';
 	for(var i = 0; i < words.length - 1;) {
 		currentSpeaker = speakers[i].speaker;
 		nextSpeaker = speakers[i + 1].speaker;
@@ -641,21 +645,32 @@ function fillWords() {
 		speakerName = document.createElement('input');
 		//speakerName.innerText = currentSpeaker;
 		speakerName.value = currentSpeaker;
+		speakerName.id = 'speaker' + i;
 		speakerName.classList.add('speaker');
 		speakerName.setAttribute('list', 'speakerlist');
 		speakerName.setAttribute('name', 'speaker');
+		/*speakerName.setAttribute('readonly', '');*/
 		speakerName.setAttribute('speakername', currentSpeaker);
 		speakerName.setAttribute('speakerindex', i);
-		speakerName.setAttribute('style', 'width: ' + ((speakerName.value.length * 8) + 2) + 'px');
+		speakerName.setAttribute('style', 'width: ' + ((speakerName.value.length * 8) + 20) + 'px');
 		speakerName.setAttribute('onkeyup', 'resizeInput(this);');
+		speakerName.setAttribute('onclick', 'handleList(this)');
+		speakerName.setAttribute('onblur', 'handleValue(this)');
 		speakerName.setAttribute('onchange', 'changeInput(this);');
+		/*deleteSpeaker = document.createElement('i');
+		deleteSpeaker.classList.add('fa');
+		deleteSpeaker.classList.add('fa-close');
+		deleteSpeaker.classList.add('delete-button');
+		deleteSpeaker.setAttribute('speakerid', speakerName.id);*/
+		//speakerName.onchange = changeInput(speakerName);
+		/*textArea.appendChild(deleteSpeaker);*/
 		textArea.appendChild(speakerName);
-		colonSpan = document.createElement('input');
+		/*colonSpan = document.createElement('input');
 		colonSpan.setAttribute('disabled', '');
-		colonSpan.value = ": ";
+		colonSpan.value = ":";
 		colonSpan.classList.add('speaker');
-		colonSpan.setAttribute('style', 'width: 10px; border: none;');
-		div.appendChild(colonSpan);
+		colonSpan.setAttribute('style', 'width: 10px; border: none; background-color: rgba(0,0,0,0); min-width: 10px;');
+		div.appendChild(colonSpan);*/
 		do {
 			nextSpeaker = speakers[i + 1].speaker;
 			word = document.createElement('span');
@@ -735,7 +750,7 @@ function fillWords() {
 		var specialBreak = document.createElement('br');
 		specialBreak.classList.add('special-break');
 		textArea.appendChild(specialBreak);
-		textArea.appendChild(datalist);
+		//textArea.appendChild(datalist);
 	}
 
 	[].forEach.call(document.getElementsByClassName('word'), function(el) {
@@ -790,28 +805,104 @@ function readWords() {
 function changeInput(caller) {
 	pastStack.push(JSON.stringify(transcript));
 	var speakers = document.getElementsByClassName('speaker');
-	var inputLength = (caller.value.length * 8) + 2;
+	var inputLength = (caller.value.length * 8) + 30;
 	var input = caller.value;
 	var oldName = caller.getAttribute('speakername');
-	[].forEach.call(document.querySelectorAll('.speaker'), function(el) {
+	
+	/*[].forEach.call(document.querySelectorAll('.speaker'), function(el) {
 		if(el.getAttribute('speakername') ==  oldName) {
 			el.value = input;
 			el.setAttribute('style', 'width: ' + inputLength + 'px');
 			el.setAttribute('speakername', input);
 		}
-	});
+	});*/
+
 	transcript.speaker_labels.forEach(function(el) {
 		if(el.speaker == oldName) {
 			el.speaker = input;
 		}
 	});
-	datalistOption = document.createElement('option');
-	datalistOption.value = input;
-	document.getElementById('speakerlist').appendChild(datalistOption);
+
+	//var hasInput = false;
+	var speakerList = document.getElementById('speakerlist');
+
+	/*[].forEach.call(speakerList.childNodes, function(el) {
+		console.log(el.value);
+		if(el.value == input) {
+			hasInput = true;
+			console.log('breaking');
+			break;
+		}
+	});
+
+	if(!hasInput) {*/
+		datalistOption = document.createElement('option');
+		//datalistOption.innerText = input;
+		datalistOption.value = input;
+		speakerList.appendChild(datalistOption);
+		/*}*/
+
+		fillWords();
+	}
+
+/*function showSpeakerForm(caller, event) {
+	var ele = document.getElementById('speakerlabel-wrapper');
+	ele.setAttribute('style', 'top: ' + event.clientY + 'px; left: ' + event.clientX + 'px;');
+	ele.classList.remove('hidden');
+	setTimeout(function() {
+		ele.classList.remove('invisible');
+	}, 50);
+
+	document.getElementById('speakerid').value = caller.id;
+}*/
+
+function handleList(caller) {
+	caller.value = '';
+}
+
+function handleValue(caller) {
+	if(!caller.value) {
+		pastStack.push(JSON.stringify(transcript));
+		caller.value = '';
+		/*var speakers = document.getElementsByClassName('speaker');*/
+		/*var inputLength = (caller.value.length * 8) + 30;*/
+		var input = caller.value;
+		var startIndex = caller.getAttribute('speakerindex');
+		var endIndex = caller.nextSibling.nextSibling.nextSibling ? Number(caller.nextSibling.nextSibling.nextSibling.getAttribute('speakerindex')) : transcript.speaker_labels.length;
+		console.log(startIndex + ' ' + endIndex);
+		var oldName = caller.getAttribute('speakername');
+
+		/*[].forEach.call(document.querySelectorAll('.speaker'), function(el) {
+			if(el.getAttribute('speakername') ==  oldName) {
+				el.value = input;
+				el.setAttribute('style', 'width: ' + inputLength + 'px');
+				el.setAttribute('speakername', input);
+			}
+		});*/
+
+		/*transcript.speaker_labels.forEach(function(el) {
+			if(el.speaker == oldName) {
+				el.speaker = input;
+			}
+		});*/
+
+		for(var i = startIndex; i < endIndex; i++) {
+			transcript.speaker_labels[i].speaker = '';
+		}
+
+		fillWords();
+	}
+}
+
+function closeSpeaker(caller) {
+	caller.parentElement.parentElement.classList.add('invisible');
+	setTimeout(function() {
+		caller.parentElement.parentElement.classList.add('hidden');
+	}, 50);
 }
 
 function resizeInput(caller) {
-	caller.setAttribute('style', 'width: ' + ((caller.value.length * 8) + 2) + 'px');
+	caller.setAttribute('style', 'width: ' + ((caller.value.length * 8) + 30) + 'px');
 }
 
 // Initialization
@@ -968,6 +1059,32 @@ document.addEventListener('DOMContentLoaded', function() {
 				});
 			}, 1000);
 		});
+
+		/*document.getElementById('speakerlabel-form').addEventListener('submit', function(e) {
+			e.preventDefault();
+			var speakerName = document.getElementById('speakerlabel').value;
+			var speakerId = document.getElementById('speakerid').value;
+			console.log(speakerName + ' ' + speakerId);*/
+			/*[].forEach.call(document.querySelectorAll('.word'), function(el) {
+				if(el.innerText.search(foundWord) >= 0) {
+					el.innerText = el.innerText.replace(foundWord, replaceWord);
+				}
+			});*/
+
+			/*document.getElementById(speakerId).value = speakerName;*/
+			/*console.log(document.getElementById(speakerId));*/
+
+			/*var event = new Event('change');
+			document.getElementById(speakerId).dispatchEvent(event);
+			
+			document.getElementById('speakerlabel-wrapper').classList.add('hidden');
+			setTimeout(function() {
+				[].forEach.call(document.querySelectorAll('.found'), function(el) {
+					el.classList.remove('found');
+				});
+			}, 1000);
+		});*/
+
 /*
 		currentElement = document.activeElement;
 		if(currentElement.classList[0] == 'word') {
