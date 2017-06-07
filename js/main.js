@@ -1201,7 +1201,6 @@ document.addEventListener('DOMContentLoaded', function() {
 			'This only happens the first time...',
 			'Really...'
 		]
-		document.getElementById('loading-text').innerHTML = ;
 		var i = 0;
 		setInterval(function() {
 			document.getElementById('loading-text').innerHTML = messages[i++];
