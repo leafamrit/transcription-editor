@@ -1058,15 +1058,44 @@ function changeInput(caller) {
 			el.setAttribute('speakername', input);
 		}
 	});*/
+	if(!caller.value || caller.value.trim == '') {
+		pastStack.push(JSON.stringify(transcript));
+		caller.value = '';
+		/*var speakers = document.getElementsByClassName('speaker');*/
+		/*var inputLength = (caller.value.length * 8) + 30;*/
+		var input = caller.value;
+		var startIndex = caller.getAttribute('speakerindex');
+		var endIndex = caller.nextSibling.nextSibling.nextSibling ? Number(caller.nextSibling.nextSibling.nextSibling.getAttribute('speakerindex')) : transcript.speaker_labels.length;
+		console.log(startIndex + ' ' + endIndex);
+		var oldName = caller.getAttribute('speakername');
 
-	transcript.speaker_labels.forEach(function(el) {
-		if(el.speaker == oldName) {
-			el.speaker = input;
+		/*[].forEach.call(document.querySelectorAll('.speaker'), function(el) {
+			if(el.getAttribute('speakername') ==  oldName) {
+				el.value = input;
+				el.setAttribute('style', 'width: ' + inputLength + 'px');
+				el.setAttribute('speakername', input);
+			}
+		});*/
+
+		/*transcript.speaker_labels.forEach(function(el) {
+			if(el.speaker == oldName) {
+				el.speaker = input;
+			}
+		});*/
+
+		for(var i = startIndex; i < endIndex; i++) {
+			transcript.speaker_labels[i].speaker = '';
 		}
-	});
+	} else {
+
+		transcript.speaker_labels.forEach(function(el) {
+			if(el.speaker == oldName) {
+				el.speaker = input;
+			}
+		});
 
 	//var hasInput = false;
-	var speakerList = document.getElementById('speakerlist');
+		var speakerList = document.getElementById('speakerlist');
 
 	/*[].forEach.call(speakerList.childNodes, function(el) {
 		console.log(el.value);
@@ -1083,9 +1112,10 @@ function changeInput(caller) {
 		datalistOption.value = input;
 		speakerList.appendChild(datalistOption);
 		/*}*/
-
-		fillWords();
 	}
+
+	fillWords();
+}
 
 /*function showSpeakerForm(caller, event) {
 	var ele = document.getElementById('speakerlabel-wrapper');
@@ -1103,7 +1133,7 @@ function handleList(caller) {
 }
 
 function handleValue(caller) {
-	if(!caller.value) {
+	if(!caller.value || caller.value.trim == '') {
 		pastStack.push(JSON.stringify(transcript));
 		caller.value = '';
 		/*var speakers = document.getElementsByClassName('speaker');*/
