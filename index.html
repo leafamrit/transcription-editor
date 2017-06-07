@@ -27,6 +27,14 @@
 	<!-- FileSaver -->
 	<script src="src/FileSaver.js"></script>
 
+	<!-- jsPDF -->
+	<script src="src/jspdf.min.js"></script>
+
+	<!-- docxtemplater -->
+	<script src="src/docxtemplater.js"></script>
+	<script src="src/jszip.min.js"></script>
+	<script src="src/jszip-utils.js"></script>
+
 	<!-- JS -->
 	<script src="js/main.js"></script>
 </head>
@@ -112,14 +120,15 @@
 				<div class="extra-options">
 					<table>
 						<tr>
-							<td><button class="export-action" title="Save as PDF">PDF</button></td>
-							<td><button class="export-action" title="Save as Word File">DOC</button></td>
+							<td><button class="export-action" data-action="export-pdf" title="Save as PDF">PDF</button></td>
+							<td><button class="export-action" data-action="export-doc" title="Save as Word File">DOC</button></td>
 						</tr>
 						<tr>
 							<td><button class="export-action" data-action="export-srt" title="Save as SRT">SRT</button></td>
-							<td><button class="export-action" title="Save as VTT">VTT</i></button></td>
+							<td><button class="export-action" data-action="export-vtt" title="Save as VTT">VTT</i></button></td>
 						</tr>
 					</table>
+					<input type="checkbox" id="export-highlight" style="vertical-align: sub;"><button class="export-action" style="font-size: 0.7em; text-align: left; margin: 0;">Export only Highlights</button>
 				</div>
 			</div>
 

@@ -263,7 +263,7 @@ input[type=range]:focus::-ms-fill-upper {
 
 .speaker {
 	margin: 2px;
-	background-color: rgba(200,200,200,1);
+	background-color: #f6f7eb;
 	border: none;
 	margin-right: 0.6em;
 	font-family: monospace;
@@ -275,6 +275,8 @@ input[type=range]:focus::-ms-fill-upper {
 	outline: none;
 	border-bottom-right-radius: 25px;
 	border-top-right-radius: 25px;
+	border-bottom-left-radius: 8px;
+	border-top-left-radius: 8px;
 	border-right: 2px solid #393e41;
 }
 

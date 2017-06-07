@@ -84,7 +84,11 @@ var GLOBAL_ACTIONS = {
 		var toReach = Array();
 		var maxAlternativeIndex;
 		var counter = 1;
+		var i = 0;
 		var srt = Array();
+		var currentSpeaker, prevSpeaker;
+		var sentence;
+		var onlyHighlight = document.getElementById('export-highlight').checked;
 
 		results.forEach(function(result, resultIndex) {
 			var maxConfidence = 0;
@@ -95,17 +99,255 @@ var GLOBAL_ACTIONS = {
 					maxAlternativeIndex = alternativeIndex;
 				}
 			});
-			/*maxAlternative.timestamps.forEach(function(word, wordIndex) {
-				words.push(word);
-				toReach.push([resultIndex, maxAlternativeIndex, wordIndex]);
-			});*/
+			sentence = '';
+			maxAlternative.timestamps.forEach(function(word, wordIndex) {
+				currentSpeaker = speakers[i++].speaker;
+				if(currentSpeaker != prevSpeaker) {
+					sentence += '(' + currentSpeaker + ') ';
+				}
+				if(word[3]) {
+					if(!word[3].strike) {
+						if(word[3].highlight) {
+							sentence += '<b>' + word[0] + '</b> ';
+						} else {
+							if(!onlyHighlight) {
+								sentence += word[0] + ' ';
+							}
+						}
+					}
+				} else {
+					if(!onlyHighlight) {
+						sentence += word[0] + ' ';
+					}
+				}
+				prevSpeaker = currentSpeaker;
+			});
 			srt.push((counter++) + '\n');
 			srt.push(toHHMMssmmm(maxAlternative.timestamps[0][1]) + ' --> ' + toHHMMssmmm(maxAlternative.timestamps[maxAlternative.timestamps.length - 1][2]) + '\n');
-			srt.push(maxAlternative.transcript + '\n\n');
+			srt.push(sentence + '\n\n');
 		});
 
-		var blob = new Blob(srt, {type: 'plain/text'});
+		var blob = new Blob(srt, {type: 'text/srt'});
 		saveAs(blob, 'transcript.srt');
+
+		GLOBAL_ACTIONS['close-export']();
+	},
+
+	'export-vtt': function() {
+		var results = transcript.results;
+		var speakers = transcript.speaker_labels;
+		var words = Array();
+		var toReach = Array();
+		var maxAlternativeIndex;
+		var counter = 1;
+		var i = 0;
+		var vtt = Array();
+		var currentSpeaker, prevSpeaker;
+		var sentence;
+		var onlyHighlight = document.getElementById('export-highlight').checked;
+
+		vtt.push('WEBVTT\n\n');
+
+		results.forEach(function(result, resultIndex) {
+			var maxConfidence = 0;
+			var maxAlternative;
+			result.alternatives.forEach(function(alternative, alternativeIndex) {
+				if(alternative.confidence > maxConfidence) {
+					maxAlternative = alternative;
+					maxAlternativeIndex = alternativeIndex;
+				}
+			});
+			sentence = '';
+			maxAlternative.timestamps.forEach(function(word, wordIndex) {
+				currentSpeaker = speakers[i++].speaker;
+				if(currentSpeaker != prevSpeaker) {
+					sentence += '<v ' + currentSpeaker + '> ';
+				}
+				if(word[3]) {
+					if(!word[3].strike) {
+						if(word[3].highlight) {
+							sentence += '<b>' + word[0] + '</b> ';
+						} else {
+							if(!onlyHighlight) {
+								sentence += word[0] + ' ';
+							}
+						}
+					}
+				} else {
+					if(!onlyHighlight) {
+						sentence += word[0] + ' ';
+					}
+				}
+				prevSpeaker = currentSpeaker;
+			});
+			vtt.push((counter++) + '\n');
+			vtt.push(toHHMMssmmm(maxAlternative.timestamps[0][1]).replace(',', '.') + ' --> ' + toHHMMssmmm(maxAlternative.timestamps[maxAlternative.timestamps.length - 1][2]).replace(',', '.') + '\n');
+			vtt.push(sentence + '\n\n');
+		});
+
+		var blob = new Blob(vtt, {type: 'text/vtt'});
+		saveAs(blob, 'transcript.vtt');
+
+		GLOBAL_ACTIONS['close-export']();
+	},
+
+	'export-pdf': function() {
+		var results = transcript.results;
+		var speakers = transcript.speaker_labels;
+		var words = Array();
+		var toReach = Array();
+		var maxAlternativeIndex;
+		var counter = 1;
+		var i = 0;
+		var srt = Array();
+		var currentSpeaker, prevSpeaker;
+		var sentence = '';
+		var onlyHighlight = document.getElementById('export-highlight').checked;
+
+		srt.push('WEBVTT\n\n');
+
+		results.forEach(function(result, resultIndex) {
+			var maxConfidence = 0;
+			var maxAlternative;
+			result.alternatives.forEach(function(alternative, alternativeIndex) {
+				if(alternative.confidence > maxConfidence) {
+					maxAlternative = alternative;
+					maxAlternativeIndex = alternativeIndex;
+				}
+			});
+			maxAlternative.timestamps.forEach(function(word, wordIndex) {
+				words.push(word);
+				toReach.push([resultIndex, maxAlternativeIndex, wordIndex]);
+			});
+		});
+
+
+		for(var i = 0; i < words.length - 1;) {
+			currentSpeaker = speakers[i].speaker;
+			nextSpeaker = speakers[i + 1].speaker;
+			sentence += currentSpeaker + ': [' + toHHMMssmmm(words[i][1]).replace(',', '.') + '] ';
+			console.log(sentence);
+			do {
+				nextSpeaker = speakers[i + 1].speaker;
+
+				if(words[i][3]) {
+					if(!words[i][3].strike) {
+						if(words[i][3].highlight) {
+							sentence += words[i][0] + ' ';
+						} else {
+							if(!onlyHighlight) {
+								sentence += words[i][0] + ' ';
+							}
+						}
+					}
+				} else {
+					if(!onlyHighlight) {
+						sentence += words[i][0] + ' ';
+					}
+				}
+				i++;
+			} while(currentSpeaker == nextSpeaker && i < words.length - 1);
+
+			sentence += ' [' + toHHMMssmmm(words[i - 1][2]).replace(',', '.') + ']\n\n';
+		}
+
+		var pdf = new jsPDF();
+		pdf.setFontSize(12);
+		var splitSentence = pdf.splitTextToSize(sentence, 160);
+		pdf.text(splitSentence, 10, 10);
+		pdf.save('transcript.pdf');
+
+		GLOBAL_ACTIONS['close-export']();
+	},
+
+	'export-doc': function() {
+		var results = transcript.results;
+		var speakers = transcript.speaker_labels;
+		var words = Array();
+		var toReach = Array();
+		var maxAlternativeIndex;
+		var counter = 1;
+		var i = 0;
+		var srt = Array();
+		var currentSpeaker, prevSpeaker;
+		var sentence = '';
+		var onlyHighlight = document.getElementById('export-highlight').checked;
+
+		results.forEach(function(result, resultIndex) {
+			var maxConfidence = 0;
+			var maxAlternative;
+			result.alternatives.forEach(function(alternative, alternativeIndex) {
+				if(alternative.confidence > maxConfidence) {
+					maxAlternative = alternative;
+					maxAlternativeIndex = alternativeIndex;
+				}
+			});
+			maxAlternative.timestamps.forEach(function(word, wordIndex) {
+				words.push(word);
+				toReach.push([resultIndex, maxAlternativeIndex, wordIndex]);
+			});
+		});
+
+
+		for(var i = 0; i < words.length - 1;) {
+			currentSpeaker = speakers[i].speaker;
+			nextSpeaker = speakers[i + 1].speaker;
+			sentence += '<w:p><w:r><w:t>' + currentSpeaker + ': [' + toHHMMssmmm(words[i][1]).replace(',', '.') + '] </w:t></w:r>';
+			console.log(sentence);
+			do {
+				nextSpeaker = speakers[i + 1].speaker;
+
+				if(words[i][3]) {
+					if(!words[i][3].strike) {
+						if(words[i][3].highlight) {
+							sentence += '<w:r><w:rPr><w:highlight w:val="yellow" /></w:rPr><w:t>' + words[i][0] + ' </w:t></w:r>';
+						} else {
+							if(!onlyHighlight){
+								sentence += '<w:r><w:t>' + words[i][0] + ' </w:t></w:r>';
+							}
+						}
+					}
+				} else {
+					if(!onlyHighlight){
+						sentence += '<w:r><w:t>' + words[i][0] + ' </w:t></w:r>';
+					}
+				}
+
+				i++;
+			} while(currentSpeaker == nextSpeaker && i < words.length - 1);
+
+			sentence += '<w:r><w:t> [' + toHHMMssmmm(words[i - 1][2]).replace(',', '.') + ']\n\n</w:t></w:r></w:p>';
+		}
+
+		function loadFile(url,callback){
+			JSZipUtils.getBinaryContent(url,callback);
+		}
+
+		loadFile("./src/template.docx",function(error,content){
+			if (error) { throw error };
+			var zip = new JSZip(content);
+			var doc=new Docxtemplater().loadZip(zip)
+			doc.setData({ xml: sentence });
+
+			try {
+				doc.render()
+			} catch (error) {
+				var e = {
+					message: error.message,
+					name: error.name,
+					stack: error.stack,
+					properties: error.properties,
+				}
+				console.log(JSON.stringify({error: e}));
+				throw error;
+			}
+
+			var out=doc.getZip().generate({
+				type:"blob",
+				mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+			}) 
+			saveAs(out,"transcript.docx")
+		})
 
 		GLOBAL_ACTIONS['close-export']();
 	},
