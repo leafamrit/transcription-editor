@@ -408,7 +408,7 @@ var GLOBAL_ACTIONS = {
 		//console.log(window.getSelection + " " + window.getSelection().toString().split('').length);
 		if(window.getSelection && window.getSelection().toString().split('').length > 1) {
 			//console.log('condition 1 active');
-			var startElement = window.getSelection().anchorNode.parentElement;
+			var startElement = window.getSelection().baseNode.parentElement;
 			if(startElement.classList[0] != 'word') {
 				startElement = startElement.nextSibling;
 			}
@@ -480,8 +480,8 @@ var GLOBAL_ACTIONS = {
 				currentNode = document.getElementsByClassName('word')[0];
 			} else if(readEle[readEle.length - 1].nextSibling) {
 				currentNode = readEle[readEle.length - 1].nextSibling;
-			} else if (readEle[readEle.length - 1].parentNode.nextSibling) {
-				currentNode = readEle[readEle.length - 1].parentNode.nextSibling.firstChild.nextSibling;
+			} else if (readEle[readEle.length - 1].parentNode.nextSibling.nextSibling.nextSibling) {
+				currentNode = readEle[readEle.length - 1].parentNode.nextSibling.nextSibling.nextSibling.firstChild;
 			} else {
 				currentNode = readEle[readEle.length - 1];
 			}
@@ -526,7 +526,7 @@ var GLOBAL_ACTIONS = {
 		//console.log(window.getSelection + " " + window.getSelection().toString().split('').length);
 		if(window.getSelection && window.getSelection().toString().split('').length > 1) {
 			//console.log('condition 1 active');
-			var startElement = window.getSelection().anchorNode.parentElement;
+			var startElement = window.getSelection().baseNode.parentElement;
 			while(startElement.classList[0] != 'word') {
 				startElement = startElement.nextSibling;
 			}
@@ -601,8 +601,8 @@ var GLOBAL_ACTIONS = {
 				currentNode = document.getElementsByClassName('word')[0];
 			} else if(readEle[readEle.length - 1].nextSibling) {
 				currentNode = readEle[readEle.length - 1].nextSibling;
-			} else if (readEle[readEle.length - 1].parentNode.nextSibling) {
-				currentNode = readEle[readEle.length - 1].parentNode.nextSibling.firstChild.nextSibling;
+			} else if (readEle[readEle.length - 1].parentNode.nextSibling.nextSibling.nextSibling) {
+				currentNode = readEle[readEle.length - 1].parentNode.nextSibling.nextSibling.nextSibling.firstChild;
 			} else {
 				currentNode = readEle[readEle.length - 1];
 			}
@@ -1082,17 +1082,6 @@ function changeInput(caller) {
 	fillWords();
 }
 
-/*function showSpeakerForm(caller, event) {
-	var ele = document.getElementById('speakerlabel-wrapper');
-	ele.setAttribute('style', 'top: ' + event.clientY + 'px; left: ' + event.clientX + 'px;');
-	ele.classList.remove('hidden');
-	setTimeout(function() {
-		ele.classList.remove('invisible');
-	}, 50);
-
-	document.getElementById('speakerid').value = caller.id;
-}*/
-
 function handleList(caller) {
 	caller.value = '';
 }
@@ -1101,33 +1090,6 @@ function handleValue(caller) {
 	if(!caller.value || caller.value.trim() == '') {
 		pastStack.push(JSON.stringify(transcript));
 		caller.value = caller.getAttribute('speakername');
-		/*var speakers = document.getElementsByClassName('speaker');*/
-		/*var inputLength = (caller.value.length * 8) + 30;*/
-		/*var input = caller.value;
-		var startIndex = caller.getAttribute('speakerindex');
-		var endIndex = caller.nextSibling.nextSibling.nextSibling ? Number(caller.nextSibling.nextSibling.nextSibling.getAttribute('speakerindex')) : transcript.speaker_labels.length;
-		console.log(startIndex + ' ' + endIndex);
-		var oldName = caller.getAttribute('speakername');*/
-
-		/*[].forEach.call(document.querySelectorAll('.speaker'), function(el) {
-			if(el.getAttribute('speakername') ==  oldName) {
-				el.value = input;
-				el.setAttribute('style', 'width: ' + inputLength + 'px');
-				el.setAttribute('speakername', input);
-			}
-		});*/
-
-		/*transcript.speaker_labels.forEach(function(el) {
-			if(el.speaker == oldName) {
-				el.speaker = input;
-			}
-		});*/
-
-		/*for(var i = startIndex; i < endIndex; i++) {
-			transcript.speaker_labels[i].speaker = '';
-		}
-
-		fillWords();*/
 	}
 }
 
@@ -1331,4 +1293,21 @@ document.addEventListener('DOMContentLoaded', function() {
 		}, 1000);
 	});
 
+	var range;
+	document.getElementById('audioclip').addEventListener('mousedown', function(e) {
+		var startEle = document.getElementsByClassName('read');
+		range = document.createRange();
+		console.log(startEle[startEle.length - 1]);
+		range.setStart(startEle[startEle.length - 1], 0);
+	});
+
+	document.getElementById('audioclip').addEventListener('mouseup', function(e) {
+		var endEle = document.getElementsByClassName('read');
+		range.setEnd(endEle[endEle.length - 1], 0);
+		console.log(endEle[endEle.length - 1]);
+		var sel = window.getSelection();
+		sel.removeAllRanges();
+		sel.addRange(range);
+		console.log(sel);
+	});
 });
