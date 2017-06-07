@@ -88,21 +88,6 @@
 			</div>
 			
 			<div id="transcript-area"><datalist id="speakerlist"></datalist></div>
-			
-<!-- 
-			<div id="speakerlabel-wrapper" class="extra-options-wrapper hidden invisible">
-				<div class="close-bt-wrapper">
-					<button class="close-button" onclick="closeSpeaker(this);"><i class="fa fa-close"></i></button>
-				</div>
-				<div class="extra-options">
-					<form id="speakerlabel-form">
-						<input class="extra-options-input" placeholder="Speaker" type="text" id="speakerlabel" list="speakerlist" /><br />
-						<input class="extra-options-input" type="hidden" id="speakerid" /><br />
-						<datalist id="speakerlist"></datalist><br />
-						<input class="extra-options-input close-button" type="submit" id="replace-found" value="Replace" />
-					</form>
-				</div>
-			</div> -->
 
 			<div id="find-replace-wrapper" class="extra-options-wrapper hidden invisible">
 				<div class="close-bt-wrapper">
@@ -134,6 +119,16 @@
 					</table>
 					<input type="checkbox" id="export-highlight" style="vertical-align: sub;"><button class="export-action" style="font-size: 0.7em; text-align: left; margin: 0;">Export only Highlights</button>
 				</div>
+			</div>
+
+			<div id="shortcut-wrapper" class="shortcut-wrapper hidden">
+				<center>
+					<div class="shortcuts">
+						<button class="shortcut-key" id="ctrl-key">Ctrl</button>
+						<button class="shortcut-key hidden" id="shift-key">Shift</button>
+						<button class="shortcut-key hidden" id="extra-key"></button>
+					</div>
+				</center>
 			</div>
 
 		</div>

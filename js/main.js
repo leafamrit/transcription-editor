@@ -1195,7 +1195,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	wavesurfer.on('loading', function(callback) {
 		document.getElementById('loading-percentage').innerHTML = callback + '%';
-		document.getElementById('loading-text').innerHTML = 'Loading Audio Clip';
+		document.getElementById('loading-text').innerHTML = 'Loading audio clip...';
+		setTimeout(function() {
+			document.getElementById('loading-text').innerHTML = 'Doing some math...';
+		}, 2000);
+		setTimeout(function() {
+			document.getElementById('loading-text').innerHTML = 'This only happens the first time...';
+		}, 2000);
+		setTimeout(function() {
+			document.getElementById('loading-text').innerHTML = 'Really...';
+		}, 2000);
 	});
 
 	// startup the page
@@ -1249,6 +1258,9 @@ document.addEventListener('DOMContentLoaded', function() {
 	});
 
 	// keypresses
+	var shortcutWrapper = document.getElementById('shortcut-wrapper');
+	var shift_key = document.getElementById('shift-key');
+	var extra_key = document.getElementById('extra-key');
 	document.addEventListener('keydown', function(e) {
 		var map = {
 			32: 'play', 		// space
@@ -1256,52 +1268,71 @@ document.addEventListener('DOMContentLoaded', function() {
 			72: 'highlight',	// H
 			74: 'strike',		// J
 			90: 'undo',			// Z
-			83: 'save', 			// S
+			83: 'save', 		// S
 		}
-
 		if(e.ctrlKey) {
+			shortcutWrapper.classList.remove('hidden');
+			if(e.shiftKey) {
+				shift_key.classList.remove('hidden');
+			}
 			var action = map[e.keyCode];
 			if(action in GLOBAL_ACTIONS) {
 				e.preventDefault();
 				if(e.shiftKey && action == 'undo') {
+					extra_key.innerHTML = 'Z';
+					extra_key.classList.remove('hidden');
 					GLOBAL_ACTIONS['redo']();
 				} else {
+					extra_key.innerHTML = e.key.toUpperCase();
+					extra_key.classList.remove('hidden');
 					GLOBAL_ACTIONS[action]();
 				}
 			}
 		}
-
-		document.getElementById('find').addEventListener('keyup', function() {
-			var input = this.value;
-			[].forEach.call(document.querySelectorAll('.word'), function(el) {
-				if(el.innerText.search(input) >= 0) {
-					if(!/found/i.test(el.classList.toString())) {
-						el.classList.add('found');
-					}
-				} else {
-					if(/found/i.test(el.classList.toString())) {
-						el.classList.remove('found');
-					}
-				}
-			});
-		});
-
-		document.getElementById('find-replace-form').addEventListener('submit', function(e) {
-			e.preventDefault();
-			var foundWord = document.getElementById('find').value;
-			var replaceWord = document.getElementById('replace').value;
-			[].forEach.call(document.querySelectorAll('.word'), function(el) {
-				if(el.innerText.search(foundWord) >= 0) {
-					el.innerText = el.innerText.replace(foundWord, replaceWord);
-				}
-			});
-			document.getElementById('find-replace-wrapper').classList.add('hidden');
-			setTimeout(function() {
-				[].forEach.call(document.querySelectorAll('.found'), function(el) {
-					el.classList.remove('found');
-				});
-			}, 1000);
-		});
-
 	});
+
+	document.addEventListener('keyup', function(e) {
+		if(!/hidden/i.test(shortcutWrapper.classList.toString())) {
+			shortcutWrapper.classList.add('hidden');
+		}
+		if(!/hidden/i.test(shift_key.classList.toString())) {
+			shift_key.classList.add('hidden');
+		}
+		if(!/hidden/i.test(extra_key.classList.toString())) {
+			extra_key.classList.add('hidden');
+		}
+	})
+
+	document.getElementById('find').addEventListener('keyup', function() {
+		var input = this.value;
+		[].forEach.call(document.querySelectorAll('.word'), function(el) {
+			if(el.innerText.search(input) >= 0) {
+				if(!/found/i.test(el.classList.toString())) {
+					el.classList.add('found');
+				}
+			} else {
+				if(/found/i.test(el.classList.toString())) {
+					el.classList.remove('found');
+				}
+			}
+		});
+	});
+
+	document.getElementById('find-replace-form').addEventListener('submit', function(e) {
+		e.preventDefault();
+		var foundWord = document.getElementById('find').value;
+		var replaceWord = document.getElementById('replace').value;
+		[].forEach.call(document.querySelectorAll('.word'), function(el) {
+			if(el.innerText.search(foundWord) >= 0) {
+				el.innerText = el.innerText.replace(foundWord, replaceWord);
+			}
+		});
+		document.getElementById('find-replace-wrapper').classList.add('hidden');
+		setTimeout(function() {
+			[].forEach.call(document.querySelectorAll('.found'), function(el) {
+				el.classList.remove('found');
+			});
+		}, 1000);
+	});
+
 });

@@ -66,6 +66,7 @@ div#main-container-mask {
 	z-index: 4;
 	text-align: center;
 	background-color: #f6f7eb;
+	font-family: 'Allerta Stencil';
 	opacity: 0.7;
 	cursor: not-allowed;
 	transition: all 0.3s;
@@ -303,7 +304,6 @@ br.special-break {
 }
 
 span#loading-percentage {
-	font-family: 'Allerta Stencil';
 	font-size: 1.2em;
 }
 
@@ -374,4 +374,36 @@ div.speaker-div {
 	color: rgba(255, 0, 0, 0.5);
 	font-size: 5px;
 	vertical-align: middle;
+}
+
+.shortcut-wrapper {
+	position: fixed;
+	top: 0;
+	left: 0;
+	background-color: rgba(0,0,0,0);
+	border: none;
+	width: 100%;
+	text-align: center;
+}
+
+.shortcuts {
+	background-color: rgba(246, 247, 235, 0.2);
+	padding: 0.3em;
+	box-shadow: 0 0 1em 0 #222;
+	border-radius: 1em;
+	border-top-left-radius: 0;
+	border-top-right-radius: 0;
+	width: 30%;
+}
+
+.shortcut-key {
+	background-color: #393e41;
+	height: 4em;
+	border-radius: 1em;
+	box-shadow: 0 0 0.5em 0 #393e41;
+	min-width: 4em;
+	margin: 0.5em;
+	border: none;
+	font-family: 'Allerta Stencil';
+	color: #f6f7eb;
 }
