@@ -1204,8 +1204,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		document.getElementById('loading-text').innerHTML = ;
 		var i = 0;
 		setInterval(function() {
-			document.getElementById('loading-text').innerHTML = messages[i];
-			i = (i + 1) % 4;
+			document.getElementById('loading-text').innerHTML = messages[i++];
 		}, 2000);
 	});
 
