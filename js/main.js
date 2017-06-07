@@ -1197,8 +1197,9 @@ document.addEventListener('DOMContentLoaded', function() {
 		document.getElementById('loading-percentage').innerHTML = callback + '%';
 		if( callback < 40 ) document.getElementById('loading-text').innerHTML = 'Loading audio clip...';
 		else if( callback < 60 ) document.getElementById('loading-text').innerHTML = 'Doing some math...';
-		else if( callback < 90 ) document.getElementById('loading-text').innerHTML = 'This only happens the first time...';
-		else document.getElementById('loading-text').innerHTML = 'Really...';
+		else if( callback < 80 ) document.getElementById('loading-text').innerHTML = 'This only happens the first time...';
+		else if( callback < 95 ) document.getElementById('loading-text').innerHTML = 'Really...';
+		else document.getElementById('loading-text').innerHTML = 'Almost done...';
 		
 	});
 
