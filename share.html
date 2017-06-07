@@ -2,7 +2,7 @@
 <html>
 
 <head>
-	<title>Transcription Editor</title>
+	<title>Transcription Viewer</title>
 
 	<!-- NO CACHE META | REMOVE ONCE DONE -->
 	<meta http-equiv="cache-control" content="max-age=0" />
@@ -36,7 +36,7 @@
 	<script src="src/jszip-utils.js"></script>
 
 	<!-- JS -->
-	<script src="js/main.js"></script>
+	<script src="js/share.js"></script>
 </head>
 
 <body onresize="resizeBody();">
@@ -76,31 +76,11 @@
 		<div class="transcript-container">
 			
 			<div id="text-options">
-				<button class="text-action" data-action="save" title="Save"><i class="fa fa-save fa-2x"></i></button>
-				<button class="text-action" data-action="undo" title="Undo"><i class="fa fa-undo fa-2x"></i></button>
-				<button class="text-action" data-action="redo" title="Redo"><i class="fa fa-repeat fa-2x"></i></button>
-				<button class="text-action" data-action="strike" title="Strikethrough"><i class="fa fa-strikethrough fa-2x"></i></button>
-				<button class="text-action" data-action="highlight" title="Highlight"><i class="fa fa-bookmark fa-2x"></i></button>
-				<a href="./share.html"><button class="text-action" title="Share"><i class="fa fa-share-alt fa-2x"></i></button></a>
+				<button class="text-action" title="Share"><i class="fa fa-share-alt fa-2x"></i></button>
 				<button class="text-action" onclick="showExport(event);" title="Export"><i class="fa fa-download fa-2x"></i></button>
-				<button class="text-action" onclick="showFindReplace(event);" title="Find & Replace"><i class="fa fa-search fa-2x"></i></button>
-				<button class="text-action" data-action="help" title="Help"><i class="fa fa-question fa-2x"></i></button>
 			</div>
 			
-			<div id="transcript-area"><datalist id="speakerlist"></datalist></div>
-
-			<div id="find-replace-wrapper" class="extra-options-wrapper hidden invisible">
-				<div class="close-bt-wrapper">
-					<button class="close-button" data-action="close-find-replace"><i class="fa fa-close"></i></button>
-				</div>
-				<div class="extra-options">
-					<form id="find-replace-form">
-						<input class="extra-options-input" placeholder="Find" type="text" id="find" /><br />
-						<input class="extra-options-input" placeholder="Replace" type="text" id="replace" /><br />
-						<input class="extra-options-input close-button" type="submit" id="replace-found" value="Replace" />
-					</form>
-				</div>
-			</div>
+			<div id="transcript-area" style="cursor: pointer;"></div>
 
 			<div id="export-wrapper" class="extra-options-wrapper hidden invisible">
 				<div class="close-bt-wrapper">
