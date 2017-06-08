@@ -79,6 +79,13 @@ var GLOBAL_ACTIONS = {
 		}, 50);
 	},
 
+	'close-help': function() {
+		document.getElementById('help-wrapper').classList.add('invisible');
+		setTimeout(function() {
+			document.getElementById('help-wrapper').classList.add('hidden');
+		}, 50);
+	},
+
 	'export-srt': function() {
 		var results = transcript.results;
 		var speakers = transcript.speaker_labels;
@@ -742,7 +749,7 @@ function saveJSON(alertUser) {
 			if(alertUser) {
 				alert('Changes successfully saved.');
 			}
-		} else {
+		} else if(this.readyState === 4 && this.status != 200) {
 			alert('Could not save changes, please check your internet connection or try again later.');	
 		}
 	}
@@ -851,6 +858,14 @@ function showExport(event) {
 	}, 50);
 }
 
+function showHelp(event) {
+	var ele = document.getElementById('help-wrapper');
+	ele.classList.remove('hidden');
+	setTimeout(function() {
+		ele.classList.remove('invisible');
+	}, 50);
+}
+
 function enableUI() {
 	document.getElementById('loader').classList.toggle('spinning');
 	document.getElementById('main-container-mask').classList.toggle('invisible');
@@ -879,6 +894,7 @@ function resizeBody() {
 	var height = window.innerHeight - off;
 	document.getElementsByClassName('transcript-container')[0].setAttribute('style', 'height: ' + height + 'px');
 	document.getElementById('text-options').setAttribute('style', 'margin-top: ' + off + 'px');
+	document.getElementById('help-wrapper').setAttribute('style', 'top: ' + off + 'px');
 }
 
 // fill editor with words from database
@@ -1252,6 +1268,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	// keypresses
 	var shortcutWrapper = document.getElementById('shortcut-wrapper');
 	var shift_key = document.getElementById('shift-key');
+	var space_key = document.getElementById('space-key');
 	var extra_key = document.getElementById('extra-key');
 	document.addEventListener('keydown', function(e) {
 		var map = {
@@ -1275,8 +1292,12 @@ document.addEventListener('DOMContentLoaded', function() {
 					extra_key.classList.remove('hidden');
 					GLOBAL_ACTIONS['redo']();
 				} else {
-					extra_key.innerHTML = e.key.toUpperCase();
-					extra_key.classList.remove('hidden');
+					if(e.keyCode == 32) {
+						space_key.classList.remove('hidden');
+					} else {
+						extra_key.innerHTML = e.key.toUpperCase();
+						extra_key.classList.remove('hidden');
+					}
 					GLOBAL_ACTIONS[action]();
 				}
 			}
@@ -1292,6 +1313,9 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 		if(!/hidden/i.test(extra_key.classList.toString())) {
 			extra_key.classList.add('hidden');
+		}
+		if(!/hidden/i.test(space_key.classList.toString())) {
+			space_key.classList.add('hidden');
 		}
 	})
 

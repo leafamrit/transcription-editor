@@ -64,8 +64,8 @@
 					<button class="actionbutton speed" data-action="speedx175">x1.75</button>
 					<button class="actionbutton speed" data-action="speedx2">x2</button>
 				</span>
-				<button class="actionbutton" data-action="rewind"><i class="fa fa-step-backward fa-2x"></i></button>
-				<button class="actionbutton" data-action="play"><i class="fa fa-play fa-2x" id="playpause"></i></button>
+				<button class="actionbutton" data-action="rewind" title="Rewind (Ctrl + R)"><i class="fa fa-step-backward fa-2x"></i></button>
+				<button class="actionbutton" data-action="play" title="Play / Pause (Ctrl + Space)"><i class="fa fa-play fa-2x" id="playpause"></i></button>
 				<span class="actionbutton"><i class="fa fa-volume-up fa-lg"></i><input id="volumerange" type="range" min="0" max="100" value="100"></span>
 				<button class="actionbutton specialbutton" id="bt-skipsilence" data-action="skipsilence">Skip Silence</button>
 				<button class="actionbutton specialbutton" id="bt-playhighlight" data-action="playhighlight">Play Highlights</button>
@@ -76,15 +76,15 @@
 		<div class="transcript-container">
 			
 			<div id="text-options">
-				<button class="text-action" data-action="save" title="Save"><i class="fa fa-save fa-2x"></i></button>
-				<button class="text-action" data-action="undo" title="Undo"><i class="fa fa-undo fa-2x"></i></button>
-				<button class="text-action" data-action="redo" title="Redo"><i class="fa fa-repeat fa-2x"></i></button>
-				<button class="text-action" data-action="strike" title="Strikethrough"><i class="fa fa-strikethrough fa-2x"></i></button>
-				<button class="text-action" data-action="highlight" title="Highlight"><i class="fa fa-bookmark fa-2x"></i></button>
+				<button class="text-action" data-action="save" title="Save (Ctrl + S)"><i class="fa fa-save fa-2x"></i></button>
+				<button class="text-action" data-action="undo" title="Undo (Ctrl + Z)"><i class="fa fa-undo fa-2x"></i></button>
+				<button class="text-action" data-action="redo" title="Redo (Ctrl + Shift + Z)"><i class="fa fa-repeat fa-2x"></i></button>
+				<button class="text-action" data-action="strike" title="Strikethrough (Ctrl + J)"><i class="fa fa-strikethrough fa-2x"></i></button>
+				<button class="text-action" data-action="highlight" title="Highlight (Ctrl + H)"><i class="fa fa-bookmark fa-2x"></i></button>
 				<a href="./share.html"><button class="text-action" title="Share"><i class="fa fa-share-alt fa-2x"></i></button></a>
 				<button class="text-action" onclick="showExport(event);" title="Export"><i class="fa fa-download fa-2x"></i></button>
 				<button class="text-action" onclick="showFindReplace(event);" title="Find & Replace"><i class="fa fa-search fa-2x"></i></button>
-				<button class="text-action" data-action="help" title="Help"><i class="fa fa-question fa-2x"></i></button>
+				<button class="text-action" onclick="showHelp(event);" title="Help"><i class="fa fa-question fa-2x"></i></button>
 			</div>
 			
 			<div id="transcript-area"><datalist id="speakerlist"></datalist></div>
@@ -97,7 +97,7 @@
 					<form id="find-replace-form">
 						<input class="extra-options-input" placeholder="Find" type="text" id="find" /><br />
 						<input class="extra-options-input" placeholder="Replace" type="text" id="replace" /><br />
-						<input class="extra-options-input close-button" type="submit" id="replace-found" value="Replace" />
+						<input class="extra-options-input close-button" type="su bmit" id="replace-found" value="Replace" />
 					</form>
 				</div>
 			</div>
@@ -125,14 +125,29 @@
 				<center>
 					<div class="shortcuts">
 						<button class="shortcut-key" id="ctrl-key">Ctrl</button>
+						<button class="shortcut-key hidden" id="space-key">Space</button>
 						<button class="shortcut-key hidden" id="shift-key">Shift</button>
 						<button class="shortcut-key hidden" id="extra-key"></button>
 					</div>
 				</center>
 			</div>
 
-			<div id="help-wrapper" class="help-wrapper">
+			<div id="help-wrapper" class="help-wrapper hidden invisible">
 				<center>
+					<div class="help">
+						<div class="close-bt-wrapper">
+							<button class="close-button" data-action="close-help"><i class="fa fa-close"></i></button>
+						</div>
+						<br />
+						Ctrl + Space : Play / Pause<br />
+						Ctrl + R : Skip back 5 seconds<br />
+						Ctrl + H : Highlight<br />
+						Ctrl + J : Strike<br />
+						Ctrl + Z : Undo<br />
+						Ctrl + Shift + Z : Redo<br />
+						Ctrl + S : Save<br />
+						<br />
+					</div>
 				</center>
 			</div>
 
