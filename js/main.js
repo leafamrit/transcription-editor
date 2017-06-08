@@ -742,6 +742,8 @@ function saveJSON(alertUser) {
 			if(alertUser) {
 				alert('Changes successfully saved.');
 			}
+		} else {
+			alert('Could not save changes, please check your internet connection or try again later.');	
 		}
 	}
 	xhttp.open('POST', './test.php', true);
