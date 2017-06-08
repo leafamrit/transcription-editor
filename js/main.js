@@ -1051,13 +1051,8 @@ function readWords() {
 }
 
 function changeInput(caller) {
-	var input = caller.value;
-	var oldName = caller.getAttribute('speakername');
-	pastStack.push(JSON.stringify(transcript));
-	var inputLength = (caller.value.length * 8) + 30;
-	pastStack.push(JSON.stringify(transcript));
-	
 	if(!caller.value || caller.value.trim() == '') {
+		changed = false;
 		caller.value = 'Unknown Speaker ' + (globaluksp++);
 		var startIndex = caller.getAttribute('speakerindex');
 		var endIndex = caller.nextSibling.nextSibling.nextSibling ? Number(caller.nextSibling.nextSibling.nextSibling.getAttribute('speakerindex')) : transcript.speaker_labels.length;
@@ -1066,6 +1061,10 @@ function changeInput(caller) {
 			transcript.speaker_labels[i].speaker = caller.value;
 		}
 	} else {
+		var input = caller.value;
+		var oldName = caller.getAttribute('speakername');
+		pastStack.push(JSON.stringify(transcript));
+		var inputLength = (caller.value.length * 8) + 30;
 		transcript.speaker_labels.forEach(function(el) {
 			if(el.speaker == oldName) {
 				el.speaker = input;
@@ -1073,9 +1072,18 @@ function changeInput(caller) {
 		});
 
 		var speakerList = document.getElementById('speakerlist');
-		datalistOption = document.createElement('option');
-		datalistOption.value = input;
-		speakerList.appendChild(datalistOption);
+
+		var hasInput = false;
+		[].forEach.call(speakerList.childNodes, function(el) {
+			if(el.value == input) {
+				hasInput = true;
+			}
+		});
+		if(!hasInput) {
+			datalistOption = document.createElement('option');
+			datalistOption.value = input;
+			speakerList.appendChild(datalistOption);
+		}
 	}
 
 	fillWords();
@@ -1086,10 +1094,17 @@ function handleList(caller) {
 }
 
 function handleValue(caller) {
-	if(changed) {
+	if(changed && (!caller.value || caller.value.trim() == '')) {
 		changed = false;
-		var e = new Event('change');
-		caller.dispatchEvent(e);
+		caller.value = 'Unknown Speaker ' + (globaluksp++);
+		var startIndex = caller.getAttribute('speakerindex');
+		var endIndex = caller.nextSibling.nextSibling.nextSibling ? Number(caller.nextSibling.nextSibling.nextSibling.getAttribute('speakerindex')) : transcript.speaker_labels.length;
+
+		for(var i = startIndex; i < endIndex; i++) {
+			transcript.speaker_labels[i].speaker = caller.value;
+		}
+
+		fillWords();
 	} else {
 		pastStack.push(JSON.stringify(transcript));
 		caller.value = caller.getAttribute('speakername');
