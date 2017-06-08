@@ -64,9 +64,11 @@
 					<button class="actionbutton speed" data-action="speedx175">x1.75</button>
 					<button class="actionbutton speed" data-action="speedx2">x2</button>
 				</span>
-				<button class="actionbutton" data-action="rewind"><i class="fa fa-step-backward fa-2x"></i></button>
-				<button class="actionbutton" data-action="play"><i class="fa fa-play fa-2x" id="playpause"></i></button>
-				<span class="actionbutton"><i class="fa fa-volume-up fa-lg"></i><input id="volumerange" type="range" min="0" max="100" value="100"></span>
+				<span id="playcontrols">
+					<button class="actionbutton" data-action="rewind" title="Rewind (Ctrl + R)"><i class="fa fa-step-backward fa-2x"></i></button>
+					<button class="actionbutton" data-action="play" title="Play / Pause (Ctrl + Space)"><i class="fa fa-play fa-2x" id="playpause"></i></button>
+					<span id="volumecontrol" class="actionbutton"><i class="fa fa-volume-up fa-lg"></i><input id="volumerange" type="range" min="0" max="100" value="100"></span>
+				</span>
 				<button class="actionbutton specialbutton" id="bt-skipsilence" data-action="skipsilence">Skip Silence</button>
 				<button class="actionbutton specialbutton" id="bt-playhighlight" data-action="playhighlight">Play Highlights</button>
 			</div>
@@ -105,6 +107,7 @@
 				<center>
 					<div class="shortcuts">
 						<button class="shortcut-key" id="ctrl-key">Ctrl</button>
+						<button class="shortcut-key hidden" id="space-key">Space</button>
 						<button class="shortcut-key hidden" id="shift-key">Shift</button>
 						<button class="shortcut-key hidden" id="extra-key"></button>
 					</div>

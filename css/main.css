@@ -1,9 +1,12 @@
+* {
+	transition: all 0.2s;
+}
+
 body, html {
 	padding: 0;
 	background-color: #f6f7eb;
 	margin: 0;
 	text-align: center;
-	transition: all 1s;
 	height: 100vh;
 	overflow: hidden;
 }
@@ -16,48 +19,15 @@ button {
 	cursor: pointer;
 }
 
-div#audioclip {
-	margin-bottom: 1.5em;
+.invisible {
+	opacity: 0;
 }
 
-div.main-container {
-	text-align: left;
-	background-color: #393e41;
-	padding: 1.5em;
-	width: 100%;
-	position: fixed;
-	top: 0;
-	box-sizing: border-box;
-	margin: 0;
-	box-shadow: 0 0 1.5em 0 #393e41;
+.hidden {
+	display: none;
 }
 
-div.transcript-container {
-	height: 100%;
-	width: 70%;
-	box-sizing: border-box;
-	text-align: center;
-	margin: 1.5em;
-	padding: 1em;
-	padding-top: 0;
-	border-right: 2px solid #393e41;
-	border-left: 2px solid #393e41;
-}
-
-div#transcript-area {
-	overflow-y: scroll;
-	height: 80%;
-	box-sizing: border-box;
-	border: 1px solid #393e41;
-	border-radius: 2px;
-	box-shadow: 0 0 2px 0 #393e41;
-	background-color: #fff;
-	cursor: text;
-	padding: 1em;
-}
-
-div#text-options {
-}
+/*** LOADING SCREEN ***/
 
 div#main-container-mask {
 	height: 100%;
@@ -79,16 +49,34 @@ i.spinning {
 	animation: spin-loader 0.5s infinite;
 }
 
-.invisible {
-	opacity: 0;
-}
-
 @keyframes spin-loader {
 	from {
 		transform: rotateZ(0deg);
 	} to {
 		transform: rotateZ(360deg);
 	}
+}
+
+span#loading-percentage {
+	font-size: 1.2em;
+}
+
+/*** AUDIO PLAYER ***/
+
+div#audioclip {
+	margin-bottom: 1.5em;
+}
+
+div.main-container {
+	text-align: left;
+	background-color: #393e41;
+	padding: 1.5em;
+	width: 100%;
+	position: fixed;
+	top: 0;
+	box-sizing: border-box;
+	margin: 0;
+	box-shadow: 0 0 1.5em 0 #393e41;
 }
 
 div#controls {
@@ -140,6 +128,70 @@ span#speedcontrols {
 
 .actionbutton:focus {
 	border: none;
+}
+
+@media (max-width: 900px) {
+	
+	span#speedcontrols {
+		width: 50%;
+	}
+
+	span#playcontrols {
+		width: 40%;
+		float: right;
+	}
+
+	.specialbutton {
+		width: 50%;
+	}
+}
+
+@media (max-width: 750px) {
+	
+	span#speedcontrols {
+		width: 100%;
+	}
+
+	span#playcontrols {
+		width: 100%;
+		float: left;
+	}
+
+	.specialbutton {
+		width: 50%;
+	}
+}
+
+@media (max-device-width: 900px) {
+	
+	span#speedcontrols {
+		width: 50%;
+	}
+
+	span#playcontrols {
+		width: 40%;
+		float: right;
+	}
+
+	.specialbutton {
+		width: 50%;
+	}
+}
+
+@media (max-device-width: 750px) {
+	
+	span#speedcontrols {
+		width: 100%;
+	}
+
+	span#playcontrols {
+		width: 100%;
+		float: left;
+	}
+
+	.specialbutton {
+		width: 50%;
+	}
 }
 
 /* RANGE INPUT CSS */
@@ -241,6 +293,33 @@ input[type=range]:focus::-ms-fill-upper {
 	background: #4f92ca;
 }
 
+/*** TRANSCRIPT CONTAINER ***/
+
+
+div.transcript-container {
+	height: 100%;
+	width: 70%;
+	box-sizing: border-box;
+	text-align: center;
+	margin: 1.5em;
+	padding: 1em;
+	padding-top: 0;
+	border-right: 2px solid #393e41;
+	border-left: 2px solid #393e41;
+}
+
+div#transcript-area {
+	overflow-y: scroll;
+	height: 80%;
+	box-sizing: border-box;
+	border: 1px solid #393e41;
+	border-radius: 2px;
+	box-shadow: 0 0 2px 0 #393e41;
+	background-color: #fff;
+	cursor: text;
+	padding: 1em;
+}
+
 .text-action {
 	padding: 0.5em;
 	border: none;
@@ -276,7 +355,6 @@ input[type=range]:focus::-ms-fill-upper {
 	color: #111;
 	cursor: text;
 	float: left;
-	/*text-decoration: bold underline;*/
 	min-width: 30px;
 	outline: none;
 	border-bottom-right-radius: 25px;
@@ -305,14 +383,62 @@ br.special-break {
 	text-decoration: line-through;
 }
 
-span#loading-percentage {
-	font-size: 1.2em;
-}
-
 div.speaker-div {
 	text-align: left;
 	outline: none;
 }
+
+@media (max-width: 970px) {
+
+	div.transcript-container {
+		width: auto;
+	}
+
+}
+
+@media (max-device-width: 970px) {
+
+	div.transcript-container {
+		width: auto;
+	}
+
+}
+
+@media (max-width: 725px) {
+
+	.text-action {
+		margin: 0;
+	}
+
+}
+
+@media (max-device-width: 725px) {
+
+	.text-action {
+		margin: 0;
+	}
+
+}
+
+@media (max-width: 490px) {
+
+	span#upper-half-actions {
+		width: 100%;
+		float: left;
+	}
+
+}
+
+@media (max-device-width: 490px) {
+
+	span#upper-half-actions {
+		width: 100%;
+		float: left;
+	}
+
+}
+
+/*** EXTRA OPTIONS ***/
 
 .extra-options-wrapper {
 	position: fixed;
@@ -349,10 +475,6 @@ div.speaker-div {
 	border: none;
 }
 
-.hidden {
-	display: none;
-}
-
 .found {
 	background-color: rgba(255, 100, 0, 0.5);
 }
@@ -371,12 +493,7 @@ div.speaker-div {
 	color: #3f88c5;
 }
 
-.delete-button {
-	float: left;
-	color: rgba(255, 0, 0, 0.5);
-	font-size: 5px;
-	vertical-align: middle;
-}
+/*** HELP ***/
 
 .shortcut-wrapper {
 	position: fixed;
@@ -418,7 +535,6 @@ div.speaker-div {
 	width: 100%;
 	padding-top: 4em;
 	transition: all 0.2s;
-	/*text-align: center;*/
 }
 
 .help {

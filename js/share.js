@@ -819,6 +819,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	// keypresses
 	var shortcutWrapper = document.getElementById('shortcut-wrapper');
 	var shift_key = document.getElementById('shift-key');
+	var space_key = document.getElementById('space-key');
 	var extra_key = document.getElementById('extra-key');
 	document.addEventListener('keydown', function(e) {
 		var map = {
@@ -833,8 +834,12 @@ document.addEventListener('DOMContentLoaded', function() {
 			var action = map[e.keyCode];
 			if(action in GLOBAL_ACTIONS) {
 				e.preventDefault();
-				extra_key.innerHTML = e.key.toUpperCase();
-				extra_key.classList.remove('hidden');
+				if(e.keyCode == 32) {
+					space_key.classList.remove('hidden');
+				} else {
+					extra_key.innerHTML = e.key.toUpperCase();
+					extra_key.classList.remove('hidden');
+				}
 				GLOBAL_ACTIONS[action]();
 				
 			}
@@ -850,6 +855,9 @@ document.addEventListener('DOMContentLoaded', function() {
 		}
 		if(!/hidden/i.test(extra_key.classList.toString())) {
 			extra_key.classList.add('hidden');
+		}
+		if(!/hidden/i.test(space_key.classList.toString())) {
+			space_key.classList.add('hidden');
 		}
 	});
 });
