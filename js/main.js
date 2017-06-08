@@ -9,6 +9,7 @@ var pastStack = Array();
 var futureStack = Array();
 var globaluksp = 0;
 var changed = false;
+var saved = false;
 
 var skipSilences = false;
 var playHighlights = false;
@@ -68,7 +69,7 @@ var GLOBAL_ACTIONS = {
 	},
 
 	'save': function() {
-		saveJSON();
+		saveJSON(true);
 	},
 
 	'close-export': function() {
@@ -732,11 +733,15 @@ function loadJSON(filepath, callback) {
 	xhttp.send();
 }
 
-function saveJSON() {
+function saveJSON(alertUser) {
+	saved = false;
 	var xhttp = new XMLHttpRequest();
 	xhttp.onreadystatechange = function() {
 		if(this.readyState === 4 && this.status === 200) {
 			console.log(this.responseText);
+			if(alertUser) {
+				alert('Changes successfully saved.');
+			}
 		}
 	}
 	xhttp.open('POST', './test.php', true);
@@ -1123,6 +1128,14 @@ function resizeInput(caller) {
 	changed = true;
 }
 
+window.onbeforeunload = function(e) {
+	e || window.event;
+	if(e) {
+		return '';
+	}
+	return '';
+}
+
 // Initialization
 document.addEventListener('DOMContentLoaded', function() {
 	// wavesurfer options
@@ -1197,7 +1210,7 @@ document.addEventListener('DOMContentLoaded', function() {
 		resizeBody();
 		enableUI();
 		setInterval(function() {
-			saveJSON();
+			saveJSON(false);
 		}, 30000)
 	});
 
@@ -1299,9 +1312,11 @@ document.addEventListener('DOMContentLoaded', function() {
 		e.preventDefault();
 		var foundWord = document.getElementById('find').value;
 		var replaceWord = document.getElementById('replace').value;
+		var counter = 0;
 		[].forEach.call(document.querySelectorAll('.word'), function(el) {
 			if(el.innerText.search(foundWord) >= 0) {
 				el.innerText = el.innerText.replace(foundWord, replaceWord);
+				counter++;
 			}
 		});
 		document.getElementById('find-replace-wrapper').classList.add('hidden');
@@ -1310,6 +1325,9 @@ document.addEventListener('DOMContentLoaded', function() {
 				el.classList.remove('found');
 			});
 		}, 1000);
+		setTimeout(function() {
+			alert('Replaced ' + counter + ' occurrences of \'' + foundWord + '\' with \'' + replaceWord + '\'.');
+		}, 100);
 	});
 
 	var range;
@@ -1317,9 +1335,9 @@ document.addEventListener('DOMContentLoaded', function() {
 		setTimeout(function() {
 			var startEle = document.getElementsByClassName('read');
 			range = document.createRange();
-			console.log(startEle[startEle.length - 1]);
-			range.setStart(startEle[startEle.length - 1], 0);
-			console.log(range);
+			try {
+				range.setStart(startEle[startEle.length - 1], 0);
+			} catch (exception) {}
 		}, 100);
 	});
 
@@ -1327,12 +1345,9 @@ document.addEventListener('DOMContentLoaded', function() {
 		setTimeout(function() {
 			var endEle = document.getElementsByClassName('read');
 			range.setEnd(endEle[endEle.length - 1], 0);
-			console.log('end');
 			var sel = window.getSelection();
 			sel.removeAllRanges();
 			sel.addRange(range);
-			console.log(range);
-			console.log(sel);
 		}, 100);
 	});
 });
