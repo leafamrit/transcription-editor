@@ -1,4 +1,8 @@
 * {
+	-webkit-transition: all 0.2s;
+	-moz-transition: all 0.2s;
+	-ms-transition: all 0.2s;
+	-o-transition: all 0.2s;
 	transition: all 0.2s;
 }
 
@@ -42,6 +46,10 @@ div#main-container-mask {
 	font-family: 'Allerta Stencil';
 	opacity: 0.7;
 	cursor: not-allowed;
+	-webkit-transition: all 0.3s;
+	-moz-transition: all 0.3s;
+	-ms-transition: all 0.3s;
+	-o-transition: all 0.3s;
 	transition: all 0.3s;
 }
 
@@ -96,13 +104,12 @@ span#speedcontrols {
 }
 
 .actionbutton {
-	padding: 0.5em;
+	padding: 0.2em;
 	border: none;
 	background-color: #393e41;
 	color: #f6f7eb;
 	vertical-align: middle;
 	width: 3em;
-	transition: all 0.2s;
 	outline: none;
 	font-family: 'Allerta Stencil';
 }
@@ -111,6 +118,7 @@ span#speedcontrols {
 	width: auto;
 	float: right;
 	font-size: 100%;
+	margin: 0.1em;
 }
 
 .active {
@@ -130,6 +138,15 @@ span#speedcontrols {
 	border: none;
 }
 
+@media (max-width: 980px) {
+
+	.specialspan {
+		width: 100%;
+		float:right;
+	}
+
+}
+
 @media (max-width: 900px) {
 	
 	span#speedcontrols {
@@ -139,10 +156,6 @@ span#speedcontrols {
 	span#playcontrols {
 		width: 40%;
 		float: right;
-	}
-
-	.specialbutton {
-		width: 50%;
 	}
 }
 
@@ -157,9 +170,15 @@ span#speedcontrols {
 		float: left;
 	}
 
-	.specialbutton {
-		width: 50%;
+}
+
+@media (max-device-width: 980px) {
+
+	.specialspan {
+		width: 100%;
+		float:right;
 	}
+
 }
 
 @media (max-device-width: 900px) {
@@ -171,10 +190,6 @@ span#speedcontrols {
 	span#playcontrols {
 		width: 40%;
 		float: right;
-	}
-
-	.specialbutton {
-		width: 50%;
 	}
 }
 
@@ -189,9 +204,6 @@ span#speedcontrols {
 		float: left;
 	}
 
-	.specialbutton {
-		width: 50%;
-	}
 }
 
 /* RANGE INPUT CSS */
@@ -291,6 +303,59 @@ input[type=range]:focus::-ms-fill-lower {
 
 input[type=range]:focus::-ms-fill-upper {
 	background: #4f92ca;
+}
+
+/* SWITCH */
+
+.switch {
+	width: 2em;
+	height: 1em;
+	position: relative;
+	padding: 0.1em;
+	margin: 0.5em;
+}
+
+.switch input { display: none; }
+
+.slider {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	cursor: pointer;
+	background-color: #f4364c;
+	-webkit-transition: .2s;
+	transition: .2s;
+	border-radius: 1em;
+}
+
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 0.9em;
+  width: 0.9em;
+  left: 0.2em;
+  bottom: 0.15em;
+  background-color: white;
+  -webkit-transition: .2s;
+  transition: .2s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #2196F3;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(0.9em);
+  -ms-transform: translateX(0.9em);
+  transform: translateX(0.9em);
 }
 
 /*** TRANSCRIPT CONTAINER ***/
@@ -523,8 +588,14 @@ div.speaker-div {
 	min-width: 4em;
 	margin: 0.5em;
 	border: none;
+	cursor: default;
 	font-family: 'Allerta Stencil';
 	color: #f6f7eb;
+}
+
+.shortcut-option {
+	height: 2em;
+	opacity: 0.5;
 }
 
 .help-wrapper {

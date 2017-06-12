@@ -65,7 +65,8 @@ var GLOBAL_ACTIONS = {
 
 	'skipsilence': function() {
 		skipSilences = !skipSilences;
-		toggleActive(document.getElementById('bt-skipsilence'));
+		//toggleActive(document.getElementById('skipsilence-switch'));
+		//document.getElementById('skipsilence-switch').click();
 	},
 
 	'save': function() {
@@ -410,7 +411,7 @@ var GLOBAL_ACTIONS = {
 			}
 		}
 		playHighlights = !playHighlights;
-		toggleActive(document.getElementById('bt-playhighlight'));
+		//toggleActive(document.getElementById('bt-playhighlight'));
 	},
 
 	'strike': function() {
@@ -1059,19 +1060,32 @@ function fillWords() {
 				newTranscript += word[0] + ' ';
 			});
 			transcript.results[r_i].alternatives[a_i].transcript = newTranscript;
-			if(this.nextSibling) {
-				var endTime = this.nextSibling.getAttribute('starttime');
+			var endTime, startTime;
+			if(this == this.parentElement.firstChild) {
+				if(r_i === '0') {
+					startTime = '0';
+				} else if(w_i === '0') {
+					var pre_r_i = Number(r_i) - 1;
+					var pre_index = transcript.results[pre_r_i].alternatives[0].timestamps - 1;
+					startTime = transcript.results[pre_r_i].alternatives[0].timestamps[pre_index][2];
+				}
+				transcript.results[r_i].alternatives[a_i].timestamps[w_i][1] = startTime;
+				this.setAttribute('starttime', startTime);
+				this.id = startTime;
+				this.setAttribute('title', startTime + ' - ' + this.getAttribute('endtime'));
+			} else if(this.nextSibling) {
+				endTime = this.nextSibling.getAttribute('starttime');
 				transcript.results[r_i].alternatives[a_i].timestamps[w_i][2] = endTime;
 				this.setAttribute('endtime', endTime);
 				this.setAttribute('title', this.getAttribute('starttime') + ' - ' + endTime);
-				if(/highlight/i.test(this.classList.value)) {
-					GLOBAL_ACTIONS['highlight']();
-					GLOBAL_ACTIONS['highlight']();
-				}
-				if(/strike/i.test(this.classList.value)) {
-					GLOBAL_ACTIONS['strike']();
-					GLOBAL_ACTIONS['strike']();
-				}
+			}
+			if(/highlight/i.test(this.classList.value)) {
+				GLOBAL_ACTIONS['highlight']();
+				GLOBAL_ACTIONS['highlight']();
+			}
+			if(/strike/i.test(this.classList.value)) {
+				GLOBAL_ACTIONS['strike']();
+				GLOBAL_ACTIONS['strike']();
 			}
 
 		});

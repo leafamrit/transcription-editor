@@ -69,8 +69,20 @@
 					<button class="actionbutton" data-action="play" title="Play / Pause (Ctrl + Space)"><i class="fa fa-play fa-2x" id="playpause"></i></button>
 					<span id="volumecontrol" class="actionbutton"><i class="fa fa-volume-up fa-lg"></i><input id="volumerange" type="range" min="0" max="100" value="100"></span>
 				</span>
-				<button class="actionbutton specialbutton" id="bt-skipsilence" data-action="skipsilence">Skip Silence</button>
-				<button class="actionbutton specialbutton" id="bt-playhighlight" data-action="playhighlight">Play Highlights</button>
+				<span class="specialspan">
+					<label class="switch actionbutton specialbutton">
+						<input type="checkbox" id="skipsilence-switch" onchange="GLOBAL_ACTIONS['skipsilence']();">
+						<div class="slider"></div>
+					</label>
+					<button class="actionbutton specialbutton" id="bt-skipsilence" onclick="document.getElementById('skipsilence-switch').click();">Skip Silence</button>
+				</span>
+				<span class="specialspan">
+					<label class="switch actionbutton specialbutton">
+						<input type="checkbox" id="playhighlight-switch" onchange="GLOBAL_ACTIONS['playhighlight']();">
+						<div class="slider"></div>
+					</label>
+					<button class="actionbutton specialbutton" id="bt-playhighlight" onclick="document.getElementById('playhighlight-switch').click();">Play Highlights</button>
+				</span>
 			</div>
 		</div>
 
@@ -134,6 +146,14 @@
 						<button class="shortcut-key hidden" id="space-key">Space</button>
 						<button class="shortcut-key hidden" id="shift-key">Shift</button>
 						<button class="shortcut-key hidden" id="extra-key"></button>
+						<br />
+						<button class="shortcut-key shortcut-option">Space | Play / Pause</button>
+						<button class="shortcut-key shortcut-option">R | Rewind</button>
+						<button class="shortcut-key shortcut-option">H | Highlight</button>
+						<button class="shortcut-key shortcut-option">J | Strike</button>
+						<button class="shortcut-key shortcut-option">S | Save</button>
+						<button class="shortcut-key shortcut-option">Z | Undo</button>
+						<button class="shortcut-key shortcut-option">Shift + Z | Redo</button>
 					</div>
 				</center>
 			</div>
