@@ -1188,7 +1188,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	wavesurfer.init(options);
 
 	// load audio
-	wavesurfer.load('audio/test.mp3');
+	wavesurfer.load('audio/3.wav');
 	loadJSON('transcript/3.json', function(text) {
 		transcript = JSON.parse(text);
 	});
