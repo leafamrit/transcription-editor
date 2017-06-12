@@ -1217,9 +1217,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	// startup the page
 	wavesurfer.on('ready', function() {
-		activeSpeed();
-		getSilences();
-		fillWords();
 		[].forEach.call(document.querySelectorAll('.speaker'), function(el) {
 			if(/Unknown Speaker/i.test(el.value)) {
 				globaluksp++;
@@ -1227,6 +1224,9 @@ document.addEventListener('DOMContentLoaded', function() {
 		});
 		resizeBody();
 		enableUI();
+		activeSpeed();
+		getSilences();
+		fillWords();
 		setInterval(function() {
 			saveJSON(false);
 		}, 30000)
