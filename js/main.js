@@ -65,8 +65,18 @@ var GLOBAL_ACTIONS = {
 
 	'skipsilence': function() {
 		skipSilences = !skipSilences;
-		//toggleActive(document.getElementById('skipsilence-switch'));
-		//document.getElementById('skipsilence-switch').click();
+	},
+
+	'playhighlight': function() {
+		if(!playHighlights) {
+			for(var i in wavesurfer.regions.list) {
+				if(/^h/i.test(i)) {
+					wavesurfer.seekTo(wavesurfer.regions.list[i].start / wavesurfer.getDuration());
+					break;
+				}
+			}
+		}
+		playHighlights = !playHighlights;
 	},
 
 	'save': function() {
@@ -401,46 +411,24 @@ var GLOBAL_ACTIONS = {
 		});
 	},
 
-	'playhighlight': function() {
-		if(!playHighlights) {
-			for(var i in wavesurfer.regions.list) {
-				if(/^h/i.test(i)) {
-					wavesurfer.seekTo(wavesurfer.regions.list[i].start / wavesurfer.getDuration());
-					break;
-				}
-			}
-		}
-		playHighlights = !playHighlights;
-		//toggleActive(document.getElementById('bt-playhighlight'));
-	},
-
 	'strike': function() {
-		//console.log(window.getSelection + " " + window.getSelection().toString().split('').length);
 		if(window.getSelection && window.getSelection().toString().split('').length > 1) {
-			//console.log('condition 1 active');
 			var startElement = window.getSelection().baseNode.parentElement;
 			if(startElement.classList[0] != 'word') {
 				startElement = startElement.nextSibling;
 			}
-			//console.log('startElement: ' + startElement.id)
 			var endElement = window.getSelection().extentNode.parentElement;
 			if(endElement.classList[0] != 'word') {
 				endElement = endElement.nextSibling;
 			}
-			//console.log('endElement: ' + endElement.id);
 			if(Number(startElement.id) > Number(endElement.id)) {
 				var temp = startElement;
 				startElement = endElement;
 				endElement = temp;
-				//console.log('swapping');
 			}
-			//console.log('after swipe: ' + startElement.id + ' ' + endElement.id);
 			var waveId = 's' + startElement.id;
 			var currentNode = document.getElementById(startElement.id);
-			//console.log('currentNode: ' + currentNode.id + ' endElement: ' + endElement.id);
 			while(Number(currentNode.id) <= Number(endElement.id)) {
-				//console.log('in while');
-				//console.log('currentNode: ' + currentNode.id);
 				currentNode.classList.toggle('strike');
 				waveId = 's' + currentNode.id;
 				if(waveId in wavesurfer.regions.list) {
@@ -455,7 +443,6 @@ var GLOBAL_ACTIONS = {
 						resize: false
 					});
 				}
-
 
 				var r_i = currentNode.getAttribute('resultindex');
 				var a_i = currentNode.getAttribute('alternativeindex');
@@ -475,15 +462,11 @@ var GLOBAL_ACTIONS = {
 
 				if(currentNode.nextSibling) {
 					currentNode = currentNode.nextSibling;
-					//console.log('nextSibling: ' + currentNode.id);
 				} else {
-					//console.log('nextSibling break');
 					break;
 				}
 			}
-			//console.log('while end');
 		} else {
-			//console.log('condition 2 active');
 			var readEle = document.getElementsByClassName('read');
 			
 			if(readEle.length <= 0) {
@@ -495,7 +478,6 @@ var GLOBAL_ACTIONS = {
 			} else {
 				currentNode = readEle[readEle.length - 1];
 			}
-			//console.log('currentNode: ' + currentNode.id);
 			currentNode.classList.toggle('strike');
 			waveId = 's' + currentNode.id;
 			
@@ -533,32 +515,23 @@ var GLOBAL_ACTIONS = {
 	},
 
 	'highlight': function() {
-		//console.log(window.getSelection + " " + window.getSelection().toString().split('').length);
 		if(window.getSelection && window.getSelection().toString().split('').length > 1) {
-			//console.log('condition 1 active');
 			var startElement = window.getSelection().baseNode.parentElement;
 			while(startElement.classList[0] != 'word') {
 				startElement = startElement.nextSibling;
 			}
-			//console.log('startElement: ' + startElement.id)
 			var endElement = window.getSelection().extentNode.parentElement;
 			while(endElement.classList[0] != 'word') {
 				endElement = endElement.nextSibling;
 			}
-			//console.log('endElement: ' + endElement.id);
 			if(Number(startElement.id) > Number(endElement.id)) {
 				var temp = startElement;
 				startElement = endElement;
 				endElement = temp;
-				//console.log('swapping');
 			}
-			//console.log('after swipe: ' + startElement.id + ' ' + endElement.id);
 			var waveId = 'h' + startElement.id;
 			var currentNode = document.getElementById(startElement.id);
-			//console.log('currentNode: ' + currentNode.id + ' endElement: ' + endElement.id);
 			while(Number(currentNode.id) <= Number(endElement.id)) {
-				//console.log('in while');
-				//console.log('currentNode: ' + currentNode.id);
 				currentNode.classList.toggle('highlight');
 				waveId = 'h' + currentNode.id;
 				if(waveId in wavesurfer.regions.list) {
@@ -579,32 +552,24 @@ var GLOBAL_ACTIONS = {
 				var w_i = currentNode.getAttribute('wordindex');
 				
 				pastStack.push(JSON.stringify(transcript));
-				//console.log(transcript.results[r_i].alternatives[a_i].timestamps[w_i][3]);
 				if(transcript.results[r_i].alternatives[a_i].timestamps[w_i][3]) {
-					//console.log('predefined');
 					if(transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].highlight) {
 						transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].highlight = false;
 					} else {
 						transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].highlight = true;
 					}
 				} else {
-					//console.log('defining');
 					transcript.results[r_i].alternatives[a_i].timestamps[w_i][3] = {};
 					transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].highlight = true;
-					//console.log(transcript.results[r_i].alternatives[a_i].timestamps[w_i][3]);
 				}
 
 				if(currentNode.nextSibling) {
 					currentNode = currentNode.nextSibling;
-					//console.log('nextSibling: ' + currentNode.id);
 				} else {
-					//console.log('nextSibling break');
 					break;
 				}
 			}
-			//console.log('while end');
 		} else {
-			//console.log('condition 2 active');
 			var readEle = document.getElementsByClassName('read');
 			
 			if(readEle.length <= 0) {
@@ -616,7 +581,7 @@ var GLOBAL_ACTIONS = {
 			} else {
 				currentNode = readEle[readEle.length - 1];
 			}
-			//console.log('currentNode: ' + currentNode.id);
+
 			currentNode.classList.toggle('highlight');
 			waveId = 'h' + currentNode.id;
 			
@@ -638,19 +603,15 @@ var GLOBAL_ACTIONS = {
 			var w_i = currentNode.getAttribute('wordindex');
 			
 			pastStack.push(JSON.stringify(transcript));
-			//console.log(transcript.results[r_i].alternatives[a_i].timestamps[w_i][3]);
 			if(transcript.results[r_i].alternatives[a_i].timestamps[w_i][3]) {
-				//console.log('predefined');
 				if(transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].highlight) {
 					transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].highlight = false;
 				} else {
 					transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].highlight = true;
 				}
 			} else {
-				//console.log('defining');
 				transcript.results[r_i].alternatives[a_i].timestamps[w_i][3] = {};
 				transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].highlight = true;
-				//console.log(transcript.results[r_i].alternatives[a_i].timestamps[w_i][3]);
 			}
 		}
 
@@ -663,7 +624,6 @@ var GLOBAL_ACTIONS = {
 			futureStack.push(JSON.stringify(transcript));
 			currAction = pastStack.pop()
 			transcript = {};
-			//console.log(transcript);
 			transcript = JSON.parse(currAction);
 			fillWords();
 			readWords();
@@ -757,24 +717,6 @@ function saveJSON(alertUser) {
 	xhttp.open('POST', './test.php', true);
 	xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
 	xhttp.send('transcript=' + JSON.stringify(transcript));
-}
-
-function savePeaks(alertUser) {
-	saved = false;
-	var xhttp = new XMLHttpRequest();
-	xhttp.onreadystatechange = function() {
-		if(this.readyState === 4 && this.status === 200) {
-			console.log(this.responseText);
-			if(alertUser) {
-				alert('Changes successfully saved.');
-			}
-		} else if(this.readyState === 4 && this.status != 200) {
-			alert('Could not save changes, please check your internet connection or try again later.');	
-		}
-	}
-	xhttp.open('POST', './test.php', true);
-	xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-	xhttp.send('transcript=' + wavesurfer.backend.getPeaks(11918336).toString());
 }
 
 function getSilences() {
@@ -1206,6 +1148,7 @@ document.addEventListener('DOMContentLoaded', function() {
 	loadJSON('transcript/3.json', function(text) {
 		transcript = JSON.parse(text);
 	});
+	enableUI();
 
 	// handle events while playing
 	wavesurfer.on('audioprocess', function() {
@@ -1258,7 +1201,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			color: 'rgba(255, 255, 0, 0)'
 		});
 		resizeBody();
-		enableUI();
+		//enableUI();
 		[].forEach.call(document.querySelectorAll('.speaker'), function(el) {
 			if(/Unknown Speaker/i.test(el.value)) {
 				globaluksp++;
