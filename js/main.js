@@ -787,7 +787,7 @@ function getSilences() {
 			while(peaks[i] < 0.01) {i++;}
 			end = Number(((unit * i) - 0.02).toFixed(1));
 			if(end > start) {
-				paintSilence(start, end);
+				//paintSilence(start, end);
 				silences[start] = Number((end - start).toFixed(1));
 			}
 		}
@@ -1249,6 +1249,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	// startup the page
 	wavesurfer.on('ready', function() {
+		wavesurfer.addRegion({
+			id: 'dummy',
+			start: 0,
+			end: 0,
+			drag: false,
+			resize: false,
+			color: 'rgba(255, 255, 0, 0)'
+		});
 		resizeBody();
 		enableUI();
 		[].forEach.call(document.querySelectorAll('.speaker'), function(el) {
@@ -1262,18 +1270,6 @@ document.addEventListener('DOMContentLoaded', function() {
 		setInterval(function() {
 			saveJSON(false);
 		}, 30000)
-	});
-
-	// dummy region ( to startup regions plugin )
-	wavesurfer.on('ready', function() {
-		wavesurfer.addRegion({
-			id: 'dummy',
-			start: 0,
-			end: 0,
-			drag: false,
-			resize: false,
-			color: 'rgba(255, 255, 0, 0)'
-		});
 	});
 });
 
