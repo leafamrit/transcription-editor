@@ -1148,7 +1148,6 @@ document.addEventListener('DOMContentLoaded', function() {
 	loadJSON('transcript/3.json', function(text) {
 		transcript = JSON.parse(text);
 	});
-	enableUI();
 
 	// handle events while playing
 	wavesurfer.on('audioprocess', function() {
@@ -1201,7 +1200,7 @@ document.addEventListener('DOMContentLoaded', function() {
 			color: 'rgba(255, 255, 0, 0)'
 		});
 		resizeBody();
-		//enableUI();
+		enableUI();
 		[].forEach.call(document.querySelectorAll('.speaker'), function(el) {
 			if(/Unknown Speaker/i.test(el.value)) {
 				globaluksp++;
