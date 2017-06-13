@@ -145,28 +145,17 @@ span#speedcontrols {
 		float:right;
 	}
 
-}
-
-@media (max-width: 900px) {
-	
-	span#speedcontrols {
-		width: 50%;
+	.highlight-area {
+		float: left;
 	}
 
-	span#playcontrols {
-		width: 40%;
-		float: right;
-	}
-}
-
-@media (max-width: 750px) {
-	
 	span#speedcontrols {
 		width: 100%;
 	}
 
 	span#playcontrols {
 		width: 100%;
+		padding: 1em;
 		float: left;
 	}
 
@@ -176,34 +165,22 @@ span#speedcontrols {
 
 	.specialspan {
 		width: 100%;
-		float:right;
-	}
-
-}
-
-@media (max-device-width: 900px) {
-	
-	span#speedcontrols {
-		width: 50%;
-	}
-
-	span#playcontrols {
-		width: 40%;
 		float: right;
 	}
-}
 
-@media (max-device-width: 750px) {
-	
-	span#speedcontrols {
-		width: 100%;
-	}
-
-	span#playcontrols {
-		width: 100%;
+	.highlight-area {
 		float: left;
 	}
 
+	span#speedcontrols {
+		width: 100%;
+	}
+
+	span#playcontrols {
+		width: 100%;
+		padding: 1em;
+		float: left;
+	}
 }
 
 /* RANGE INPUT CSS */
@@ -473,6 +450,8 @@ div.speaker-div {
 
 	.text-action {
 		margin: 0;
+		margin-top: 0.3em;
+		margin-bottom: 0.3em;
 	}
 
 }
@@ -481,6 +460,8 @@ div.speaker-div {
 
 	.text-action {
 		margin: 0;
+		margin-top: 0.3em;
+		margin-bottom: 0.3em;
 	}
 
 }
