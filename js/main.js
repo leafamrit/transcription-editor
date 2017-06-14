@@ -542,6 +542,7 @@ var GLOBAL_ACTIONS = {
 		}
 
 		getStrikes();
+		getHighlights();
 	},
 
 	'highlight': function() {
@@ -662,6 +663,7 @@ var GLOBAL_ACTIONS = {
 			}
 		}
 
+		getStrikes();
 		getHighlights();
 	},
 
