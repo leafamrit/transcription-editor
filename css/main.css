@@ -344,6 +344,8 @@ div.transcript-container {
 	box-sizing: border-box;
 	text-align: center;
 	margin: 1.5em;
+	margin-bottom: 0;
+	margin-top: 0;
 	padding: 1em;
 	padding-top: 0;
 	border-right: 2px solid #393e41;
@@ -559,6 +561,7 @@ div.speaker-div {
 	border-top-left-radius: 0;
 	border-top-right-radius: 0;
 	width: 30%;
+	font-family: 'Allerta Stencil';
 }
 
 .shortcut-key {
@@ -572,12 +575,25 @@ div.speaker-div {
 	cursor: default;
 	font-family: 'Allerta Stencil';
 	color: #f6f7eb;
+	outline: none;
 }
 
 .shortcut-option {
 	height: 2em;
 	opacity: 0.5;
 }
+
+button#hints-switch {
+	opacity: 0.9;
+	cursor: pointer;
+	background-color: #f4364c;
+}
+
+button#hints-switch.off {
+	background-color: #090;
+}
+
+/*** HELP ***/
 
 .help-wrapper {
 	position: fixed;

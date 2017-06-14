@@ -79,6 +79,19 @@ var GLOBAL_ACTIONS = {
 		playHighlights = !playHighlights;
 	},
 
+	'toggle-hints': function() {
+		var hintSwitch = document.getElementById('hints-switch');
+		hintSwitch.classList.toggle('off');
+		document.getElementById('hints').classList.toggle('hidden');
+		if(/off/i.test(hintSwitch.classList.toString())) {
+			hintSwitch.innerHTML = 'Turn Hints On';
+			setCookie('hints', 'off');
+		} else {
+			hintSwitch.innerHTML = 'Turn Hints Off';
+			setCookie('hints', 'on');
+		}
+	},
+
 	'save': function() {
 		saveJSON(true);
 	},
@@ -426,16 +439,22 @@ var GLOBAL_ACTIONS = {
 				startElement = endElement;
 				endElement = temp;
 			}
-			var waveId = 's' + startElement.id;
 			var currentNode = document.getElementById(startElement.id);
 			while(Number(currentNode.id) <= Number(endElement.id)) {
 				currentNode.classList.toggle('strike');
-				waveId = 's' + currentNode.id;
-				if(waveId in wavesurfer.regions.list) {
-					wavesurfer.regions.list[waveId].remove();
+				if(/highlight/i.test(currentNode.classList.toString())) {
+					currentNode.classList.remove('highlight');
+				}
+				sWaveId = 's' + currentNode.id;
+				hWaveId = 'h' + currentNode.id;
+				if(sWaveId in wavesurfer.regions.list) {
+					wavesurfer.regions.list[sWaveId].remove();
 				} else {
+					if(hWaveId in wavesurfer.regions.list) {
+						wavesurfer.regions.list[hWaveId].remove();
+					}
 					wavesurfer.addRegion({
-						id: waveId,
+						id: sWaveId,
 						start: currentNode.getAttribute('starttime'),
 						end: currentNode.getAttribute('endtime'),
 						color: 'rgba(100, 100, 100, 0.5)',
@@ -454,10 +473,12 @@ var GLOBAL_ACTIONS = {
 						transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].strike = false;
 					} else {
 						transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].strike = true;
+						transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].highlight = false;
 					}
 				} else {
 					transcript.results[r_i].alternatives[a_i].timestamps[w_i][3] = {};
 					transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].strike = true;
+					transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].highlight = false;
 				}
 
 				if(currentNode.nextSibling) {
@@ -479,13 +500,20 @@ var GLOBAL_ACTIONS = {
 				currentNode = readEle[readEle.length - 1];
 			}
 			currentNode.classList.toggle('strike');
-			waveId = 's' + currentNode.id;
+			if(/highlight/i.test(currentNode.classList.toString())) {
+				currentNode.classList.remove('highlight');
+			}
+			sWaveId = 's' + currentNode.id;
+			hWaveId = 'h' + currentNode.id;
 			
-			if(waveId in wavesurfer.regions.list) {
-				wavesurfer.regions.list[waveId].remove();
+			if(sWaveId in wavesurfer.regions.list) {
+				wavesurfer.regions.list[sWaveId].remove();
 			} else {
+				if(hWaveId in wavesurfer.regions.list) {
+					wavesurfer.regions.list[hWaveId].remove();
+				}
 				wavesurfer.addRegion({
-					id: waveId,
+					id: sWaveId,
 					start: currentNode.getAttribute('starttime'),
 					end: currentNode.getAttribute('endtime'),
 					color: 'rgba(100, 100, 100, 0.5)',
@@ -504,10 +532,12 @@ var GLOBAL_ACTIONS = {
 					transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].strike = false;
 				} else {
 					transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].strike = true;
+					transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].highlight = false;
 				}
 			} else {
 				transcript.results[r_i].alternatives[a_i].timestamps[w_i][3] = {};
 				transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].strike = true;
+				transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].highlight = false;
 			}
 		}
 
@@ -529,16 +559,22 @@ var GLOBAL_ACTIONS = {
 				startElement = endElement;
 				endElement = temp;
 			}
-			var waveId = 'h' + startElement.id;
 			var currentNode = document.getElementById(startElement.id);
 			while(Number(currentNode.id) <= Number(endElement.id)) {
 				currentNode.classList.toggle('highlight');
-				waveId = 'h' + currentNode.id;
-				if(waveId in wavesurfer.regions.list) {
-					wavesurfer.regions.list[waveId].remove();
+				if(/strike/i.test(currentNode.classList.toString())) {
+					currentNode.classList.remove('strike');
+				}
+				sWaveId = 's' + currentNode.id;
+				hWaveId = 'h' + currentNode.id;
+				if(hWaveId in wavesurfer.regions.list) {
+					wavesurfer.regions.list[hWaveId].remove();
 				} else {
+					if(sWaveId in wavesurfer.regions.list) {
+						wavesurfer.regions.list[sWaveId].remove();
+					}
 					wavesurfer.addRegion({
-						id: waveId,
+						id: hWaveId,
 						start: currentNode.getAttribute('starttime'),
 						end: currentNode.getAttribute('endtime'),
 						color: 'rgba(255, 255, 0, 0.3)',
@@ -557,10 +593,12 @@ var GLOBAL_ACTIONS = {
 						transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].highlight = false;
 					} else {
 						transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].highlight = true;
+						transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].strike = false;
 					}
 				} else {
 					transcript.results[r_i].alternatives[a_i].timestamps[w_i][3] = {};
 					transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].highlight = true;
+					transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].strike = false;
 				}
 
 				if(currentNode.nextSibling) {
@@ -583,13 +621,20 @@ var GLOBAL_ACTIONS = {
 			}
 
 			currentNode.classList.toggle('highlight');
-			waveId = 'h' + currentNode.id;
+			if(/strike/i.test(currentNode.classList.toString())) {
+				currentNode.classList.remove('strike');
+			}
+			sWaveId = 's' + currentNode.id;
+			hWaveId = 'h' + currentNode.id;
 			
-			if(waveId in wavesurfer.regions.list) {
-				wavesurfer.regions.list[waveId].remove();
+			if(hWaveId in wavesurfer.regions.list) {
+				wavesurfer.regions.list[hWaveId].remove();
 			} else {
+				if(sWaveId in wavesurfer.regions.list) {
+					wavesurfer.regions.list[sWaveId].remove();
+				}
 				wavesurfer.addRegion({
-					id: waveId,
+					id: hWaveId,
 					start: currentNode.getAttribute('starttime'),
 					end: currentNode.getAttribute('endtime'),
 					color: 'rgba(255, 255, 0, 0.3)',
@@ -608,10 +653,12 @@ var GLOBAL_ACTIONS = {
 					transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].highlight = false;
 				} else {
 					transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].highlight = true;
+					transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].strike = false;
 				}
 			} else {
 				transcript.results[r_i].alternatives[a_i].timestamps[w_i][3] = {};
 				transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].highlight = true;
+				transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].strike = false;
 			}
 		}
 
@@ -640,6 +687,12 @@ var GLOBAL_ACTIONS = {
 			readWords();
 		}
 	}
+}
+
+function setCookie(key, value) {
+	var d = new Date();
+	d.setTime(d.getTime() + 2592000000);
+	document.cookie = key + '=' + value + '; expires=' + d.toUTCString() + '; path=/';
 }
 
 function toHHMMssmmm(seconds) {
@@ -1041,6 +1094,10 @@ function readWords() {
 	[].forEach.call(document.getElementsByClassName('word'), function(el) {
 		if( el.id < wavesurfer.getCurrentTime() ) {
 			el.classList.add('read');
+			var divEnds = document.getElementById('transcript-area').getBoundingClientRect();
+			if(divEnds.bottom < el.getBoundingClientRect().bottom || divEnds.top > el.getBoundingClientRect().top) {
+				el.scrollIntoView();
+			}
 		} else {
 			el.classList.remove('read');
 		}
@@ -1202,6 +1259,9 @@ document.addEventListener('DOMContentLoaded', function() {
 			color: 'rgba(255, 255, 0, 0)'
 		});
 		resizeBody();
+		if(/hints=off/i.test(document.cookie)) {
+			GLOBAL_ACTIONS['toggle-hints']();
+		}
 		enableUI();
 		[].forEach.call(document.querySelectorAll('.speaker'), function(el) {
 			if(/Unknown Speaker/i.test(el.value)) {

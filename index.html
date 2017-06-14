@@ -57,12 +57,12 @@
 
 			<div id="controls">
 				<span id="speedcontrols">
-					<button class="actionbutton speed" data-action="speedx05">x0.5</button>
-					<button class="actionbutton speed" data-action="speedx1">x1</button>
-					<button class="actionbutton speed" data-action="speedx125">x1.25</button>
-					<button class="actionbutton speed" data-action="speedx15">x1.5</button>
-					<button class="actionbutton speed" data-action="speedx175">x1.75</button>
-					<button class="actionbutton speed" data-action="speedx2">x2</button>
+					<button class="actionbutton speed" data-action="speedx05" title="Change Playback Speed">x0.5</button>
+					<button class="actionbutton speed" data-action="speedx1" title="Change Playback Speed">x1</button>
+					<button class="actionbutton speed" data-action="speedx125" title="Change Playback Speed">x1.25</button>
+					<button class="actionbutton speed" data-action="speedx15" title="Change Playback Speed">x1.5</button>
+					<button class="actionbutton speed" data-action="speedx175" title="Change Playback Speed">x1.75</button>
+					<button class="actionbutton speed" data-action="speedx2" title="Change Playback Speed">x2</button>
 				</span>
 				<span id="playcontrols">
 					<button class="actionbutton" data-action="rewind" title="Rewind (Ctrl + R)"><i class="fa fa-step-backward fa-2x"></i></button>
@@ -70,18 +70,16 @@
 					<span id="volumecontrol" class="actionbutton"><i class="fa fa-volume-up fa-lg"></i><input id="volumerange" type="range" min="0" max="100" value="100"></span>
 				</span>
 				<span class="specialspan">
-					<label class="switch actionbutton specialbutton">
+					<label class="switch actionbutton specialbutton" title="Skip Silent Parts">
 						<input type="checkbox" id="skipsilence-switch" onchange="GLOBAL_ACTIONS['skipsilence']();">
 						<div class="slider"></div>
 					</label>
-					<button class="actionbutton specialbutton" id="bt-skipsilence" onclick="document.getElementById('skipsilence-switch').click();">Skip Silence</button>
-				<!-- </span>
-				<span class="specialspan"> -->
-					<label class="switch actionbutton specialbutton highlight-area">
+					<button class="actionbutton specialbutton" id="bt-skipsilence" onclick="document.getElementById('skipsilence-switch').click();" title="Skip Silent Parts">Skip Silence</button>
+					<label class="switch actionbutton specialbutton highlight-area" title="Play Only Highlights">
 						<input type="checkbox" id="playhighlight-switch" onchange="GLOBAL_ACTIONS['playhighlight']();">
 						<div class="slider"></div>
 					</label>
-					<button class="actionbutton specialbutton highlight-area" id="bt-playhighlight" onclick="document.getElementById('playhighlight-switch').click();">Play Highlights</button>
+					<button class="actionbutton specialbutton highlight-area" id="bt-playhighlight" onclick="document.getElementById('playhighlight-switch').click();" title="Play Only Highlights">Play Highlights</button>
 				</span>
 			</div>
 		</div>
@@ -147,13 +145,17 @@
 						<button class="shortcut-key hidden" id="shift-key">Shift</button>
 						<button class="shortcut-key hidden" id="extra-key"></button>
 						<br />
-						<button class="shortcut-key shortcut-option">Space | Play / Pause</button>
-						<button class="shortcut-key shortcut-option">R | Rewind</button>
-						<button class="shortcut-key shortcut-option">H | Highlight</button>
-						<button class="shortcut-key shortcut-option">J | Strike</button>
-						<button class="shortcut-key shortcut-option">S | Save</button>
-						<button class="shortcut-key shortcut-option">Z | Undo</button>
-						<button class="shortcut-key shortcut-option">Shift + Z | Redo</button>
+						<span id="hints">
+							<button class="shortcut-key shortcut-option">Space | Play / Pause</button>
+							<button class="shortcut-key shortcut-option">R | Rewind</button>
+							<button class="shortcut-key shortcut-option">H | Highlight</button>
+							<button class="shortcut-key shortcut-option">J | Strike</button>
+							<button class="shortcut-key shortcut-option">S | Save</button>
+							<button class="shortcut-key shortcut-option">Z | Undo</button>
+							<button class="shortcut-key shortcut-option">Shift + Z | Redo</button>
+						</span>
+						<br />
+						<button class="shortcut-key shortcut-option" id="hints-switch" data-action="toggle-hints">Turn Hints Off</button>
 					</div>
 				</center>
 			</div>
