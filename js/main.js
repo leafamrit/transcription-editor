@@ -69,12 +69,7 @@ var GLOBAL_ACTIONS = {
 
 	'playhighlight': function() {
 		if(!playHighlights) {
-			for(var i in wavesurfer.regions.list) {
-				if(/^h/i.test(i)) {
-					wavesurfer.seekTo(wavesurfer.regions.list[i].start / wavesurfer.getDuration());
-					break;
-				}
-			}
+			wavesurfer.seekTo(highlights[0] / wavesurfer.getDuration());
 		}
 		playHighlights = !playHighlights;
 	},
@@ -381,14 +376,14 @@ var GLOBAL_ACTIONS = {
 			}
 		}
 
-		function loadFile(url,callback){
-			JSZipUtils.getBinaryContent(url,callback);
+		function loadFile(url, callback){
+			JSZipUtils.getBinaryContent(url, callback);
 		}
 
-		loadFile("./src/template.docx",function(error,content){
+		loadFile("./src/template.docx", function(error, content){
 			if (error) { throw error };
 			var zip = new JSZip(content);
-			var doc=new Docxtemplater().loadZip(zip)
+			var doc = new Docxtemplater().loadZip(zip)
 			doc.setData({ xml: sentence });
 
 			try {
@@ -400,16 +395,16 @@ var GLOBAL_ACTIONS = {
 					stack: error.stack,
 					properties: error.properties,
 				}
-				console.log(JSON.stringify({error: e}));
+				console.log(JSON.stringify( { error: e} ));
 				throw error;
 			}
 
-			var out=doc.getZip().generate({
-				type:"blob",
+			var out = doc.getZip().generate({
+				type: "blob",
 				mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-			}) 
-			saveAs(out,"transcript.docx")
-		})
+			});
+			saveAs(out,"transcript.docx");
+		});
 
 		GLOBAL_ACTIONS['close-export']();
 	},
@@ -725,10 +720,6 @@ function togglePlayPause() {
 }
 
 // set colors to active elements
-function toggleActive(caller) {
-	caller.classList.toggle('active');
-}
-
 function activeSpeed() {
 	var map = {
 		0.5: 0,
@@ -774,23 +765,6 @@ function saveJSON(alertUser) {
 	xhttp.send('transcript=' + JSON.stringify(transcript));
 }
 
-function getSilences() {
-	var peaks = wavesurfer.backend.getPeaks(Math.floor(wavesurfer.backend.buffer.length / 100));
-	var unit = 0.00002267573 * 100;
-	var start, end;
-	for(var i = 0; i < peaks.length; i++) {
-		if(peaks[i] < 0.01) {
-			start = Number(((unit * i) + 0.02).toFixed(1));
-			while(peaks[i] < 0.01) {i++;}
-			end = Number(((unit * i) - 0.02).toFixed(1));
-			if(end > start) {
-				//paintSilence(start, end);
-				silences[start] = Number((end - start).toFixed(1));
-			}
-		}
-	}
-}
-
 function getHighlights() {
 	var keys = Array();
 	var temp = Array();
@@ -814,12 +788,16 @@ function getHighlights() {
 		highlights['0'] = Number((keys[0].start).toFixed(1));
 		for(var i = 1; i < keys.length - 1; i++) {
 			if(Number(keys[i + 1].start.toFixed(1)) > Number(keys[i].end.toFixed(1)) + 0.2) {
+				highlights[(keys[i].end - 0.2).toFixed(1)] = Number(keys[i + 1].start.toFixed(1));
+				highlights[(keys[i].end - 0.1).toFixed(1)] = Number(keys[i + 1].start.toFixed(1));
 				highlights[(keys[i].end).toFixed(1)] = Number(keys[i + 1].start.toFixed(1));
 				highlights[(keys[i].end + 0.1).toFixed(1)] = Number(keys[i + 1].start.toFixed(1));
 				highlights[(keys[i].end + 0.2).toFixed(1)] = Number(keys[i + 1].start.toFixed(1));
 			}
 		}
 		if(keys.length > 1) {
+			highlights[(keys[i].end - 0.2).toFixed(1)] = Number((wavesurfer.getDuration() - 0.1).toFixed(1));
+			highlights[(keys[i].end - 0.1).toFixed(1)] = Number((wavesurfer.getDuration() - 0.1).toFixed(1));
 			highlights[keys[i].end.toFixed(1)] = Number((wavesurfer.getDuration() - 0.1).toFixed(1));
 			highlights[(keys[i].end + 0.1).toFixed(1)] = Number((wavesurfer.getDuration() - 0.1).toFixed(1));
 			highlights[(keys[i].end + 0.2).toFixed(1)] = Number((wavesurfer.getDuration() - 0.1).toFixed(1));
@@ -853,6 +831,8 @@ function getStrikes() {
 		while(i < keys.length - 1 && keys[i].end.toFixed(1) === keys[i + 1].start.toFixed(1)) { i++; }
 		end = Number(keys[i].end.toFixed(1));
 		if(end > (Number(start) + 0.2)) {
+			strikes[(Number(start) - 0.2).toFixed(1)] = end;
+			strikes[(Number(start) - 0.1).toFixed(1)] = end;
 			strikes[start] = end;
 			strikes[(Number(start) + 0.1).toFixed(1)] = end;
 			strikes[(Number(start) + 0.2).toFixed(1)] = end;
@@ -1225,20 +1205,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
 		if(playHighlights) {
 			if( curr in highlights ) {
-				//wavesurfer.skip(highlights[curr]);
 				wavesurfer.backend.seekTo(highlights[curr]);
 			}
 		}
 		
 		if(skipSilences) {
 			if( curr in silences ) {
-				//wavesurfer.skip(silences[curr]);
 				wavesurfer.backend.seekTo(silences[curr]);
 			}
 		}
 
 		if( curr in strikes ) {
-			//wavesurfer.skip(strikes[curr]);
 			wavesurfer.backend.seekTo(strikes[curr]);
 		}
 	});
@@ -1282,10 +1259,9 @@ document.addEventListener('DOMContentLoaded', function() {
 			}
 		});
 		activeSpeed();
-		//getSilences();
 		fillWords();
 		setInterval(function() {
-			//saveJSON(false);
+			saveJSON(false);
 		}, 30000)
 	});
 });

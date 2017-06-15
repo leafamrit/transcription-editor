@@ -11,10 +11,12 @@ var wavesurfer = Object.create(WaveSurfer);
 document.addEventListener('DOMContentLoaded', function () {
     var options = {
         container     : document.querySelector('#waveform'),
-        waveColor     : 'violet',
-        progressColor : 'purple',
         loaderColor   : 'purple',
-        cursorColor   : 'navy',
+        progressColor: '#f4364c',
+        waveColor: '#3f88c5',
+        cursorWidth: 2,
+        cursorColor: '#3f88c5',
+        hideScrollbar: true,
         hideScrollbar: true
     };
 
@@ -72,7 +74,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 if(/audio/i.test(e.dataTransfer.files[0].type)) {
                     filename = e.dataTransfer.files[0].name;
                     wavesurfer.loadBlob(e.dataTransfer.files[0]);
-                    audioloaded = true;
+                    wavesurfer.on('ready', function() {
+                        audioloaded = true;
+                        document.getElementById('audio-loaded').classList.add('loaded');
+                    });
                 } else if(/json/i.test(e.dataTransfer.files[0].type)) {
                     var reader = new FileReader();
                     reader.readAsText(e.dataTransfer.files[0]);
@@ -80,6 +85,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         transcript = reader.result;
                         document.getElementById('transcript').innerHTML = '<code>' + transcript + '</code>';
                         transcriptloaded = true;
+                        document.getElementById('json-loaded').classList.add('loaded');
                     };
                 }
             } else {
@@ -121,6 +127,8 @@ function getSilences() {
             end = Number(((unit * i)).toFixed(1));
             if(end > Number((start + 0.2).toFixed(1))) {
                 //silences[start] = Number((end - start).toFixed(1));
+                silences[(start - 0.2).toFixed(1)] = Number(end.toFixed(1));
+                silences[(start - 0.1).toFixed(1)] = Number(end.toFixed(1));
                 silences[start.toFixed(1)] = Number(end.toFixed(1));
                 silences[(start + 0.1).toFixed(1)] = Number(end.toFixed(1));
                 silences[(start + 0.2).toFixed(1)] = Number(end.toFixed(1));
