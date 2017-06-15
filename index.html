@@ -2,174 +2,174 @@
 <html>
 
 <head>
-	<title>Transcription Editor</title>
+    <title>Transcription Editor</title>
 
-	<!-- CSS -->
-	<link rel="stylesheet" href="css/main.css" />
-	<link rel="stylesheet" href="css/font-awesome.min.css" />
-	<link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Allerta+Stencil" />
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/main.css" />
+    <link rel="stylesheet" href="css/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Allerta+Stencil" />
 
-	<!-- wavesurfer -->
-	<script src="src/wavesurfer.js"></script>
-	<script src="src/webaudio.js"></script>
-	<script src="src/audioelement.js"></script>
-	<script src="src/drawer.js"></script>
-	<script src="src/drawer.canvas.js"></script>
-	<script src="src/wavesurfer.regions.js"></script>
+    <!-- wavesurfer -->
+    <script src="src/wavesurfer.js"></script>
+    <script src="src/webaudio.js"></script>
+    <script src="src/audioelement.js"></script>
+    <script src="src/drawer.js"></script>
+    <script src="src/drawer.canvas.js"></script>
+    <script src="src/wavesurfer.regions.js"></script>
 
-	<!-- FileSaver -->
-	<script src="src/FileSaver.js"></script>
+    <!-- FileSaver -->
+    <script src="src/FileSaver.js"></script>
 
-	<!-- jsPDF -->
-	<script src="src/jspdf.min.js"></script>
+    <!-- jsPDF -->
+    <script src="src/jspdf.min.js"></script>
 
-	<!-- docxtemplater -->
-	<script src="src/docxtemplater.js"></script>
-	<script src="src/jszip.min.js"></script>
-	<script src="src/jszip-utils.js"></script>
+    <!-- docxtemplater -->
+    <script src="src/docxtemplater.js"></script>
+    <script src="src/jszip.min.js"></script>
+    <script src="src/jszip-utils.js"></script>
 
-	<!-- JS -->
-	<script src="js/main.js"></script>
+    <!-- JS -->
+    <script src="js/main.js"></script>
 </head>
 
 <body onresize="resizeBody();">
-	<div id="main-container-mask">
-		<i id="loader" class="fa fa-refresh fa-2x spinning"></i>
-		<br /><br /><br />
-		<span id="loading-percentage"></span>
-		<br /><br /><br />
-		<span id="loading-text"></span>
-	</div>
-	<center>
-		<div class="main-container">
-			<div id="audioclip"></div>
+    <div id="main-container-mask">
+        <i id="loader" class="fa fa-refresh fa-2x spinning"></i>
+        <br /><br /><br />
+        <span id="loading-percentage"></span>
+        <br /><br /><br />
+        <span id="loading-text"></span>
+    </div>
+    <center>
+        <div class="main-container">
+            <div id="audioclip"></div>
 
-			<div id="controls">
-				<span id="speedcontrols">
-					<button class="actionbutton speed" data-action="speedx05" title="Change Playback Speed">x0.5</button>
-					<button class="actionbutton speed" data-action="speedx1" title="Change Playback Speed">x1</button>
-					<button class="actionbutton speed" data-action="speedx125" title="Change Playback Speed">x1.25</button>
-					<button class="actionbutton speed" data-action="speedx15" title="Change Playback Speed">x1.5</button>
-					<button class="actionbutton speed" data-action="speedx175" title="Change Playback Speed">x1.75</button>
-					<button class="actionbutton speed" data-action="speedx2" title="Change Playback Speed">x2</button>
-				</span>
-				<span id="playcontrols">
-					<button class="actionbutton" data-action="rewind" title="Rewind (Ctrl + R)"><i class="fa fa-step-backward fa-2x"></i></button>
-					<button class="actionbutton" data-action="play" title="Play / Pause (Ctrl + Space)"><i class="fa fa-play fa-2x" id="playpause"></i></button>
-					<span id="volumecontrol" class="actionbutton"><i class="fa fa-volume-up fa-lg"></i><input id="volumerange" type="range" min="0" max="100" value="100"></span>
-				</span>
-				<span class="specialspan">
-					<label class="switch actionbutton specialbutton" title="Skip Silent Parts">
-						<input type="checkbox" id="skipsilence-switch" onchange="GLOBAL_ACTIONS['skipsilence']();">
-						<div class="slider"></div>
-					</label>
-					<button class="actionbutton specialbutton" id="bt-skipsilence" onclick="document.getElementById('skipsilence-switch').click();" title="Skip Silent Parts">Skip Silence</button>
-					<label class="switch actionbutton specialbutton highlight-area" title="Play Only Highlights">
-						<input type="checkbox" id="playhighlight-switch" onchange="GLOBAL_ACTIONS['playhighlight']();">
-						<div class="slider"></div>
-					</label>
-					<button class="actionbutton specialbutton highlight-area" id="bt-playhighlight" onclick="document.getElementById('playhighlight-switch').click();" title="Play Only Highlights">Play Highlights</button>
-				</span>
-			</div>
-		</div>
+            <div id="controls">
+                <span id="speedcontrols">
+                    <button class="actionbutton speed" data-action="speedx05" title="Change Playback Speed">x0.5</button>
+                    <button class="actionbutton speed" data-action="speedx1" title="Change Playback Speed">x1</button>
+                    <button class="actionbutton speed" data-action="speedx125" title="Change Playback Speed">x1.25</button>
+                    <button class="actionbutton speed" data-action="speedx15" title="Change Playback Speed">x1.5</button>
+                    <button class="actionbutton speed" data-action="speedx175" title="Change Playback Speed">x1.75</button>
+                    <button class="actionbutton speed" data-action="speedx2" title="Change Playback Speed">x2</button>
+                </span>
+                <span id="playcontrols">
+                    <button class="actionbutton" data-action="rewind" title="Rewind (Ctrl + R)"><i class="fa fa-step-backward fa-2x"></i></button>
+                    <button class="actionbutton" data-action="play" title="Play / Pause (Ctrl + Space)"><i class="fa fa-play fa-2x" id="playpause"></i></button>
+                    <span id="volumecontrol" class="actionbutton"><i class="fa fa-volume-up fa-lg"></i><input id="volumerange" type="range" min="0" max="100" value="100"></span>
+                </span>
+                <span class="specialspan">
+                    <label class="switch actionbutton specialbutton" title="Skip Silent Parts">
+                        <input type="checkbox" id="skipsilence-switch" onchange="GLOBAL_ACTIONS['skipsilence']();">
+                        <div class="slider"></div>
+                    </label>
+                    <button class="actionbutton specialbutton" id="bt-skipsilence" onclick="document.getElementById('skipsilence-switch').click();" title="Skip Silent Parts">Skip Silence</button>
+                    <label class="switch actionbutton specialbutton highlight-area" title="Play Only Highlights">
+                        <input type="checkbox" id="playhighlight-switch" onchange="GLOBAL_ACTIONS['playhighlight']();">
+                        <div class="slider"></div>
+                    </label>
+                    <button class="actionbutton specialbutton highlight-area" id="bt-playhighlight" onclick="document.getElementById('playhighlight-switch').click();" title="Play Only Highlights">Play Highlights</button>
+                </span>
+            </div>
+        </div>
 
 
-		<div class="transcript-container">
-			
-			<div id="text-options">
-				<span id="upper-half-actions">
-					<button class="text-action" data-action="save" title="Save (Ctrl + S)"><i class="fa fa-save fa-2x"></i></button>
-					<button class="text-action" data-action="undo" title="Undo (Ctrl + Z)"><i class="fa fa-undo fa-2x"></i></button>
-					<button class="text-action" data-action="redo" title="Redo (Ctrl + Shift + Z)"><i class="fa fa-repeat fa-2x"></i></button>
-					<button class="text-action" data-action="strike" title="Strikethrough (Ctrl + J)"><i class="fa fa-strikethrough fa-2x"></i></button>
-					<button class="text-action" data-action="highlight" title="Highlight (Ctrl + H)"><i class="fa fa-bookmark fa-2x"></i></button>
-				</span>
-				<span id="lower-half-actions">
-					<a href="./share.html"><button class="text-action" title="Share"><i class="fa fa-share-alt fa-2x"></i></button></a>
-					<button class="text-action" onclick="showExport(event);" title="Export"><i class="fa fa-download fa-2x"></i></button>
-					<button class="text-action" onclick="showFindReplace(event);" title="Find & Replace"><i class="fa fa-search fa-2x"></i></button>
-					<button class="text-action" onclick="showHelp(event);" title="Help"><i class="fa fa-question fa-2x"></i></button>
-				</span>
-			</div>
-			
-			<div id="transcript-area"><datalist id="speakerlist"></datalist></div>
+        <div class="transcript-container">
+            
+            <div id="text-options">
+                <span id="upper-half-actions">
+                    <button class="text-action" data-action="save" title="Save (Ctrl + S)"><i class="fa fa-save fa-2x"></i></button>
+                    <button class="text-action" data-action="undo" title="Undo (Ctrl + Z)"><i class="fa fa-undo fa-2x"></i></button>
+                    <button class="text-action" data-action="redo" title="Redo (Ctrl + Shift + Z)"><i class="fa fa-repeat fa-2x"></i></button>
+                    <button class="text-action" data-action="strike" title="Strikethrough (Ctrl + J)"><i class="fa fa-strikethrough fa-2x"></i></button>
+                    <button class="text-action" data-action="highlight" title="Highlight (Ctrl + H)"><i class="fa fa-bookmark fa-2x"></i></button>
+                </span>
+                <span id="lower-half-actions">
+                    <a href="./share.html"><button class="text-action" title="Share"><i class="fa fa-share-alt fa-2x"></i></button></a>
+                    <button class="text-action" onclick="showExport(event);" title="Export"><i class="fa fa-download fa-2x"></i></button>
+                    <button class="text-action" onclick="showFindReplace(event);" title="Find & Replace"><i class="fa fa-search fa-2x"></i></button>
+                    <button class="text-action" onclick="showHelp(event);" title="Help"><i class="fa fa-question fa-2x"></i></button>
+                </span>
+            </div>
+            
+            <div id="transcript-area"><datalist id="speakerlist"></datalist></div>
 
-			<div id="find-replace-wrapper" class="extra-options-wrapper hidden invisible">
-				<div class="close-bt-wrapper">
-					<button class="close-button" data-action="close-find-replace"><i class="fa fa-close"></i></button>
-				</div>
-				<div class="extra-options">
-					<form id="find-replace-form">
-						<input class="extra-options-input" placeholder="Find" type="text" id="find" /><br />
-						<input class="extra-options-input" placeholder="Replace" type="text" id="replace" /><br />
-						<input class="extra-options-input close-button" type="submit" id="replace-found" value="Replace" />
-					</form>
-				</div>
-			</div>
+            <div id="find-replace-wrapper" class="extra-options-wrapper hidden invisible">
+                <div class="close-bt-wrapper">
+                    <button class="close-button" data-action="close-find-replace"><i class="fa fa-close"></i></button>
+                </div>
+                <div class="extra-options">
+                    <form id="find-replace-form">
+                        <input class="extra-options-input" placeholder="Find" type="text" id="find" /><br />
+                        <input class="extra-options-input" placeholder="Replace" type="text" id="replace" /><br />
+                        <input class="extra-options-input close-button" type="submit" id="replace-found" value="Replace" />
+                    </form>
+                </div>
+            </div>
 
-			<div id="export-wrapper" class="extra-options-wrapper hidden invisible">
-				<div class="close-bt-wrapper">
-					<button class="close-button" data-action="close-export"><i class="fa fa-close"></i></button>
-				</div>
-				<div class="extra-options">
-					<table>
-						<tr>
-							<td><button class="export-action" data-action="export-pdf" title="Save as PDF">PDF</button></td>
-							<td><button class="export-action" data-action="export-doc" title="Save as Word File">DOC</button></td>
-						</tr>
-						<tr>
-							<td><button class="export-action" data-action="export-srt" title="Save as SRT">SRT</button></td>
-							<td><button class="export-action" data-action="export-vtt" title="Save as VTT">VTT</i></button></td>
-						</tr>
-					</table>
-					<input type="checkbox" id="export-highlight" style="vertical-align: sub;"><button class="export-action" style="font-size: 0.7em; text-align: left; margin: 0;">Export only Highlights</button>
-				</div>
-			</div>
+            <div id="export-wrapper" class="extra-options-wrapper hidden invisible">
+                <div class="close-bt-wrapper">
+                    <button class="close-button" data-action="close-export"><i class="fa fa-close"></i></button>
+                </div>
+                <div class="extra-options">
+                    <table>
+                        <tr>
+                            <td><button class="export-action" data-action="export-pdf" title="Save as PDF">PDF</button></td>
+                            <td><button class="export-action" data-action="export-doc" title="Save as Word File">DOC</button></td>
+                        </tr>
+                        <tr>
+                            <td><button class="export-action" data-action="export-srt" title="Save as SRT">SRT</button></td>
+                            <td><button class="export-action" data-action="export-vtt" title="Save as VTT">VTT</i></button></td>
+                        </tr>
+                    </table>
+                    <input type="checkbox" id="export-highlight" style="vertical-align: sub;"><button class="export-action" style="font-size: 0.7em; text-align: left; margin: 0;">Export only Highlights</button>
+                </div>
+            </div>
 
-			<div id="shortcut-wrapper" class="shortcut-wrapper hidden">
-				<center>
-					<div class="shortcuts">
-						<button class="shortcut-key" id="ctrl-key">Ctrl</button>
-						<button class="shortcut-key hidden" id="space-key">Space</button>
-						<button class="shortcut-key hidden" id="shift-key">Shift</button>
-						<button class="shortcut-key hidden" id="extra-key"></button>
-						<br />
-						<span id="hints">
-							<button class="shortcut-key shortcut-option">Space | Play / Pause</button>
-							<button class="shortcut-key shortcut-option">R | Rewind</button>
-							<button class="shortcut-key shortcut-option">H | Highlight</button>
-							<button class="shortcut-key shortcut-option">J | Strike</button>
-							<button class="shortcut-key shortcut-option">S | Save</button>
-							<button class="shortcut-key shortcut-option">Z | Undo</button>
-							<button class="shortcut-key shortcut-option">Shift + Z | Redo</button>
-						</span>
-						<br />
-						<button class="shortcut-key shortcut-option" id="hints-switch" data-action="toggle-hints">Turn Hints Off</button>
-					</div>
-				</center>
-			</div>
+            <div id="shortcut-wrapper" class="shortcut-wrapper hidden">
+                <center>
+                    <div class="shortcuts">
+                        <button class="shortcut-key" id="ctrl-key">Ctrl</button>
+                        <button class="shortcut-key hidden" id="space-key">Space</button>
+                        <button class="shortcut-key hidden" id="shift-key">Shift</button>
+                        <button class="shortcut-key hidden" id="extra-key"></button>
+                        <br />
+                        <span id="hints">
+                            <button class="shortcut-key shortcut-option">Space | Play / Pause</button>
+                            <button class="shortcut-key shortcut-option">R | Rewind</button>
+                            <button class="shortcut-key shortcut-option">H | Highlight</button>
+                            <button class="shortcut-key shortcut-option">J | Strike</button>
+                            <button class="shortcut-key shortcut-option">S | Save</button>
+                            <button class="shortcut-key shortcut-option">Z | Undo</button>
+                            <button class="shortcut-key shortcut-option">Shift + Z | Redo</button>
+                        </span>
+                        <br />
+                        <button class="shortcut-key shortcut-option" id="hints-switch" data-action="toggle-hints">Turn Hints Off</button>
+                    </div>
+                </center>
+            </div>
 
-			<div id="help-wrapper" class="help-wrapper hidden invisible">
-				<center>
-					<div class="help">
-						<div class="close-bt-wrapper">
-							<button class="close-button" data-action="close-help"><i class="fa fa-close"></i></button>
-						</div>
-						<br />
-						Ctrl + Space : Play / Pause<br />
-						Ctrl + R : Skip back 5 seconds<br />
-						Ctrl + H : Highlight<br />
-						Ctrl + J : Strike<br />
-						Ctrl + Z : Undo<br />
-						Ctrl + Shift + Z : Redo<br />
-						Ctrl + S : Save<br />
-						<br />
-					</div>
-				</center>
-			</div>
+            <div id="help-wrapper" class="help-wrapper hidden invisible">
+                <center>
+                    <div class="help">
+                        <div class="close-bt-wrapper">
+                            <button class="close-button" data-action="close-help"><i class="fa fa-close"></i></button>
+                        </div>
+                        <br />
+                        Ctrl + Space : Play / Pause<br />
+                        Ctrl + R : Skip back 5 seconds<br />
+                        Ctrl + H : Highlight<br />
+                        Ctrl + J : Strike<br />
+                        Ctrl + Z : Undo<br />
+                        Ctrl + Shift + Z : Redo<br />
+                        Ctrl + S : Save<br />
+                        <br />
+                    </div>
+                </center>
+            </div>
 
-		</div>
-	</center>
+        </div>
+    </center>
 </body>
 
 </html>
