@@ -488,7 +488,7 @@ function getHighlights() {
     if(keys.length > 0) {
         highlights['0'] = Number((keys[0].start).toFixed(1));
         for(var i = 0; i < keys.length - 1; i++) {
-            if(Number(keys[i + 1].start.toFixed(1)) > Number(keys[i].end.toFixed(1)) + 0.2) {
+            if(Number(keys[i + 1].start.toFixed(1)) > Number(keys[i].end + 0.2).toFixed(1)) {
                 // give a 0.5 second window to compare and skip
                 highlights[(keys[i].end - 0.2).toFixed(1)] = Number(keys[i + 1].start.toFixed(1));
                 highlights[(keys[i].end - 0.1).toFixed(1)] = Number(keys[i + 1].start.toFixed(1));
@@ -724,17 +724,28 @@ function fillWords() {
 }
 
 function readWords() {
-    [].forEach.call(document.getElementsByClassName('word'), function(el) {
-        if( el.id < wavesurfer.getCurrentTime() ) {
-            el.classList.add('read');
+    readWord = document.getElementsByClassName('read');
+    try {
+        currWord = readWord[0] ? (readWord[readWord.length - 1].nextSibling ? readWord[readWord.length - 1].nextSibling : readWord[readWord.length - 1].parentElement.nextSibling.nextSibling.nextSibling.firstChild) : document.getElementsByClassName('word')[0];
+    } catch (exception) {
+        currWord = document.getElementsByClassName('word')[0];
+    }
+    if(currWord.id < wavesurfer.getCurrentTime()) {
+        while(currWord && currWord.id < wavesurfer.getCurrentTime()) {
+            currWord.classList.add('read');
             var divEnds = document.getElementById('transcript-area').getBoundingClientRect();
-            if(divEnds.bottom < el.getBoundingClientRect().bottom || divEnds.top > el.getBoundingClientRect().top) {
-                el.scrollIntoView();
-            }
-        } else {
-            el.classList.remove('read');
+            currWord = currWord.nextSibling ? currWord.nextSibling : currWord.parentElement.nextSibling.nextSibling.nextSibling.firstChild;
         }
-    });
+        if(divEnds.bottom < currWord.getBoundingClientRect().bottom || divEnds.top > currWord.getBoundingClientRect().top) {
+            currWord.scrollIntoView();
+        }
+    } else {
+        [].forEach.call(document.querySelectorAll('.read'), function(el) {
+            if(el.id > wavesurfer.getCurrentTime()) {
+                el.classList.remove('read');
+            }
+        })
+    }
 }
 
 function checkDeepLink() {

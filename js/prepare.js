@@ -94,7 +94,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             setTimeout(function() {
                 wavesurfer.fireEvent('ready');
-            }, 10);
+            }, 100);
         },
 
         // Drag-over event
