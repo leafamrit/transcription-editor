@@ -18,13 +18,13 @@ var undoAction = false;
 var GLOBAL_ACTIONS = {
     
     'play': function() {
-        wavesurfer.playPause();
         togglePlayPause();
+        wavesurfer.playPause();
     },
 
     'stop': function() {
-        wavesurfer.stop();
         togglePlayPause();
+        wavesurfer.stop();
         readWords();
     },
 
@@ -105,8 +105,8 @@ var GLOBAL_ACTIONS = {
     },
 
     'export-srt': function() {
-        var results = transcript.results;
-        var speakers = transcript.speaker_labels;
+        var results = transcript.results[0].results;
+        var speakers = transcript.results[0].speaker_labels;
         var counter = 1;
         var i = 0;
         var srt = Array();
@@ -167,8 +167,8 @@ var GLOBAL_ACTIONS = {
     },
 
     'export-vtt': function() {
-        var results = transcript.results;
-        var speakers = transcript.speaker_labels;
+        var results = transcript.results[0].results;
+        var speakers = transcript.results[0].speaker_labels;
         var counter = 1;
         var i = 0;
         var vtt = Array();
@@ -231,8 +231,8 @@ var GLOBAL_ACTIONS = {
     },
 
     'export-pdf': function() {
-        var results = transcript.results;
-        var speakers = transcript.speaker_labels;
+        var results = transcript.results[0].results;
+        var speakers = transcript.results[0].speaker_labels;
         var words = Array();
         var currentSpeaker, nextSpeaker;
         var sentence = '';
@@ -308,8 +308,8 @@ var GLOBAL_ACTIONS = {
     },
 
     'export-doc': function() {
-        var results = transcript.results;
-        var speakers = transcript.speaker_labels;
+        var results = transcript.results[0].results;
+        var speakers = transcript.results[0].speaker_labels;
         var words = Array();
         var currentSpeaker, nextSpeaker;
         var sentence = '';
@@ -420,11 +420,11 @@ var GLOBAL_ACTIONS = {
 
     'strike': function() {
         if(window.getSelection && window.getSelection().toString().split('').length > 1) {
-            var startElement = window.getSelection().baseNode.parentElement;
+            var startElement = window.getSelection().anchorNode.parentElement;
             if(startElement.classList[0] != 'word') {
                 startElement = startElement.nextSibling;
             }
-            var endElement = window.getSelection().extentNode.parentElement;
+            var endElement = window.getSelection().focusNode.parentElement;
             if(endElement.classList[0] != 'word') {
                 endElement = endElement.nextSibling;
             }
@@ -462,17 +462,17 @@ var GLOBAL_ACTIONS = {
                 var w_i = currentNode.getAttribute('wordindex');
                 
                 pastStack.push(JSON.stringify(transcript));
-                if(transcript.results[r_i].alternatives[a_i].timestamps[w_i][3]) {
-                    if(transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].strike) {
-                        transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].strike = false;
+                if(transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][3]) {
+                    if(transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][3].strike) {
+                        transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][3].strike = false;
                     } else {
-                        transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].strike = true;
-                        transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].highlight = false;
+                        transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][3].strike = true;
+                        transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][3].highlight = false;
                     }
                 } else {
-                    transcript.results[r_i].alternatives[a_i].timestamps[w_i][3] = {};
-                    transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].strike = true;
-                    transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].highlight = false;
+                    transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][3] = {};
+                    transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][3].strike = true;
+                    transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][3].highlight = false;
                 }
 
                 if(currentNode.nextSibling) {
@@ -521,17 +521,17 @@ var GLOBAL_ACTIONS = {
             var w_i = currentNode.getAttribute('wordindex');
 
             pastStack.push(JSON.stringify(transcript));
-            if(transcript.results[r_i].alternatives[a_i].timestamps[w_i][3]) {
-                if(transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].strike) {
-                    transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].strike = false;
+            if(transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][3]) {
+                if(transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][3].strike) {
+                    transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][3].strike = false;
                 } else {
-                    transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].strike = true;
-                    transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].highlight = false;
+                    transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][3].strike = true;
+                    transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][3].highlight = false;
                 }
             } else {
-                transcript.results[r_i].alternatives[a_i].timestamps[w_i][3] = {};
-                transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].strike = true;
-                transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].highlight = false;
+                transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][3] = {};
+                transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][3].strike = true;
+                transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][3].highlight = false;
             }
         }
 
@@ -541,11 +541,11 @@ var GLOBAL_ACTIONS = {
 
     'highlight': function() {
         if(window.getSelection && window.getSelection().toString().split('').length > 1) {
-            var startElement = window.getSelection().baseNode.parentElement;
+            var startElement = window.getSelection().anchorNode.parentElement;
             while(startElement.classList[0] != 'word') {
                 startElement = startElement.nextSibling;
             }
-            var endElement = window.getSelection().extentNode.parentElement;
+            var endElement = window.getSelection().focusNode.parentElement;
             while(endElement.classList[0] != 'word') {
                 endElement = endElement.nextSibling;
             }
@@ -583,17 +583,17 @@ var GLOBAL_ACTIONS = {
                 var w_i = currentNode.getAttribute('wordindex');
                 
                 pastStack.push(JSON.stringify(transcript));
-                if(transcript.results[r_i].alternatives[a_i].timestamps[w_i][3]) {
-                    if(transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].highlight) {
-                        transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].highlight = false;
+                if(transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][3]) {
+                    if(transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][3].highlight) {
+                        transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][3].highlight = false;
                     } else {
-                        transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].highlight = true;
-                        transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].strike = false;
+                        transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][3].highlight = true;
+                        transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][3].strike = false;
                     }
                 } else {
-                    transcript.results[r_i].alternatives[a_i].timestamps[w_i][3] = {};
-                    transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].highlight = true;
-                    transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].strike = false;
+                    transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][3] = {};
+                    transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][3].highlight = true;
+                    transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][3].strike = false;
                 }
 
                 if(currentNode.nextSibling) {
@@ -643,17 +643,17 @@ var GLOBAL_ACTIONS = {
             var w_i = currentNode.getAttribute('wordindex');
             
             pastStack.push(JSON.stringify(transcript));
-            if(transcript.results[r_i].alternatives[a_i].timestamps[w_i][3]) {
-                if(transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].highlight) {
-                    transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].highlight = false;
+            if(transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][3]) {
+                if(transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][3].highlight) {
+                    transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][3].highlight = false;
                 } else {
-                    transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].highlight = true;
-                    transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].strike = false;
+                    transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][3].highlight = true;
+                    transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][3].strike = false;
                 }
             } else {
-                transcript.results[r_i].alternatives[a_i].timestamps[w_i][3] = {};
-                transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].highlight = true;
-                transcript.results[r_i].alternatives[a_i].timestamps[w_i][3].strike = false;
+                transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][3] = {};
+                transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][3].highlight = true;
+                transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][3].strike = false;
             }
         }
 
@@ -878,7 +878,7 @@ function showHelp(event) {
 function enableUI() {
     document.getElementById('loader').classList.toggle('spinning');
     document.getElementById('main-container-mask').classList.toggle('invisible');
-    setInterval(function() {
+    setTimeout(function() {
         document.getElementById('main-container-mask').setAttribute('style', 'display: none');
     }, 30);
 }
@@ -897,8 +897,8 @@ function resizeBody() {
 
 // fill editor with words from transcript
 function fillWords() {
-    var results = transcript.results;
-    var speakers = transcript.speaker_labels;
+    var results = transcript.results[0].results;
+    var speakers = transcript.results[0].speaker_labels;
     var words = Array();
     var toReach = Array();
     var maxAlternativeIndex;
@@ -977,7 +977,7 @@ function fillWords() {
             currWord.setAttribute('title', word[1] + " - " + word[2]);
             currWord.setAttribute('tabindex', '-1');
             currWord.addEventListener('focus', function() { seekToWord(this); });
-            currWord.setAttribute('id', word[1]);
+            currWord.id = word[1];
             currWord.classList.add('word');
 
             // check if word highlighted or striked
@@ -1062,7 +1062,7 @@ function fillWords() {
             var w_i = this.getAttribute('wordindex');
             
             // check if value has changed
-            if( this.innerText != transcript.results[r_i].alternatives[a_i].timestamps[w_i][0]) {
+            if( this.innerText != transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][0]) {
                 // push current content to undo stack if change not caused by undo
                 if(!undoAction) {
                     pastStack.push(JSON.stringify(transcript));
@@ -1074,14 +1074,14 @@ function fillWords() {
 
                 // add new value to chunk
                 var newValue = this.innerText;
-                transcript.results[r_i].alternatives[a_i].timestamps[w_i][0] = newValue;
+                transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][0] = newValue;
 
                 // generate new chunk content
                 var newTranscript = '';
-                transcript.results[r_i].alternatives[a_i].timestamps.forEach(function(word) {
+                transcript.results[0].results[r_i].alternatives[a_i].timestamps.forEach(function(word) {
                     newTranscript += word[0] + ' ';
                 });
-                transcript.results[r_i].alternatives[a_i].transcript = newTranscript;
+                transcript.results[0].results[r_i].alternatives[a_i].transcript = newTranscript;
 
                 // approximate timestamps
                 var endTime, startTime;
@@ -1094,19 +1094,19 @@ function fillWords() {
                     } else if(w_i === '0') {
                         // start time of current changed to end of previous chunk
                         var pre_r_i = Number(r_i) - 1;
-                        var pre_index = transcript.results[pre_r_i].alternatives[0].timestamps.length - 1;
-                        startTime = transcript.results[pre_r_i].alternatives[0].timestamps[pre_index][2];
+                        var pre_index = transcript.results[0].results[pre_r_i].alternatives[0].timestamps.length - 1;
+                        startTime = transcript.results[0].results[pre_r_i].alternatives[0].timestamps[pre_index][2];
                     } else {
                         var pre_index = Number(w_i) - 1;
-                        startTime = transcript.results[r_i].alternatives[0].timestamps[pre_index][2];
+                        startTime = transcript.results[0].results[r_i].alternatives[0].timestamps[pre_index][2];
                     }
-                    transcript.results[r_i].alternatives[a_i].timestamps[w_i][1] = startTime;
+                    transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][1] = startTime;
                     this.setAttribute('starttime', startTime);
                     this.id = startTime;
                     this.setAttribute('title', startTime + ' - ' + this.getAttribute('endtime'));
                 } else if(this.nextSibling) {
                     endTime = this.nextSibling.getAttribute('starttime');
-                    transcript.results[r_i].alternatives[a_i].timestamps[w_i][2] = endTime;
+                    transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][2] = endTime;
                     this.setAttribute('endtime', endTime);
                     this.setAttribute('title', this.getAttribute('starttime') + ' - ' + endTime);
                 }
@@ -1150,17 +1150,17 @@ function changeInput(caller) {
         changed = false;
         caller.value = 'Unknown Speaker ' + (globaluksp++);
         var startIndex = caller.getAttribute('speakerindex');
-        var endIndex = caller.nextSibling.nextSibling.nextSibling ? Number(caller.nextSibling.nextSibling.nextSibling.getAttribute('speakerindex')) : transcript.speaker_labels.length;
+        var endIndex = caller.nextSibling.nextSibling.nextSibling ? Number(caller.nextSibling.nextSibling.nextSibling.getAttribute('speakerindex')) : transcript.results[0].speaker_labels.length;
 
         for(var i = startIndex; i < endIndex; i++) {
-            transcript.speaker_labels[i].speaker = caller.value;
+            transcript.results[0].speaker_labels[i].speaker = caller.value;
         }
     } else {
         var input = caller.value;
         var oldName = caller.getAttribute('speakername');
         pastStack.push(JSON.stringify(transcript));
         var inputLength = (caller.value.length * 8) + 30;
-        transcript.speaker_labels.forEach(function(el) {
+        transcript.results[0].speaker_labels.forEach(function(el) {
             if(el.speaker == oldName) {
                 el.speaker = input;
             }
@@ -1193,10 +1193,10 @@ function handleValue(caller) {
         changed = false;
         caller.value = 'Unknown Speaker ' + (globaluksp++);
         var startIndex = caller.getAttribute('speakerindex');
-        var endIndex = caller.nextSibling.nextSibling.nextSibling ? Number(caller.nextSibling.nextSibling.nextSibling.getAttribute('speakerindex')) : transcript.speaker_labels.length;
+        var endIndex = caller.nextSibling.nextSibling.nextSibling ? Number(caller.nextSibling.nextSibling.nextSibling.getAttribute('speakerindex')) : transcript.results[0].speaker_labels.length;
 
         for(var i = startIndex; i < endIndex; i++) {
-            transcript.speaker_labels[i].speaker = caller.value;
+            transcript.results[0].speaker_labels[i].speaker = caller.value;
         }
 
         fillWords();
@@ -1236,7 +1236,7 @@ document.addEventListener('DOMContentLoaded', function() {
         cursorWidth: 2,
         cursorColor: '#3f88c5',
         hideScrollbar: true,
-        backend: 'AudioElement',
+        backend: 'MediaElement',
         height: 95
     };
 
@@ -1244,14 +1244,14 @@ document.addEventListener('DOMContentLoaded', function() {
     wavesurfer.init(options);
 
     // load metadata and audio
-    loadJSON('transcript/2_meta.json', function(text) {
+    loadJSON('transcript/testimony_meta.json', function(text) {
         var metadata = JSON.parse(text);
         silences = metadata.silences;
-        wavesurfer.load('audio/2.wav', metadata.peaks, 'none');
+        wavesurfer.load('audio/testimony.mp3', metadata.peaks, 'none');
     });
 
     // load transcript
-    loadJSON('transcript/2.json', function(text) {
+    loadJSON('transcript/testimony.json', function(text) {
         transcript = JSON.parse(text);
         pastStack.push(JSON.stringify(transcript));
     });
@@ -1309,7 +1309,7 @@ document.addEventListener('DOMContentLoaded', function() {
         activeSpeed();
         fillWords();
         setInterval(function() {
-            saveJSON(false);
+            //saveJSON(false);
         }, 30000)
     });
 });

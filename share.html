@@ -2,14 +2,7 @@
 <html>
 
 <head>
-    <title>Transcription Viewer</title>
-
-    <!-- NO CACHE META | REMOVE ONCE DONE -->
-    <meta http-equiv="cache-control" content="max-age=0" />
-    <meta http-equiv="cache-control" content="no-cache" />
-    <meta http-equiv="expires" content="0" />
-    <meta http-equiv="expires" content="Tue, 01 Jan 1980 1:00:00 GMT" />
-    <meta http-equiv="pragma" content="no-cache" />
+    <title>Transcription Editor</title>
 
     <!-- CSS -->
     <link rel="stylesheet" href="css/main.css" />
@@ -17,12 +10,20 @@
     <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Allerta+Stencil" />
 
     <!-- wavesurfer -->
-    <script src="src/wavesurfer.js"></script>
+    <!-- <script src="src/wavesurfer.js"></script>
     <script src="src/webaudio.js"></script>
     <script src="src/audioelement.js"></script>
     <script src="src/drawer.js"></script>
     <script src="src/drawer.canvas.js"></script>
+    <script src="src/wavesurfer.regions.js"></script> -->
+    <script src="src/wavesurfer.js"></script>
+    <script src="src/util.js"></script>
+    <script src="src/drawer.js"></script>
+    <script src="src/drawer.multicanvas.js"></script>
+    <script src="src/webaudio.js"></script>
+    <script src="src/mediaelement.js"></script>
     <script src="src/wavesurfer.regions.js"></script>
+
 
     <!-- FileSaver -->
     <script src="src/FileSaver.js"></script>
@@ -42,13 +43,9 @@
 <body onresize="resizeBody();">
     <div id="main-container-mask">
         <i id="loader" class="fa fa-refresh fa-2x spinning"></i>
-        <br />
-        <br />
-        <br />
+        <br /><br /><br />
         <span id="loading-percentage"></span>
-        <br />
-        <br />
-        <br />
+        <br /><br /><br />
         <span id="loading-text"></span>
     </div>
     <center>
@@ -57,20 +54,30 @@
 
             <div id="controls">
                 <span id="speedcontrols">
-                    <button class="actionbutton speed" data-action="speedx05">x0.5</button>
-                    <button class="actionbutton speed" data-action="speedx1">x1</button>
-                    <button class="actionbutton speed" data-action="speedx125">x1.25</button>
-                    <button class="actionbutton speed" data-action="speedx15">x1.5</button>
-                    <button class="actionbutton speed" data-action="speedx175">x1.75</button>
-                    <button class="actionbutton speed" data-action="speedx2">x2</button>
+                    <button class="actionbutton speed" data-action="speedx05" title="Change Playback Speed">x0.5</button>
+                    <button class="actionbutton speed" data-action="speedx1" title="Change Playback Speed">x1</button>
+                    <button class="actionbutton speed" data-action="speedx125" title="Change Playback Speed">x1.25</button>
+                    <button class="actionbutton speed" data-action="speedx15" title="Change Playback Speed">x1.5</button>
+                    <button class="actionbutton speed" data-action="speedx175" title="Change Playback Speed">x1.75</button>
+                    <button class="actionbutton speed" data-action="speedx2" title="Change Playback Speed">x2</button>
                 </span>
                 <span id="playcontrols">
                     <button class="actionbutton" data-action="rewind" title="Rewind (Ctrl + R)"><i class="fa fa-step-backward fa-2x"></i></button>
                     <button class="actionbutton" data-action="play" title="Play / Pause (Ctrl + Space)"><i class="fa fa-play fa-2x" id="playpause"></i></button>
                     <span id="volumecontrol" class="actionbutton"><i class="fa fa-volume-up fa-lg"></i><input id="volumerange" type="range" min="0" max="100" value="100"></span>
                 </span>
-                <button class="actionbutton specialbutton" id="bt-skipsilence" data-action="skipsilence">Skip Silence</button>
-                <button class="actionbutton specialbutton" id="bt-playhighlight" data-action="playhighlight">Play Highlights</button>
+                <span class="specialspan">
+                    <label class="switch actionbutton specialbutton" title="Skip Silent Parts">
+                        <input type="checkbox" id="skipsilence-switch" onchange="GLOBAL_ACTIONS['skipsilence']();">
+                        <div class="slider"></div>
+                    </label>
+                    <button class="actionbutton specialbutton" id="bt-skipsilence" onclick="document.getElementById('skipsilence-switch').click();" title="Skip Silent Parts">Skip Silence</button>
+                    <label class="switch actionbutton specialbutton highlight-area" title="Play Only Highlights">
+                        <input type="checkbox" id="playhighlight-switch" onchange="GLOBAL_ACTIONS['playhighlight']();">
+                        <div class="slider"></div>
+                    </label>
+                    <button class="actionbutton specialbutton highlight-area" id="bt-playhighlight" onclick="document.getElementById('playhighlight-switch').click();" title="Play Only Highlights">Play Highlights</button>
+                </span>
             </div>
         </div>
 
@@ -78,11 +85,21 @@
         <div class="transcript-container">
             
             <div id="text-options">
-                <button class="text-action" title="Share"><i class="fa fa-share-alt fa-2x"></i></button>
-                <button class="text-action" onclick="showExport(event);" title="Export"><i class="fa fa-download fa-2x"></i></button>
+                <span id="upper-half-actions">
+                    <button class="text-action" data-action="save" title="Save (Ctrl + S)"><i class="fa fa-save fa-2x"></i></button>
+                    <button class="text-action" data-action="undo" title="Undo (Ctrl + Z)"><i class="fa fa-undo fa-2x"></i></button>
+                    <button class="text-action" data-action="redo" title="Redo (Ctrl + Shift + Z)"><i class="fa fa-repeat fa-2x"></i></button>
+                    <button class="text-action" data-action="strike" title="Strikethrough (Ctrl + J)"><i class="fa fa-strikethrough fa-2x"></i></button>
+                    <button class="text-action" data-action="highlight" title="Highlight (Ctrl + H)"><i class="fa fa-bookmark fa-2x"></i></button>
+                </span>
+                <span id="lower-half-actions">
+                    <a href="./share.html"><button class="text-action" title="Share"><i class="fa fa-share-alt fa-2x"></i></button></a>
+                    <button class="text-action" onclick="showExport(event);" title="Export"><i class="fa fa-download fa-2x"></i></button>
+                    <button class="text-action" onclick="showHelp(event);" title="Help"><i class="fa fa-question fa-2x"></i></button>
+                </span>
             </div>
             
-            <div id="transcript-area" style="cursor: pointer;"></div>
+            <div id="transcript-area"><datalist id="speakerlist"></datalist></div>
 
             <div id="export-wrapper" class="extra-options-wrapper hidden invisible">
                 <div class="close-bt-wrapper">
@@ -110,6 +127,37 @@
                         <button class="shortcut-key hidden" id="space-key">Space</button>
                         <button class="shortcut-key hidden" id="shift-key">Shift</button>
                         <button class="shortcut-key hidden" id="extra-key"></button>
+                        <br />
+                        <span id="hints">
+                            <button class="shortcut-key shortcut-option">Space | Play / Pause</button>
+                            <button class="shortcut-key shortcut-option">R | Rewind</button>
+                            <button class="shortcut-key shortcut-option">H | Highlight</button>
+                            <button class="shortcut-key shortcut-option">J | Strike</button>
+                            <button class="shortcut-key shortcut-option">S | Save</button>
+                            <button class="shortcut-key shortcut-option">Z | Undo</button>
+                            <button class="shortcut-key shortcut-option">Shift + Z | Redo</button>
+                        </span>
+                        <br />
+                        <button class="shortcut-key shortcut-option" id="hints-switch" data-action="toggle-hints">Turn Hints Off</button>
+                    </div>
+                </center>
+            </div>
+
+            <div id="help-wrapper" class="help-wrapper hidden invisible">
+                <center>
+                    <div class="help">
+                        <div class="close-bt-wrapper">
+                            <button class="close-button" data-action="close-help"><i class="fa fa-close"></i></button>
+                        </div>
+                        <br />
+                        Ctrl + Space : Play / Pause<br />
+                        Ctrl + R : Skip back 5 seconds<br />
+                        Ctrl + H : Highlight<br />
+                        Ctrl + J : Strike<br />
+                        Ctrl + Z : Undo<br />
+                        Ctrl + Shift + Z : Redo<br />
+                        Ctrl + S : Save<br />
+                        <br />
                     </div>
                 </center>
             </div>

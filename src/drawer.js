@@ -10,6 +10,7 @@ WaveSurfer.Drawer = {
 
         this.lastPos = 0;
 
+        this.initDrawer(params);
         this.createWrapper();
         this.createElements();
     },
@@ -38,10 +39,28 @@ WaveSurfer.Drawer = {
         this.setupWrapperEvents();
     },
 
-    handleEvent: function (e) {
-        e.preventDefault();
+    handleEvent: function (e, noPrevent) {
+        !noPrevent && e.preventDefault();
+
+        var clientX = e.targetTouches ? e.targetTouches[0].clientX : e.clientX;
         var bbox = this.wrapper.getBoundingClientRect();
-        return ((e.clientX - bbox.left + this.wrapper.scrollLeft) / this.wrapper.scrollWidth) || 0;
+
+        var nominalWidth = this.width;
+        var parentWidth = this.getWidth();
+
+        var progress;
+
+        if (!this.params.fillParent && nominalWidth < parentWidth) {
+            progress = ((clientX - bbox.left) * this.params.pixelRatio / nominalWidth) || 0;
+
+            if (progress > 1) {
+                progress = 1;
+            }
+        } else {
+            progress = ((clientX - bbox.left + this.wrapper.scrollLeft) / this.wrapper.scrollWidth) || 0;
+        }
+
+        return progress;
     },
 
     setupWrapperEvents: function () {
@@ -68,20 +87,17 @@ WaveSurfer.Drawer = {
         });
     },
 
-    drawPeaks: function (peaks, length) {
-        this.resetScroll();
+    drawPeaks: function (peaks, length, start, end) {
         this.setWidth(length);
-        if (this.params.normalize) {
-            var max = WaveSurfer.util.max(peaks);
-        } else {
-            max = 1;
-        }
-        this.drawWave(peaks, max);
+
+        this.params.barWidth ?
+            this.drawBars(peaks, 0, start, end) :
+            this.drawWave(peaks, 0, start, end);
     },
 
     style: function (el, styles) {
         Object.keys(styles).forEach(function (prop) {
-            if (el.style[prop] != styles[prop]) {
+            if (el.style[prop] !== styles[prop]) {
                 el.style[prop] = styles[prop];
             }
         });
@@ -128,12 +144,18 @@ WaveSurfer.Drawer = {
 
     },
 
+    getScrollX: function() {
+        return Math.round(this.wrapper.scrollLeft * this.params.pixelRatio);
+    },
+
     getWidth: function () {
         return Math.round(this.container.clientWidth * this.params.pixelRatio);
     },
 
     setWidth: function (width) {
-        if (width == this.width) { return; }
+        if (this.width == width) {
+          return;
+        }
 
         this.width = width;
 
@@ -147,7 +169,16 @@ WaveSurfer.Drawer = {
             });
         }
 
-        this.updateWidth();
+        this.updateSize();
+    },
+
+    setHeight: function (height) {
+        if (height == this.height) { return; }
+        this.height = height;
+        this.style(this.wrapper, {
+            height: ~~(this.height / this.params.pixelRatio) + 'px'
+        });
+        this.updateSize();
     },
 
     progress: function (progress) {
@@ -157,25 +188,29 @@ WaveSurfer.Drawer = {
         if (pos < this.lastPos || pos - this.lastPos >= minPxDelta) {
             this.lastPos = pos;
 
-            if (this.params.scrollParent) {
+            if (this.params.scrollParent && this.params.autoCenter) {
                 var newPos = ~~(this.wrapper.scrollWidth * progress);
                 this.recenterOnPosition(newPos);
             }
 
-            this.updateProgress(progress);
+            this.updateProgress(pos);
         }
     },
 
     destroy: function () {
         this.unAll();
-        this.container.removeChild(this.wrapper);
-        this.wrapper = null;
+        if (this.wrapper) {
+            this.container.removeChild(this.wrapper);
+            this.wrapper = null;
+        }
     },
 
     /* Renderer-specific methods */
+    initDrawer: function () {},
+
     createElements: function () {},
 
-    updateWidth: function () {},
+    updateSize: function () {},
 
     drawWave: function (peaks, max) {},
 

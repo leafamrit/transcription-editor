@@ -10,7 +10,7 @@ var skipSilences = false;
 var playHighlights = false;
 
 var GLOBAL_ACTIONS = {
-    
+
     'play': function() {
         wavesurfer.playPause();
         togglePlayPause();
@@ -58,13 +58,39 @@ var GLOBAL_ACTIONS = {
 
     'skipsilence': function() {
         skipSilences = !skipSilences;
-        toggleActive(document.getElementById('bt-skipsilence'));
+    },
+
+    'playhighlight': function() {
+        if(!playHighlights) {
+            wavesurfer.seekTo(highlights[0] / wavesurfer.getDuration());
+        }
+        playHighlights = !playHighlights;
+    },
+
+    'toggle-hints': function() {
+        var hintSwitch = document.getElementById('hints-switch');
+        hintSwitch.classList.toggle('off');
+        document.getElementById('hints').classList.toggle('hidden');
+        if(/off/i.test(hintSwitch.classList.toString())) {
+            hintSwitch.innerHTML = 'Turn Hints On';
+            setCookie('hints', 'off');
+        } else {
+            hintSwitch.innerHTML = 'Turn Hints Off';
+            setCookie('hints', 'on');
+        }
     },
 
     'close-export': function() {
         document.getElementById('export-wrapper').classList.add('invisible');
         setTimeout(function() {
             document.getElementById('export-wrapper').classList.add('hidden');
+        }, 50);
+    },
+
+    'close-help': function() {
+        document.getElementById('help-wrapper').classList.add('invisible');
+        setTimeout(function() {
+            document.getElementById('help-wrapper').classList.add('hidden');
         }, 50);
     },
 
@@ -339,14 +365,14 @@ var GLOBAL_ACTIONS = {
             }
         }
 
-        function loadFile(url,callback){
-            JSZipUtils.getBinaryContent(url,callback);
+        function loadFile(url, callback){
+            JSZipUtils.getBinaryContent(url, callback);
         }
 
-        loadFile("./src/template.docx",function(error,content){
+        loadFile("./src/template.docx", function(error, content){
             if (error) { throw error };
             var zip = new JSZip(content);
-            var doc=new Docxtemplater().loadZip(zip)
+            var doc = new Docxtemplater().loadZip(zip)
             doc.setData({ xml: sentence });
 
             try {
@@ -358,34 +384,29 @@ var GLOBAL_ACTIONS = {
                     stack: error.stack,
                     properties: error.properties,
                 }
-                console.log(JSON.stringify({error: e}));
+                console.log(JSON.stringify( { error: e} ));
                 throw error;
             }
 
-            var out=doc.getZip().generate({
-                type:"blob",
+            var out = doc.getZip().generate({
+                type: "blob",
                 mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            }) 
-            saveAs(out,"transcript.docx")
-        })
+            });
+            saveAs(out,"transcript.docx");
+        });
 
         GLOBAL_ACTIONS['close-export']();
-    },
-
-    'playhighlight': function() {
-        if(!playHighlights) {
-            for(var i in wavesurfer.regions.list) {
-                if(/^h/i.test(i)) {
-                    wavesurfer.seekTo(wavesurfer.regions.list[i].start / wavesurfer.getDuration());
-                    break;
-                }
-            }
-        }
-        playHighlights = !playHighlights;
-        toggleActive(document.getElementById('bt-playhighlight'));
     }
 }
 
+// set cookies for showing / hiding of hints
+function setCookie(key, value) {
+    var d = new Date();
+    d.setTime(d.getTime() + 2592000000);
+    document.cookie = key + '=' + value + '; expires=' + d.toUTCString() + '; path=/';
+}
+
+// convert seconds to  string of format HH:MM:ss,mmm
 function toHHMMssmmm(seconds) {
     var milliseconds = parseInt(seconds * 1000, 10);
     var hr = Math.floor(milliseconds / 3600000);
@@ -413,11 +434,7 @@ function togglePlayPause() {
     document.getElementById('playpause').classList.toggle('fa-pause');
 }
 
-// set colors to active elements
-function toggleActive(caller) {
-    caller.classList.toggle('active');
-}
-
+// add color to active playback speed
 function activeSpeed() {
     var map = {
         0.5: 0,
@@ -434,6 +451,7 @@ function activeSpeed() {
     speedButtons[map[wavesurfer.backend.playbackRate]].classList.add('activespeed');
 }
 
+// load JSON
 function loadJSON(filepath, callback) {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
@@ -445,51 +463,46 @@ function loadJSON(filepath, callback) {
     xhttp.send();
 }
 
-function getSilences() {
-    var peaks = wavesurfer.backend.getPeaks(Math.floor(wavesurfer.backend.buffer.length / 100));
-    var unit = 0.00002267573 * 100;
-    var start, end;
-    for(var i = 0; i < peaks.length; i++) {
-        if(peaks[i] < 0.01) {
-            start = Number(((unit * i) + 0.02).toFixed(1));
-            while(peaks[i] < 0.01) {i++;}
-            end = Number(((unit * i) - 0.02).toFixed(1));
-            if(end > start) {
-                silences[start] = Number((end - start).toFixed(1));
-            }
-        }
-    }
-}
-
+// generate highlight array
 function getHighlights() {
     var keys = Array();
     var temp = Array();
     
+    // sort regions in waveform according to time
     for(var i in wavesurfer.regions.list) {
         if(/^h/i.test(i)) {
             temp.push(wavesurfer.regions.list[i].start);
         }
     }
-
     temp.sort(function(a, b) { return a - b; });
     temp = temp.map(function(item) { return 'h' + item; });
-
+    // get sorted regions
     temp.forEach(function(item) {
         keys.push(wavesurfer.regions.list[item]);
     });
 
+    // clear array to remove garbage data
     highlights = [];
 
+    // generate highlight array
     if(keys.length > 0) {
         highlights['0'] = Number((keys[0].start).toFixed(1));
-        for(var i = 1; i < keys.length - 1; i++) {
-            var duration = Number((keys[i + 1].start - keys[i].end).toFixed(1));
-            if(duration >= 0) {
-                highlights[(keys[i].end).toFixed(1)] = duration;
+        for(var i = 0; i < keys.length - 1; i++) {
+            if(Number(keys[i + 1].start.toFixed(1)) > Number(keys[i].end.toFixed(1)) + 0.2) {
+                // give a 0.5 second window to compare and skip
+                highlights[(keys[i].end - 0.2).toFixed(1)] = Number(keys[i + 1].start.toFixed(1));
+                highlights[(keys[i].end - 0.1).toFixed(1)] = Number(keys[i + 1].start.toFixed(1));
+                highlights[(keys[i].end).toFixed(1)] = Number(keys[i + 1].start.toFixed(1));
+                highlights[(keys[i].end + 0.1).toFixed(1)] = Number(keys[i + 1].start.toFixed(1));
+                highlights[(keys[i].end + 0.2).toFixed(1)] = Number(keys[i + 1].start.toFixed(1));
             }
         }
         if(keys.length > 1) {
-            highlights[keys[i].end.toFixed(1)] = Number((wavesurfer.getDuration() - keys[i].end).toFixed(1));
+            highlights[(keys[i].end - 0.2).toFixed(1)] = Number((wavesurfer.getDuration() - 0.1).toFixed(1));
+            highlights[(keys[i].end - 0.1).toFixed(1)] = Number((wavesurfer.getDuration() - 0.1).toFixed(1));
+            highlights[keys[i].end.toFixed(1)] = Number((wavesurfer.getDuration() - 0.1).toFixed(1));
+            highlights[(keys[i].end + 0.1).toFixed(1)] = Number((wavesurfer.getDuration() - 0.1).toFixed(1));
+            highlights[(keys[i].end + 0.2).toFixed(1)] = Number((wavesurfer.getDuration() - 0.1).toFixed(1));
         }
     }
 }
@@ -498,30 +511,36 @@ function getStrikes() {
     var keys = Array();
     var temp = Array();
 
+    // sort striked regions in waveform
     for(var i in wavesurfer.regions.list) {
         if(/^s/i.test(i)) {
             temp.push(wavesurfer.regions.list[i].start);
         }
     }
-
     temp.sort(function(a, b) { return a - b; });
     temp = temp.map(function(item) { return 's' + item; });
 
+    // get sorted regions
     temp.forEach(function(item) {
         keys.push(wavesurfer.regions.list[item]);
     });
     
+    // clear array to remove garbage
     strikes = [];
 
-    j = 1;
-    for(var i = 0; i < keys.length - 1; i++) {
-        var duration = Number((keys[i].end - keys[i].start).toFixed(1));
-        if(keys[i].end.toFixed(1) == keys[i + j].start.toFixed(1)) {
-            strikes[(keys[i].start).toFixed(1)] = Number((duration + (keys[i + j].end - keys[i + j].start)).toFixed(1));
-            i + j;
-        } else {
-            strikes[(keys[i].start).toFixed(1)] = duration;
-            j = 1;
+    // generate array
+    var start, end;
+    for(var i = 0; i < keys.length; i++) {
+        start = keys[i].start.toFixed(1);
+        while(i < keys.length - 1 && keys[i].end.toFixed(1) === keys[i + 1].start.toFixed(1)) { i++; }
+        end = Number(keys[i].end.toFixed(1));
+        if(end > (Number(start) + 0.2)) {
+            // 0.5 second window
+            strikes[(Number(start) - 0.2).toFixed(1)] = end;
+            strikes[(Number(start) - 0.1).toFixed(1)] = end;
+            strikes[start] = end;
+            strikes[(Number(start) + 0.1).toFixed(1)] = end;
+            strikes[(Number(start) + 0.2).toFixed(1)] = end;
         }
     }
 }
@@ -535,13 +554,24 @@ function showExport(event) {
     }, 50);
 }
 
+function showHelp(event) {
+    var ele = document.getElementById('help-wrapper');
+    ele.classList.remove('hidden');
+    setTimeout(function() {
+        ele.classList.remove('invisible');
+    }, 50);
+}
+
 function enableUI() {
     document.getElementById('loader').classList.toggle('spinning');
     document.getElementById('main-container-mask').classList.toggle('invisible');
     setInterval(function() {
         document.getElementById('main-container-mask').setAttribute('style', 'display: none');
-        document.getElementById('loading-percentage').innerHTML = '';
-    }, 300);
+    }, 30);
+}
+
+function seekToWord(caller) {
+    wavesurfer.seekTo(caller.id / wavesurfer.getDuration());
 }
 
 function resizeBody() {
@@ -549,126 +579,146 @@ function resizeBody() {
     var height = window.innerHeight - off;
     document.getElementsByClassName('transcript-container')[0].setAttribute('style', 'height: ' + height + 'px');
     document.getElementById('text-options').setAttribute('style', 'margin-top: ' + off + 'px');
+    document.getElementById('help-wrapper').setAttribute('style', 'top: ' + off + 'px');
 }
 
-// fill editor with words from database
+// fill editor with words from transcript
 function fillWords() {
     var results = transcript.results;
     var speakers = transcript.speaker_labels;
     var words = Array();
     var toReach = Array();
     var maxAlternativeIndex;
+    var i = 0;
     
+    var textArea = document.getElementById('transcript-area');
+    
+    // for each result
     results.forEach(function(result, resultIndex) {
         var maxConfidence = 0;
         var maxAlternative;
+        
+        // find chunk with maximum confidence
         result.alternatives.forEach(function(alternative, alternativeIndex) {
             if(alternative.confidence > maxConfidence) {
                 maxAlternative = alternative;
                 maxAlternativeIndex = alternativeIndex;
             }
         });
+
+        // for each word in the chunk
+        var currentSpeaker, prevSpeaker, div, speakerName, currWord;
         maxAlternative.timestamps.forEach(function(word, wordIndex) {
-            words.push(word);
-            toReach.push([resultIndex, maxAlternativeIndex, wordIndex]);
-        });
-    });
 
-    var textArea = document.getElementById('transcript-area');
-    var currentSpeaker, nextSpeaker, div, speakerName, word, colonSpan, deleteSpeaker;
-    var datalist = document.getElementById('speakerlist');
-    for(var i = 0; i < words.length - 1;) {
-        currentSpeaker = speakers[i].speaker;
-        nextSpeaker = speakers[i + 1].speaker;
-        div = document.createElement('div');
-        div.setAttribute('title', currentSpeaker);
-        div.classList.add('speaker-div');
-        speakerName = document.createElement('input');
-        speakerName.value = currentSpeaker;
-        speakerName.id = 'speaker' + i;
-        speakerName.classList.add('speaker');
-        speakerName.setAttribute('disabled', '');
-        speakerName.setAttribute('name', 'speaker');
-        speakerName.setAttribute('speakername', currentSpeaker);
-        speakerName.setAttribute('speakerindex', i);
-        speakerName.setAttribute('style', 'width: ' + ((speakerName.value.length * 8) + 20) + 'px');
-        textArea.appendChild(speakerName);
-        do {
-            nextSpeaker = speakers[i + 1].speaker;
-            word = document.createElement('span');
-            word.innerText = words[i][0] + " ";
-            word.setAttribute('starttime', words[i][1]);
-            word.setAttribute('endtime', words[i][2]);
-            word.setAttribute('resultindex', toReach[i][0]);
-            word.setAttribute('alternativeindex', toReach[i][1]);
-            word.setAttribute('wordindex', toReach[i][2]);
-            word.setAttribute('title', words[i][1] + " - " + words[i][2]);
-            word.setAttribute('tabindex', '-1');
-            word.addEventListener('focus', function() { enableInput(this); });
-            word.setAttribute('id', words[i][1]);
-            word.classList.add('word');
-            var hWaveId = 'h' + words[i][1];
-            var sWaveId = 's' + words[i][1];
-            if(words[i][3]) {
-                if(words[i][3].highlight) {
-                    word.classList.add('highlight');
-                    if(hWaveId in wavesurfer.regions.list) {
+            currentSpeaker = speakers[i++].speaker;
 
-                    } else {
+            if(currentSpeaker != prevSpeaker) {
+                // if speaker changes within a chunk
+                if(div) {
+                    textArea.appendChild(div);
+                    var specialBreak = document.createElement('br');
+                    specialBreak.classList.add('special-break');
+                    textArea.appendChild(specialBreak);
+                }
+
+                // start creating div for surrent speaker
+                div = document.createElement('div');
+                div.setAttribute('title', currentSpeaker);
+                div.classList.add('speaker-div');
+
+                // input field for speaker name
+                speakerName = document.createElement('input');
+                speakerName.value = currentSpeaker;
+                speakerName.id = 'speaker' + (i - 1);
+                speakerName.classList.add('speaker');
+                speakerName.setAttribute('readonly', '');
+                speakerName.setAttribute('style', 'width: ' + ((speakerName.value.length * 8) + 20) + 'px');
+                textArea.appendChild(speakerName);
+            }
+
+            // start creating span for current word
+            currWord = document.createElement('span');
+            currWord.innerText = word[0] + " ";
+            currWord.setAttribute('title', word[1] + " - " + word[2]);
+            currWord.setAttribute('tabindex', '-1');
+            currWord.addEventListener('focus', function() { seekToWord(this); });
+            currWord.id = word[1];
+            currWord.classList.add('word');
+
+            // check if word highlighted or striked
+            var hWaveId = 'h' + word[1];
+            var sWaveId = 's' + word[1];
+            if(word[3]) {
+                if(word[3].highlight) {
+                    // add highlighting to text
+                    currWord.classList.add('highlight');
+
+                    // check if highlighted region already present in waveform (helpful on undo / redo)
+                    if(!(hWaveId in wavesurfer.regions.list)) {
+                        // create highlighted region
                         wavesurfer.addRegion({
                             id: hWaveId,
-                            start: word.getAttribute('starttime'),
-                            end: word.getAttribute('endtime'),
+                            start: currWord.getAttribute('starttime'),
+                            end: currWord.getAttribute('endtime'),
                             color: 'rgba(255, 255, 0, 0.3)',
                             drag: false,
                             resize: false
                         });
                     }
-                } else {
-                    if(hWaveId in wavesurfer.regions.list) {
-                        wavesurfer.regions.list[hWaveId].remove();
-                    }
-                }
-            } else {
-                if(hWaveId in wavesurfer.regions.list) {
-                    wavesurfer.regions.list[hWaveId].remove();
-                }
-            }
-            if(words[i][3]) {
-                if(words[i][3].strike) {
-                    word.classList.add('strike');
-                    if(sWaveId in wavesurfer.regions.list) {
+                } else if(word[3].strike) {
+                    // add strike to text
+                    currWord.classList.add('strike');
 
-                    } else {
+                    // check if striked region already present in waveform (helpful on undo / redo)
+                    if(!(sWaveId in wavesurfer.regions.list)) {
+                        // create striked region
                         wavesurfer.addRegion({
                             id: sWaveId,
-                            start: word.getAttribute('starttime'),
-                            end: word.getAttribute('endtime'),
+                            start: currWord.getAttribute('starttime'),
+                            end: currWord.getAttribute('endtime'),
                             color: 'rgba(100, 100, 100, 0.5)',
                             drag: false,
                             resize: false
                         });
                     }
                 } else {
+                    // remove highlight if present
+                    if(hWaveId in wavesurfer.regions.list) {
+                        wavesurfer.regions.list[hWaveId].remove();
+                    }
+                    // remove strike region if present
                     if(sWaveId in wavesurfer.regions.list) {
                         wavesurfer.regions.list[sWaveId].remove();
                     }
                 }
             } else {
+                // remove highlight if present
+                if(hWaveId in wavesurfer.regions.list) {
+                    wavesurfer.regions.list[hWaveId].remove();
+                }
+                // remove strike region if present
                 if(sWaveId in wavesurfer.regions.list) {
                     wavesurfer.regions.list[sWaveId].remove();
                 }
             }
-            div.appendChild(word);
-            i++;
-        } while(currentSpeaker == nextSpeaker && i < words.length - 1);
+            
+            // add current word to speaker
+            div.appendChild(currWord);
 
+            // go to next speaker
+            prevSpeaker = currentSpeaker;
+        });
+
+        // add speaker to editor
         textArea.appendChild(div);
+
+        // add small space between two speakers
         var specialBreak = document.createElement('br');
         specialBreak.classList.add('special-break');
         textArea.appendChild(specialBreak);
-    }
+    });
 
+    // get highlights and strike arrays for skipping playback
     getHighlights();
     getStrikes();
 }
@@ -677,14 +727,14 @@ function readWords() {
     [].forEach.call(document.getElementsByClassName('word'), function(el) {
         if( el.id < wavesurfer.getCurrentTime() ) {
             el.classList.add('read');
+            var divEnds = document.getElementById('transcript-area').getBoundingClientRect();
+            if(divEnds.bottom < el.getBoundingClientRect().bottom || divEnds.top > el.getBoundingClientRect().top) {
+                el.scrollIntoView();
+            }
         } else {
             el.classList.remove('read');
         }
     });
-}
-
-function enableInput(caller) {
-    wavesurfer.seekTo(caller.id / wavesurfer.getDuration());
 }
 
 function checkDeepLink() {
@@ -724,13 +774,21 @@ document.addEventListener('DOMContentLoaded', function() {
         cursorWidth: 2,
         cursorColor: '#3f88c5',
         hideScrollbar: true,
+        backend: 'AudioElement',
         height: 95
     };
 
+    // initialize wavesurfer with options
     wavesurfer.init(options);
-    
-    // load audio
-    wavesurfer.load('audio/2.wav');
+
+    // load metadata and audio
+    loadJSON('transcript/2_meta.json', function(text) {
+        var metadata = JSON.parse(text);
+        silences = metadata.silences;
+        wavesurfer.load('audio/2.wav', metadata.peaks, 'none');
+    });
+
+    // load transcript
     loadJSON('transcript/2.json', function(text) {
         transcript = JSON.parse(text);
     });
@@ -739,21 +797,21 @@ document.addEventListener('DOMContentLoaded', function() {
     wavesurfer.on('audioprocess', function() {
         curr = wavesurfer.getCurrentTime().toFixed(1);
         readWords();
-        
-        if(skipSilences) {
-            if( curr in silences ) {
-                wavesurfer.skip(silences[curr]);
-            }
+
+        if( curr in strikes ) {
+            wavesurfer.backend.seekTo(strikes[curr]);
         }
 
         if(playHighlights) {
             if( curr in highlights ) {
-                wavesurfer.skip(highlights[curr]);
+                wavesurfer.backend.seekTo(highlights[curr]);
             }
         }
-
-        if( curr in strikes ) {
-            wavesurfer.skip(strikes[curr]);
+        
+        if(skipSilences) {
+            if( curr in silences ) {
+                wavesurfer.backend.seekTo(silences[curr]);
+            }
         }
     });
 
@@ -765,19 +823,8 @@ document.addEventListener('DOMContentLoaded', function() {
         readWords();
     });
 
-    wavesurfer.on('loading', function(callback) {
-        document.getElementById('loading-percentage').innerHTML = callback + '%';
-        if( callback < 40 ) document.getElementById('loading-text').innerHTML = 'Loading audio clip...';
-        else if( callback < 60 ) document.getElementById('loading-text').innerHTML = 'Doing some math...';
-        else if( callback < 80 ) document.getElementById('loading-text').innerHTML = 'This only happens the first time...';
-        else if( callback < 95 ) document.getElementById('loading-text').innerHTML = 'Really...';
-        else document.getElementById('loading-text').innerHTML = 'Almost done...';
-        
-    });
-
     // startup the page
     wavesurfer.on('ready', function() {
-        // dummy region ( to startup regions plugin )
         wavesurfer.addRegion({
             id: 'dummy',
             start: 0,
@@ -786,14 +833,15 @@ document.addEventListener('DOMContentLoaded', function() {
             resize: false,
             color: 'rgba(255, 255, 0, 0)'
         });
-        activeSpeed();
-        getSilences();
-        fillWords();
         resizeBody();
-        checkDeepLink();
+        if(/hints=off/i.test(document.cookie)) {
+            GLOBAL_ACTIONS['toggle-hints']();
+        }
         enableUI();
+        activeSpeed();
+        checkDeepLink();
+        fillWords();
     });
-
 });
 
 
@@ -828,12 +876,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         if(e.ctrlKey) {
             shortcutWrapper.classList.remove('hidden');
-            if(e.shiftKey) {
-                shift_key.classList.remove('hidden');
-            }
             var action = map[e.keyCode];
             if(action in GLOBAL_ACTIONS) {
-                e.preventDefault();
                 if(e.keyCode == 32) {
                     space_key.classList.remove('hidden');
                 } else {
@@ -841,7 +885,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     extra_key.classList.remove('hidden');
                 }
                 GLOBAL_ACTIONS[action]();
-                
             }
         }
     });

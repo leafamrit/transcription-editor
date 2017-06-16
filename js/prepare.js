@@ -16,8 +16,7 @@ document.addEventListener('DOMContentLoaded', function () {
         waveColor: '#3f88c5',
         cursorWidth: 2,
         cursorColor: '#3f88c5',
-        hideScrollbar: true,
-        hideScrollbar: true
+        hideScrollbar: false
     };
 
     // Init
