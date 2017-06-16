@@ -10,12 +10,6 @@
     <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Allerta+Stencil" />
 
     <!-- wavesurfer -->
-    <!-- <script src="src/wavesurfer.js"></script>
-    <script src="src/webaudio.js"></script>
-    <script src="src/audioelement.js"></script>
-    <script src="src/drawer.js"></script>
-    <script src="src/drawer.canvas.js"></script>
-    <script src="src/wavesurfer.regions.js"></script> -->
     <script src="src/wavesurfer.js"></script>
     <script src="src/util.js"></script>
     <script src="src/drawer.js"></script>
@@ -23,6 +17,7 @@
     <script src="src/webaudio.js"></script>
     <script src="src/mediaelement.js"></script>
     <script src="src/wavesurfer.regions.js"></script>
+    <script src="src/wavesurfer.timeline.js"></script>
 
     <!-- FileSaver -->
     <script src="src/FileSaver.js"></script>
@@ -50,6 +45,7 @@
     <center>
         <div class="main-container">
             <div id="audioclip"></div>
+            <div id="audioclip-timeline"></div>
 
             <div id="controls">
                 <span id="speedcontrols">
@@ -99,7 +95,7 @@
                 </span>
             </div>
             
-            <div id="transcript-area"><datalist id="speakerlist"></datalist></div>
+            <div id="transcript-area"><datalist id="speakerlist"><option value="Remove Speaker"></option></datalist></div>
 
             <div id="find-replace-wrapper" class="extra-options-wrapper hidden invisible">
                 <div class="close-bt-wrapper">
@@ -156,13 +152,18 @@
                 </center>
             </div>
 
-            <div id="help-wrapper" class="help-wrapper hidden invisible">
+            <div id="help-wrapper" class="help-wrapper">
                 <center>
                     <div class="help">
                         <div class="close-bt-wrapper">
                             <button class="close-button" data-action="close-help"><i class="fa fa-close"></i></button>
                         </div>
+                        <b>Instructions:</b><br />
+                        1. Edit like a normal text editor. <br />To add a speaker, press enter where break is required.<br />
+                        2. On changing a speaker label, all corresponding labels will be changed.<br />To prevent this, select "Remove Speaker" from the dropdown.<br />
+                        3. The editor autosaves the transcript every minute. <br />
                         <br />
+                        <b>Shortcuts</b><br />
                         Ctrl + Space : Play / Pause<br />
                         Ctrl + R : Skip back 5 seconds<br />
                         Ctrl + H : Highlight<br />
@@ -171,6 +172,7 @@
                         Ctrl + Shift + Z : Redo<br />
                         Ctrl + S : Save<br />
                         <br />
+                        <button class="shortcut-key shortcut-option" id="help-switch" data-action="toggle-help">Don't Show at Startup</button>
                     </div>
                 </center>
             </div>

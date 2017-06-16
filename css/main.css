@@ -71,7 +71,7 @@ span#loading-percentage {
 
 /*** AUDIO PLAYER ***/
 
-div#audioclip {
+div#audioclip-timeline {
     margin-bottom: 1.5em;
 }
 
@@ -541,7 +541,7 @@ div.speaker-div {
     color: #3f88c5;
 }
 
-/*** HELP ***/
+/*** SHORTCUTS ***/
 
 .shortcut-wrapper {
     position: fixed;
@@ -602,15 +602,26 @@ button#hints-switch.off {
     border: none;
     width: 100%;
     padding-top: 4em;
+    top: 10%;
     transition: all 0.2s;
 }
 
 .help {
     background-color: rgba(57, 62, 65, 0.9);
-    padding: 0.3em;
+    padding: 1em;
     color: #f6f7eb;
     box-shadow: 0 0 1em 0 #222;
     border-radius: 10px;
     font-family: 'Allerta Stencil';
-    width: 30%;
+    width: 60%;
+}
+
+button#help-switch {
+    opacity: 0.9;
+    cursor: pointer;
+    background-color: #f4364c;
+}
+
+button#help-switch.off {
+    background-color: #090;
 }

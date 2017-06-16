@@ -1,7 +1,7 @@
 'use strict';
 
 var filename, transcript;
-var audioloaded, transcriptloaded;
+var audioloaded = false, transcriptloaded = false;
 var metadata = {}
 
 // Create an instance
@@ -85,16 +85,13 @@ document.addEventListener('DOMContentLoaded', function () {
                         document.getElementById('transcript').innerHTML = '<code>' + transcript + '</code>';
                         transcriptloaded = true;
                         document.getElementById('json-loaded').classList.add('loaded');
+                        wavesurfer.fireEvent('ready');
                     };
                 }
             } else {
                 wavesurfer.fireEvent('error', 'Not a file');
                 alert('Please drop 1 file at a time');
             }
-
-            setTimeout(function() {
-                wavesurfer.fireEvent('ready');
-            }, 100);
         },
 
         // Drag-over event
@@ -114,13 +111,13 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-function getSilences() {
+function getSilences(buffer) {
     var silences = {};
-    var peaks = wavesurfer.backend.getPeaks(Math.floor(wavesurfer.backend.buffer.length / 100));
+    var peaks = wavesurfer.backend.getPeaks(buffer);
     var unit = 0.00002267573 * 100;
     var start, end;
     for(var i = 0; i < peaks.length; i++) {
-        if(peaks[i] < 0.01) {
+        if(Math.abs(peaks[i]) < 0.01) {
             start = Number(((unit * i)).toFixed(1));
             while(peaks[i] < 0.01) {i++;}
             end = Number(((unit * i)).toFixed(1));
@@ -142,6 +139,8 @@ function saveJSON() {
     xhttp.onreadystatechange = function() {
         if(this.readyState === 4 && this.status === 200) {
             console.log(this.responseText);
+            audioloaded = false; transcriptloaded = false;
+            document.getElementById('bt-analyze').setAttribute('disabled', '');
             alert('Waveform successfully prepared.');
         } else if(this.readyState === 4 && this.status != 200) {
             alert('Could not save changes, please check your internet connection or try again later.');
@@ -153,9 +152,10 @@ function saveJSON() {
 }
 
 function getData() {
-    metadata = '{ "peaks": [' + wavesurfer.backend.getPeaks(Number(document.getElementById('arraysize').value)).toString() + '] }';
+    var buffer = Math.floor(wavesurfer.backend.buffer.length / 100);
+    metadata = '{ "peaks": [' + wavesurfer.backend.getPeaks(500).toString() + '] }';
     metadata = JSON.parse(metadata);
-    metadata.silences = getSilences();
+    metadata.silences = getSilences(buffer);
     document.getElementById('filename').innerHTML = '<code>Filename: ' + filename + '</code>';
     document.getElementById('result').setAttribute('style', 'overflow-x: scroll');
     document.getElementById('result').innerHTML = '<code>Metadata:<br/>' + JSON.stringify(metadata) + '</code>';

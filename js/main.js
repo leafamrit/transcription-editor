@@ -86,6 +86,18 @@ var GLOBAL_ACTIONS = {
         }
     },
 
+    'toggle-help': function() {
+        var helpSwitch = document.getElementById('help-switch');
+        helpSwitch.classList.toggle('off');
+        if(/off/i.test(helpSwitch.classList.toString())) {
+            helpSwitch.innerHTML = 'Show at Startup';
+            setCookie('help', 'off');
+        } else {
+            helpSwitch.innerHTML = 'Don\'t Show at Startup';
+            setCookie('help', 'on');
+        }
+    },
+
     'save': function() {
         saveJSON(true);
     },
@@ -890,7 +902,6 @@ function resizeBody() {
     var height = window.innerHeight - off;
     document.getElementsByClassName('transcript-container')[0].setAttribute('style', 'height: ' + height + 'px');
     document.getElementById('text-options').setAttribute('style', 'margin-top: ' + off + 'px');
-    document.getElementById('help-wrapper').setAttribute('style', 'top: ' + off + 'px');
 }
 
 // fill editor with words from transcript
@@ -901,6 +912,7 @@ function fillWords() {
     var toReach = Array();
     var maxAlternativeIndex;
     var i = 0;
+    var globalspkr_i = 0;
     
     var textArea = document.getElementById('transcript-area');
     var datalist = document.getElementById('speakerlist');
@@ -945,6 +957,7 @@ function fillWords() {
                 div = document.createElement('div');
                 div.setAttribute('title', currentSpeaker);
                 div.setAttribute('contenteditable', 'true');
+                div.setAttribute('onkeypress', 'addSpeaker(event, this)');
                 div.classList.add('speaker-div');
 
                 // input field for speaker name
@@ -972,6 +985,7 @@ function fillWords() {
             currWord.setAttribute('resultindex', resultIndex);
             currWord.setAttribute('alternativeindex', maxAlternativeIndex);
             currWord.setAttribute('wordindex', wordIndex);
+            currWord.setAttribute('speakerindex', globalspkr_i++);
             currWord.setAttribute('title', word[1] + " - " + word[2]);
             currWord.setAttribute('tabindex', '-1');
             currWord.addEventListener('focus', function() { seekToWord(this); });
@@ -1060,7 +1074,7 @@ function fillWords() {
             var w_i = this.getAttribute('wordindex');
             
             // check if value has changed
-            if( this.innerText != transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][0]) {
+            if( this.innerText != transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][0] ) {
                 // push current content to undo stack if change not caused by undo
                 if(!undoAction) {
                     pastStack.push(JSON.stringify(transcript));
@@ -1068,7 +1082,6 @@ function fillWords() {
 
                 // reset undoAction
                 undoAction = false;
-
 
                 // add new value to chunk
                 var newValue = this.innerText;
@@ -1129,6 +1142,21 @@ function fillWords() {
     getStrikes();
 }
 
+function addSpeaker(event, ele) {
+    if(event.which == 13) {
+        setTimeout(function() {
+            newEle = ele.getElementsByTagName('div')[0].firstChild;
+            globaluksp++;
+            while(newEle) {
+                index = newEle.getAttribute('speakerindex');
+                transcript.results[0].speaker_labels[index].speaker = 'Unknown Speaker ' + globaluksp;
+                newEle = newEle.nextSibling;
+            }
+            fillWords();
+        }, 30);
+    }
+}
+
 function readWords() {
     readWord = document.getElementsByClassName('read');
     try {
@@ -1139,9 +1167,9 @@ function readWords() {
     if(currWord.id < wavesurfer.getCurrentTime()) {
         while(currWord && currWord.id < wavesurfer.getCurrentTime()) {
             currWord.classList.add('read');
-            var divEnds = document.getElementById('transcript-area').getBoundingClientRect();
             currWord = currWord.nextSibling ? currWord.nextSibling : currWord.parentElement.nextSibling.nextSibling.nextSibling.firstChild;
         }
+        var divEnds = document.getElementById('transcript-area').getBoundingClientRect();
         if(divEnds.bottom < currWord.getBoundingClientRect().bottom || divEnds.top > currWord.getBoundingClientRect().top) {
             currWord.scrollIntoView();
         }
@@ -1155,7 +1183,7 @@ function readWords() {
 }
 
 function changeInput(caller) {
-    if(!caller.value || caller.value.trim() == '') {
+    if(!caller.value || caller.value.trim() === '' || caller.value === 'Remove Speaker') {
         changed = false;
         caller.value = 'Unknown Speaker ' + (globaluksp++);
         var startIndex = caller.getAttribute('speakerindex');
@@ -1237,6 +1265,15 @@ window.onbeforeunload = function(e) {
 
 // Initialization
 document.addEventListener('DOMContentLoaded', function() {
+    // cookies
+    if(/hints=off/i.test(document.cookie)) {
+        GLOBAL_ACTIONS['toggle-hints']();
+    }
+    if(/help=off/i.test(document.cookie)) {
+        GLOBAL_ACTIONS['toggle-help']();
+        GLOBAL_ACTIONS['close-help']();
+    }
+
     // wavesurfer options
     var options = {
         container: document.querySelector('#audioclip'),
@@ -1244,7 +1281,8 @@ document.addEventListener('DOMContentLoaded', function() {
         waveColor: '#3f88c5',
         cursorWidth: 2,
         cursorColor: '#3f88c5',
-        hideScrollbar: true,
+        barWidth: 2,
+        normalize: true,
         backend: 'MediaElement',
         height: 95
     };
@@ -1260,10 +1298,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // load transcript
-    loadJSON('transcript/testimony.json', function(text) {
-        transcript = JSON.parse(text);
-        pastStack.push(JSON.stringify(transcript));
-    });
+    
 
     // handle events while playing
     wavesurfer.on('audioprocess', function() {
@@ -1297,6 +1332,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // startup the page
     wavesurfer.on('ready', function() {
+        var timeline = Object.create(WaveSurfer.Timeline);
+
+        timeline.init({
+            wavesurfer: wavesurfer,
+            container: '#audioclip-timeline',
+            primaryColor: '#3f88c5',
+            seondaryColor: '#f4364c',
+            primaryFontColor: '#f6f7eb',
+            secondaryFontColor: '#f6f7eb',
+            timeInterval: 150,
+            height: 15
+        });
+
         wavesurfer.addRegion({
             id: 'dummy',
             start: 0,
@@ -1306,9 +1354,6 @@ document.addEventListener('DOMContentLoaded', function() {
             color: 'rgba(255, 255, 0, 0)'
         });
         resizeBody();
-        if(/hints=off/i.test(document.cookie)) {
-            GLOBAL_ACTIONS['toggle-hints']();
-        }
         enableUI();
         [].forEach.call(document.querySelectorAll('.speaker'), function(el) {
             if(/Unknown Speaker/i.test(el.value)) {
@@ -1316,10 +1361,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         activeSpeed();
-        fillWords();
+        loadJSON('transcript/testimony.json', function(text) {
+            transcript = JSON.parse(text);
+            pastStack.push(JSON.stringify(transcript));
+            fillWords();
+        });
         setInterval(function() {
-            //saveJSON(false);
-        }, 30000)
+            saveJSON(false);
+        }, 60000)
     });
 });
 
