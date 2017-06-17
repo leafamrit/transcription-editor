@@ -1000,7 +1000,7 @@ function fillWords() {
                 currWord.classList.add('word');
             }
             globalspkr_i++;
-            
+
             // check if word highlighted or striked
             var hWaveId = 'h' + word[1];
             var sWaveId = 's' + word[1];
@@ -1162,7 +1162,6 @@ function nodeMutation(mutation) {
         mutation.forEach(function(m) {
             m.removedNodes.forEach(function(node) {
                 if(node.innerText.trim() != '') {
-                    console.log(node.innerText);
                     index = node.getAttribute('speakerindex');
                     transcript.results[0].speaker_labels[index].speaker = 'Unknown Speaker ' + globaluksp;
                 }
@@ -1402,7 +1401,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         setInterval(function() {
-            //saveJSON(false);
+            saveJSON(false);
         }, 60000)
     });
 });
