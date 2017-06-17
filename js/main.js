@@ -1172,6 +1172,7 @@ function nodeMutation(mutation) {
 
 function addSpeaker(event, ele) {
     if(event.which == 13) {
+        nodeObserver.disconnect();
         setTimeout(function() {
             newEle = ele.getElementsByTagName('div')[0].firstChild;
             globaluksp++;
