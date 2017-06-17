@@ -964,7 +964,6 @@ function fillWords() {
                 div = document.createElement('div');
                 div.setAttribute('title', currentSpeaker);
                 div.setAttribute('contenteditable', 'true');
-                div.setAttribute('onkeypress', 'addSpeaker(event, this)');
                 div.classList.add('speaker-div');
 
                 // input field for speaker name
@@ -993,14 +992,15 @@ function fillWords() {
                 currWord.setAttribute('resultindex', resultIndex);
                 currWord.setAttribute('alternativeindex', maxAlternativeIndex);
                 currWord.setAttribute('wordindex', wordIndex);
-                currWord.setAttribute('speakerindex', globalspkr_i++);
+                currWord.setAttribute('speakerindex', globalspkr_i);
                 currWord.setAttribute('title', word[1] + " - " + word[2]);
                 currWord.setAttribute('tabindex', '-1');
                 currWord.addEventListener('focus', function() { seekToWord(this); });
                 currWord.id = word[1];
                 currWord.classList.add('word');
             }
-
+            globalspkr_i++;
+            
             // check if word highlighted or striked
             var hWaveId = 'h' + word[1];
             var sWaveId = 's' + word[1];
@@ -1090,7 +1090,6 @@ function fillWords() {
 }
 
 function wordMutation(mutation) {
-    console.log('word');
     mutation.forEach(function(m) {
         var word = m.target.parentElement;
 
@@ -1157,19 +1156,13 @@ function wordMutation(mutation) {
 }
 
 function nodeMutation(mutation) {
-    console.log('node');
     if(mutation[0].addedNodes.length > 0) {
         wordObserver.disconnect();
         globaluksp++;
-        /*console.log(mutation);
-        if(mutation[1].addedNodes[0].innerText != '') {
-            console.log(mutation[1].addedNodes[0].innerText);
-            index = mutation[1].addedNodes[0].getAttribute('speakerindex');
-            transcript.results[0].speaker_labels[index].speaker = 'Unknown Speaker ' + globaluksp;
-        }*/
         mutation.forEach(function(m) {
             m.removedNodes.forEach(function(node) {
                 if(node.innerText.trim() != '') {
+                    console.log(node.innerText);
                     index = node.getAttribute('speakerindex');
                     transcript.results[0].speaker_labels[index].speaker = 'Unknown Speaker ' + globaluksp;
                 }
@@ -1188,23 +1181,6 @@ function nodeMutation(mutation) {
             }); 
         });
     }
-}
-
-function addSpeaker(event, ele) {
-    /*if(event.which == 13) {
-        nodeObserver.disconnect();
-        wordObserver.disconnect();
-        setTimeout(function() {
-            newEle = ele.getElementsByTagName('div')[0].firstChild.innerText.trim() != '' ? ele.getElementsByTagName('div')[0].firstChild : ele.getElementsByTagName('div')[0].firstChild.nextSibling;
-            globaluksp++;
-            while(newEle) {
-                index = newEle.getAttribute('speakerindex');
-                transcript.results[0].speaker_labels[index].speaker = 'Unknown Speaker ' + globaluksp;
-                newEle = newEle.nextSibling;
-            }
-            fillWords();
-        }, 30);
-    }*/
 }
 
 function readWords() {
