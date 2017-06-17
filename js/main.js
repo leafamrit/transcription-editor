@@ -72,6 +72,7 @@ var GLOBAL_ACTIONS = {
 
     'playhighlight': function() {
         if(!playHighlights) {
+            getHighlights();
             wavesurfer.seekTo(highlights[0] / wavesurfer.getDuration());
         }
         playHighlights = !playHighlights;
@@ -552,7 +553,9 @@ var GLOBAL_ACTIONS = {
         }
 
         getStrikes();
-        getHighlights();
+        if(playHighlights) {
+            getHighlights();
+        }
     },
 
     'highlight': function() {
@@ -674,7 +677,9 @@ var GLOBAL_ACTIONS = {
         }
 
         getStrikes();
-        getHighlights();
+        if(playHighlights) {
+            getHighlights();
+        }
     },
 
     'undo': function() {
@@ -816,11 +821,11 @@ function getHighlights() {
             }
         }
         if(keys.length > 1) {
-            highlights[(keys[i].end - 0.2).toFixed(1)] = Number((wavesurfer.getDuration() - 0.1).toFixed(1));
-            highlights[(keys[i].end - 0.1).toFixed(1)] = Number((wavesurfer.getDuration() - 0.1).toFixed(1));
-            highlights[keys[i].end.toFixed(1)] = Number((wavesurfer.getDuration() - 0.1).toFixed(1));
-            highlights[(keys[i].end + 0.1).toFixed(1)] = Number((wavesurfer.getDuration() - 0.1).toFixed(1));
-            highlights[(keys[i].end + 0.2).toFixed(1)] = Number((wavesurfer.getDuration() - 0.1).toFixed(1));
+            highlights[(keys[i].end - 0.2).toFixed(1)] = highlights['0'];
+            highlights[(keys[i].end - 0.1).toFixed(1)] = highlights['0'];
+            highlights[keys[i].end.toFixed(1)] = highlights['0'];
+            highlights[(keys[i].end + 0.1).toFixed(1)] = highlights['0'];
+            highlights[(keys[i].end + 0.2).toFixed(1)] = highlights['0'];
         }
     }
 }
