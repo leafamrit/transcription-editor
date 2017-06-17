@@ -15,6 +15,10 @@ var playHighlights = false;
 
 var undoAction = false;
 
+// mutation observers
+var wordObserver;
+var nodeObserver;
+
 var GLOBAL_ACTIONS = {
 
     'play': function() {
@@ -144,7 +148,7 @@ var GLOBAL_ACTIONS = {
                             if(currentSpeaker != prevSpeaker) {
                                 sentence += '(' + currentSpeaker + ')';
                             }
-                            sentence += '<b>' + word[0] + '</b> ';
+                            sentence += '<b>' + word[0] + '</b>';
                         }
                     }
                 } else {
@@ -154,13 +158,13 @@ var GLOBAL_ACTIONS = {
                     if(word[3]) {
                         if(!word[3].strike) {
                             if(word[3].highlight) {
-                                sentence += '<b>' + word[0] + '</b> ';
+                                sentence += '<b>' + word[0] + '</b>';
                             } else {
-                                sentence += word[0] + ' ';
+                                sentence += word[0];
                             }
                         }
                     } else {
-                        sentence += word[0] + ' ';
+                        sentence += word[0];
                     }
                 }
                 prevSpeaker = currentSpeaker;
@@ -206,9 +210,9 @@ var GLOBAL_ACTIONS = {
                     if(word[3]) {
                         if(!word[3].strike && word[3].highlight) {
                             if(currentSpeaker != prevSpeaker) {
-                                sentence += '(' + currentSpeaker + ')';
+                                sentence += '(' + currentSpeaker + ') ';
                             }
-                            sentence += '<b>' + word[0] + '</b> ';
+                            sentence += '<b>' + word[0] + '</b>';
                         }
                     }
                 } else {
@@ -218,13 +222,13 @@ var GLOBAL_ACTIONS = {
                     if(word[3]) {
                         if(!word[3].strike) {
                             if(word[3].highlight) {
-                                sentence += '<b>' + word[0] + '</b> ';
+                                sentence += '<b>' + word[0] + '</b>';
                             } else {
-                                sentence += word[0] + ' ';
+                                sentence += word[0];
                             }
                         }
                     } else {
-                        sentence += word[0] + ' ';
+                        sentence += word[0];
                     }
                 }
                 prevSpeaker = currentSpeaker;
@@ -284,7 +288,7 @@ var GLOBAL_ACTIONS = {
                             if(words[i][3].highlight) {
                                 sentence += currentPara;
                                 currentPara = '';
-                                sentence += words[i][0] + ' ';
+                                sentence += words[i][0];
                             }
                         }
                     }
@@ -292,21 +296,21 @@ var GLOBAL_ACTIONS = {
                     if(words[i][3]) {
                         if(!words[i][3].strike) {
                             if(words[i][3].highlight) {
-                                sentence += words[i][0] + ' ';
+                                sentence += words[i][0];
                             } else {
-                                sentence += words[i][0] + ' ';
+                                sentence += words[i][0];
                             }
                         }
                     } else {
-                        sentence += words[i][0] + ' ';
+                        sentence += words[i][0];
                     }
                 }
                 i++;
             } while(currentSpeaker == nextSpeaker && i < words.length);
             if(onlyHighlight && currentPara == '') {
-                sentence += ' [' + toHHMMssmmm(words[i - 1][2]).replace(',', '.') + ']\n\n';
+                sentence += '[' + toHHMMssmmm(words[i - 1][2]).replace(',', '.') + ']\n\n';
             } else if(!onlyHighlight && !currentPara) {
-                sentence += ' [' + toHHMMssmmm(words[i - 1][2]).replace(',', '.') + ']\n\n';
+                sentence += '[' + toHHMMssmmm(words[i - 1][2]).replace(',', '.') + ']\n\n';
             }
         }
 
@@ -361,7 +365,7 @@ var GLOBAL_ACTIONS = {
                             if(words[i][3].highlight) {
                                 sentence += currentPara;
                                 currentPara = '';
-                                sentence += '<w:r><w:rPr><w:highlight w:val="yellow" /></w:rPr><w:t>' + words[i][0] + ' </w:t></w:r>';
+                                sentence += '<w:r><w:rPr><w:highlight w:val="yellow" /></w:rPr><w:t>' + words[i][0] + '</w:t></w:r>';
                             }
                         }
                     }
@@ -369,13 +373,13 @@ var GLOBAL_ACTIONS = {
                     if(words[i][3]) {
                         if(!words[i][3].strike) {
                             if(words[i][3].highlight) {
-                                sentence += '<w:r><w:t>' + words[i][0] + ' </w:t></w:r>';
+                                sentence += '<w:r><w:t>' + words[i][0] + '</w:t></w:r>';
                             } else {
-                                sentence += '<w:r><w:t>' + words[i][0] + ' </w:t></w:r>';
+                                sentence += '<w:r><w:t>' + words[i][0] + '</w:t></w:r>';
                             }
                         }
                     } else {
-                        sentence += '<w:r><w:t>' + words[i][0] + ' </w:t></w:r>';
+                        sentence += '<w:r><w:t>' + words[i][0] + '</w:t></w:r>';
                     }
                 }
                 i++;
@@ -977,20 +981,22 @@ function fillWords() {
                 textArea.appendChild(speakerName);
             }
 
-            // start creating span for current word
-            currWord = document.createElement('span');
-            currWord.innerText = word[0] + " ";
-            currWord.setAttribute('starttime', word[1]);
-            currWord.setAttribute('endtime', word[2]);
-            currWord.setAttribute('resultindex', resultIndex);
-            currWord.setAttribute('alternativeindex', maxAlternativeIndex);
-            currWord.setAttribute('wordindex', wordIndex);
-            currWord.setAttribute('speakerindex', globalspkr_i++);
-            currWord.setAttribute('title', word[1] + " - " + word[2]);
-            currWord.setAttribute('tabindex', '-1');
-            currWord.addEventListener('focus', function() { seekToWord(this); });
-            currWord.id = word[1];
-            currWord.classList.add('word');
+            // start creating span for current word if word is not blank
+            if(word[0].trim() != '') {
+                currWord = document.createElement('span');
+                currWord.innerHTML = word[0];
+                currWord.setAttribute('starttime', word[1]);
+                currWord.setAttribute('endtime', word[2]);
+                currWord.setAttribute('resultindex', resultIndex);
+                currWord.setAttribute('alternativeindex', maxAlternativeIndex);
+                currWord.setAttribute('wordindex', wordIndex);
+                currWord.setAttribute('speakerindex', globalspkr_i++);
+                currWord.setAttribute('title', word[1] + " - " + word[2]);
+                currWord.setAttribute('tabindex', '-1');
+                currWord.addEventListener('focus', function() { seekToWord(this); });
+                currWord.id = word[1];
+                currWord.classList.add('word');
+            }
 
             // check if word highlighted or striked
             var hWaveId = 'h' + word[1];
@@ -1065,81 +1071,103 @@ function fillWords() {
         textArea.appendChild(specialBreak);
     });
 
-    // add event listeners for each word
-    [].forEach.call(document.getElementsByClassName('word'), function(el) {
-        el.addEventListener('DOMSubtreeModified', function() {
-            // get position of current word in transcript json
-            var r_i = this.getAttribute('resultindex');
-            var a_i = this.getAttribute('alternativeindex');
-            var w_i = this.getAttribute('wordindex');
-            
-            // check if value has changed
-            if( this.innerText != transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][0] ) {
-                // push current content to undo stack if change not caused by undo
-                if(!undoAction) {
-                    pastStack.push(JSON.stringify(transcript));
-                }
+    // add observer for each word
+    [].forEach.call(document.querySelectorAll('.word'), function(el) {
+        wordObserver.observe(el, {characterData: true, subtree: true});
+    });
 
-                // reset undoAction
-                undoAction = false;
-
-                // add new value to chunk
-                var newValue = this.innerText;
-                transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][0] = newValue;
-
-                // generate new chunk content
-                var newTranscript = '';
-                transcript.results[0].results[r_i].alternatives[a_i].timestamps.forEach(function(word) {
-                    newTranscript += word[0] + ' ';
-                });
-                transcript.results[0].results[r_i].alternatives[a_i].transcript = newTranscript;
-
-                // approximate timestamps
-                var endTime, startTime;
-
-                // if this is first word of speaker
-                if(this === this.parentElement.firstChild) {
-                    // if first word in transcript
-                    if(r_i === '0') {
-                        startTime = '0';
-                    } else if(w_i === '0') {
-                        // start time of current changed to end of previous chunk
-                        var pre_r_i = Number(r_i) - 1;
-                        var pre_index = transcript.results[0].results[pre_r_i].alternatives[0].timestamps.length - 1;
-                        startTime = transcript.results[0].results[pre_r_i].alternatives[0].timestamps[pre_index][2];
-                    } else {
-                        var pre_index = Number(w_i) - 1;
-                        startTime = transcript.results[0].results[r_i].alternatives[0].timestamps[pre_index][2];
-                    }
-                    transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][1] = startTime;
-                    this.setAttribute('starttime', startTime);
-                    this.id = startTime;
-                    this.setAttribute('title', startTime + ' - ' + this.getAttribute('endtime'));
-                } else if(this.nextSibling) {
-                    endTime = this.nextSibling.getAttribute('starttime');
-                    transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][2] = endTime;
-                    this.setAttribute('endtime', endTime);
-                    this.setAttribute('title', this.getAttribute('starttime') + ' - ' + endTime);
-                }
-                // not approximating the time if the word is last in the current chunk
-
-                // adjust to new timestamps
-                if(/highlight/i.test(this.classList.value)) {
-                    GLOBAL_ACTIONS['highlight']();
-                    GLOBAL_ACTIONS['highlight']();
-                }
-                if(/strike/i.test(this.classList.value)) {
-                    GLOBAL_ACTIONS['strike']();
-                    GLOBAL_ACTIONS['strike']();
-                }
-            }
-
-        });
+    // add oobserver for removed nodes
+    [].forEach.call(document.querySelectorAll('.speaker-div'), function(el) {
+        nodeObserver.observe(el, {childList: true});
     });
 
     // get highlights and strike arrays for skipping playback
     getHighlights();
     getStrikes();
+}
+
+function wordMutation(mutation) {
+    mutation.forEach(function(m) {
+        var word = m.target.parentElement;
+
+        // get position of current word in transcript json
+        var r_i = word.getAttribute('resultindex');
+        var a_i = word.getAttribute('alternativeindex');
+        var w_i = word.getAttribute('wordindex');
+
+        // check if value has changed
+        if( word.innerText != transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][0] ) {
+            // push current content to undo stack if change not caused by undo
+            if(!undoAction) {
+                pastStack.push(JSON.stringify(transcript));
+            }
+
+            // reset undoAction
+            undoAction = false;
+
+            // add new value to chunk
+            var newValue = word.innerText;
+            transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][0] = newValue;
+
+            // generate new chunk content
+            var newTranscript = '';
+            transcript.results[0].results[r_i].alternatives[a_i].timestamps.forEach(function(word) {
+                newTranscript += word[0];
+            });
+            transcript.results[0].results[r_i].alternatives[a_i].transcript = newTranscript;
+
+            // approximate timestamps
+            var endTime, startTime;
+            // if this is first word of speaker
+            if(this === word.parentElement.firstChild) {
+                // if first word in transcript
+                if(r_i === '0') {
+                    startTime = '0';
+                } else if(w_i === '0') {
+                    // start time of current changed to end of previous chunk
+                    var pre_r_i = Number(r_i) - 1;
+                    var pre_index = transcript.results[0].results[pre_r_i].alternatives[0].timestamps.length - 1;
+                    startTime = transcript.results[0].results[pre_r_i].alternatives[0].timestamps[pre_index][2];
+                } else {
+                    var pre_index = Number(w_i) - 1;
+                    startTime = transcript.results[0].results[r_i].alternatives[0].timestamps[pre_index][2];
+                }
+                transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][1] = startTime;
+                word.setAttribute('starttime', startTime);
+                word.id = startTime;
+                word.setAttribute('title', startTime + ' - ' + word.getAttribute('endtime'));
+            } else if(word.nextSibling) {
+                endTime = word.nextSibling.getAttribute('starttime');
+                transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][2] = endTime;
+                word.setAttribute('endtime', endTime);
+                word.setAttribute('title', word.getAttribute('starttime') + ' - ' + endTime);
+            }
+            // not approximating the time if the word is last in the current chunk
+
+            // adjust to new timestamps
+            if(/highlight/i.test(word.classList.value)) {
+                GLOBAL_ACTIONS['highlight']();
+                GLOBAL_ACTIONS['highlight']();
+            }
+            if(/strike/i.test(word.classList.value)) {
+                GLOBAL_ACTIONS['strike']();
+                GLOBAL_ACTIONS['strike']();
+            }
+        }
+    });
+}
+
+function nodeMutation(mutation) {
+    mutation.forEach(function(m) {
+        m.removedNodes.forEach(function(node) {
+            // get position of current word in transcript json
+            var r_i = node.getAttribute('resultindex');
+            var a_i = node.getAttribute('alternativeindex');
+            var w_i = node.getAttribute('wordindex');
+
+            transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][0] = '';
+        }); 
+    });
 }
 
 function addSpeaker(event, ele) {
@@ -1353,6 +1381,7 @@ document.addEventListener('DOMContentLoaded', function() {
             resize: false,
             color: 'rgba(255, 255, 0, 0)'
         });
+
         resizeBody();
         enableUI();
         [].forEach.call(document.querySelectorAll('.speaker'), function(el) {
@@ -1361,13 +1390,21 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         activeSpeed();
-        loadJSON('transcript/testimony.json', function(text) {
+
+        wordObserver = new MutationObserver(function(mutation) {
+            wordMutation(mutation);
+        });
+        nodeObserver = new MutationObserver(function(mutation) {
+            nodeMutation(mutation);
+        });
+        loadJSON('transcript/testimony_prepared.json', function(text) {
             transcript = JSON.parse(text);
             pastStack.push(JSON.stringify(transcript));
             fillWords();
         });
+
         setInterval(function() {
-            saveJSON(false);
+            //saveJSON(false);
         }, 60000)
     });
 });

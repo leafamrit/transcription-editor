@@ -82,6 +82,15 @@ document.addEventListener('DOMContentLoaded', function () {
                     reader.readAsText(e.dataTransfer.files[0]);
                     reader.onload = function() {
                         transcript = reader.result;
+                        transcript = JSON.parse(transcript);
+                        transcript.results[0].results.forEach(function(result, r_i) {
+                            result.alternatives.forEach(function(alternative, a_i) {
+                                alternative.timestamps.forEach(function(word, w_i) {
+                                    transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][0] += ' ';
+                                });
+                            });
+                        });
+                        transcript = JSON.stringify(transcript);
                         document.getElementById('transcript').innerHTML = '<code>' + transcript + '</code>';
                         transcriptloaded = true;
                         document.getElementById('json-loaded').classList.add('loaded');
