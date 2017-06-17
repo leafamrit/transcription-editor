@@ -1173,8 +1173,9 @@ function nodeMutation(mutation) {
 function addSpeaker(event, ele) {
     if(event.which == 13) {
         nodeObserver.disconnect();
+        wordObserver.disconnect();
         setTimeout(function() {
-            newEle = ele.getElementsByTagName('div')[0].firstChild;
+            newEle = ele.getElementsByTagName('div')[0].firstChild.innerText.trim() != '' ? ele.getElementsByTagName('div')[0].firstChild : ele.getElementsByTagName('div')[0].firstChild.nextSibling;
             globaluksp++;
             while(newEle) {
                 index = newEle.getAttribute('speakerindex');
