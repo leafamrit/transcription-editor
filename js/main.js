@@ -9,6 +9,7 @@ var pastStack = Array();
 var futureStack = Array();
 var globaluksp = 0;
 var changed = false;
+var pageOptions;
 
 var skipSilences = false;
 var playHighlights = false;
@@ -1270,12 +1271,7 @@ function resizeInput(caller) {
     changed = true;
 }
 
-function checkDeepLink() {
-    var getVars = {};
-    window.location.search.slice(1).split('&').forEach(function(getVar) {
-        var temp = getVar.split('=');
-        getVars[temp[0]] = temp[1];
-    });
+function checkDeepLink(getVars) {
     if('t' in getVars) {
         var time = 0;
         if(getVars.t.split('h').length > 1) {
@@ -1297,6 +1293,28 @@ function checkDeepLink() {
     }
 }
 
+function getParameters() {
+    var getVars = {};
+    window.location.search.slice(1).split('&').forEach(function(getVar) {
+        var temp = getVar.split('=');
+        getVars[temp[0]] = temp[1];
+    });
+    return getVars;
+}
+
+function getURLs(id) {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if(this.readyState === 4 && this.status === 200) {
+            pageOptions = JSON.parse(this.responseText);
+            init();
+        }
+    }
+    xhttp.open('POST', './save.php', true);
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhttp.send('id=' + id);
+}
+
 window.onbeforeunload = function(e) {
     e || window.event;
     if(e) {
@@ -1306,253 +1324,264 @@ window.onbeforeunload = function(e) {
 }
 
 // Initialization
-document.addEventListener('DOMContentLoaded', function() {
-    // cookies
-    if(/hints=off/i.test(document.cookie)) {
-        GLOBAL_ACTIONS['toggle-hints']();
-    }
-    if(/help=off/i.test(document.cookie)) {
-        GLOBAL_ACTIONS['toggle-help']();
-        GLOBAL_ACTIONS['close-help']();
-    }
-
-    // wavesurfer options
-    var options = {
-        container: document.querySelector('#audioclip'),
-        progressColor: '#f4364c',
-        waveColor: '#3f88c5',
-        cursorWidth: 2,
-        cursorColor: '#3f88c5',
-        barWidth: 2,
-        normalize: true,
-        backend: 'MediaElement',
-        height: 95
+var getParams = getParameters();
+//if('id' in getParams) {              // UNCOMMENT WHEN DEPLOYED
+    //getURLs(getParams['id']);        // UNCOMMENT WHEN DEPLOYED
+    pageOptions = {
+        metaURL: 'transcript/new-york-rock_meta.json',
+        transcriptURL: 'transcript/new-york-rock_prepared.json',
+        audioURL: 'audio/new-york-rock.mp3'
     };
+    init();
+//}                                    // UNCOMMENT WHEN DEPLOYED
 
-    // initialize wavesurfer with options
-    wavesurfer.init(options);
-
-    // load metadata and audio
-    loadJSON('transcript/testimony_meta.json', function(text) {
-        var metadata = JSON.parse(text);
-        silences = metadata.silences;
-        wavesurfer.load('audio/testimony.mp3', metadata.peaks, 'none');
-    });
-
-    // load transcript
-
-
-    // handle events while playing
-    wavesurfer.on('audioprocess', function() {
-        curr = wavesurfer.getCurrentTime().toFixed(1);
-        readWords();
-
-        if( curr in strikes ) {
-            wavesurfer.backend.seekTo(strikes[curr]);
+function init() {
+    document.addEventListener('DOMContentLoaded', function() {
+        // cookies
+        if(/hints=off/i.test(document.cookie)) {
+            GLOBAL_ACTIONS['toggle-hints']();
+        }
+        if(/help=off/i.test(document.cookie)) {
+            GLOBAL_ACTIONS['toggle-help']();
+            GLOBAL_ACTIONS['close-help']();
         }
 
-        if(playHighlights) {
-            if( curr in highlights ) {
-                wavesurfer.backend.seekTo(highlights[curr]);
-            }
-        }
+        // wavesurfer options
+        var options = {
+            container: document.querySelector('#audioclip'),
+            progressColor: '#f4364c',
+            waveColor: '#3f88c5',
+            cursorWidth: 2,
+            cursorColor: '#3f88c5',
+            barWidth: 2,
+            normalize: true,
+            backend: 'MediaElement',
+            height: 95
+        };
 
-        if(skipSilences) {
-            if( curr in silences ) {
-                wavesurfer.backend.seekTo(silences[curr]);
-            }
-        }
-    });
+        // initialize wavesurfer with options
+        wavesurfer.init(options);
 
-    wavesurfer.on('finish', function() {
-        GLOBAL_ACTIONS['stop']();
-    });
-
-    wavesurfer.on('seek', function() {
-        readWords();
-    });
-
-    // startup the page
-    wavesurfer.on('ready', function() {
-        var timeline = Object.create(WaveSurfer.Timeline);
-
-        var timeGap = (Math.floor(wavesurfer.getDuration() / 1000) * 100) / 2;
-        timeline.init({
-            wavesurfer: wavesurfer,
-            container: '#audioclip-timeline',
-            primaryColor: '#3f88c5',
-            seondaryColor: '#f4364c',
-            primaryFontColor: '#f6f7eb',
-            secondaryFontColor: '#f6f7eb',
-            timeInterval: timeGap,
-            height: 15
+        // load metadata and audio
+        loadJSON(pageOptions.metaURL, function(text) {
+            var metadata = JSON.parse(text);
+            silences = metadata.silences;
+            wavesurfer.load(pageOptions.audioURL, metadata.peaks, 'none');
         });
 
-        wavesurfer.addRegion({
-            id: 'dummy',
-            start: 0,
-            end: 0,
-            drag: false,
-            resize: false,
-            color: 'rgba(255, 255, 0, 0)'
-        });
+        // handle events while playing
+        wavesurfer.on('audioprocess', function() {
+            curr = wavesurfer.getCurrentTime().toFixed(1);
+            readWords();
 
-        resizeBody();
-        enableUI();
-        [].forEach.call(document.querySelectorAll('.speaker'), function(el) {
-            if(/Unknown Speaker/i.test(el.value)) {
-                globaluksp++;
+            if( curr in strikes ) {
+                wavesurfer.backend.seekTo(strikes[curr]);
+            }
+
+            if(playHighlights) {
+                if( curr in highlights ) {
+                    wavesurfer.backend.seekTo(highlights[curr]);
+                }
+            }
+
+            if(skipSilences) {
+                if( curr in silences ) {
+                    wavesurfer.backend.seekTo(silences[curr]);
+                }
             }
         });
-        activeSpeed();
 
-        nodeObserver = new MutationObserver(function(mutation) {
-            nodeMutation(mutation);
-        });
-        wordObserver = new MutationObserver(function(mutation) {
-            wordMutation(mutation);
-        });
-        loadJSON('transcript/testimony_prepared.json', function(text) {
-            transcript = JSON.parse(text);
-            pastStack.push(JSON.stringify(transcript));
-            fillWords();
+        wavesurfer.on('finish', function() {
+            GLOBAL_ACTIONS['stop']();
         });
 
-        setInterval(function() {
-            saveJSON(false);
-        }, 60000)
+        wavesurfer.on('seek', function() {
+            readWords();
+        });
+
+        // startup the page
+        wavesurfer.on('ready', function() {
+            var timeline = Object.create(WaveSurfer.Timeline);
+
+            var timeGap = (Math.floor(wavesurfer.getDuration() / 1000) * 100) / 2;
+            timeline.init({
+                wavesurfer: wavesurfer,
+                container: '#audioclip-timeline',
+                primaryColor: '#3f88c5',
+                seondaryColor: '#f4364c',
+                primaryFontColor: '#f6f7eb',
+                secondaryFontColor: '#f6f7eb',
+                timeInterval: timeGap,
+                height: 15
+            });
+
+            wavesurfer.addRegion({
+                id: 'dummy',
+                start: 0,
+                end: 0,
+                drag: false,
+                resize: false,
+                color: 'rgba(255, 255, 0, 0)'
+            });
+
+            resizeBody();
+            enableUI();
+            [].forEach.call(document.querySelectorAll('.speaker'), function(el) {
+                if(/Unknown Speaker/i.test(el.value)) {
+                    globaluksp++;
+                }
+            });
+            activeSpeed();
+
+            nodeObserver = new MutationObserver(function(mutation) {
+                nodeMutation(mutation);
+            });
+            wordObserver = new MutationObserver(function(mutation) {
+                wordMutation(mutation);
+            });
+            loadJSON(pageOptions.transcriptURL, function(text) {
+                transcript = JSON.parse(text);
+                pastStack.push(JSON.stringify(transcript));
+                fillWords();
+                checkDeepLink(getParams);
+            });
+
+            setInterval(function() {
+                saveJSON(false);
+            }, 60000)
+        });
     });
-});
 
 
-// Event handlers
-document.addEventListener('DOMContentLoaded', function() {
-    // buttons
-    [].forEach.call(document.querySelectorAll('[data-action]'), function(el) {
-        el.addEventListener('click', function(e) {
-            var action = e.currentTarget.dataset.action;
-            if(action in GLOBAL_ACTIONS) {
-                e.preventDefault();
-                GLOBAL_ACTIONS[action]();
-            }
-        });
-    });
-
-    // volume
-    document.getElementById('volumerange').addEventListener('change', function() {
-        //document.getElementById('volume').innerHTML = this.value;
-        wavesurfer.setVolume(this.value / 100);
-    });
-
-    // keypresses
-    var shortcutWrapper = document.getElementById('shortcut-wrapper');
-    var shift_key = document.getElementById('shift-key');
-    var space_key = document.getElementById('space-key');
-    var extra_key = document.getElementById('extra-key');
-    document.addEventListener('keydown', function(e) {
-        var map = {
-            32: 'play',         // space
-            82: 'rewind',       // R
-            72: 'highlight',    // H
-            74: 'strike',       // J
-            90: 'undo',         // Z
-            83: 'save',         // S
-        }
-        if(e.ctrlKey) {
-            shortcutWrapper.classList.remove('hidden');
-            if(e.shiftKey) {
-                shift_key.classList.remove('hidden');
-            }
-            var action = map[e.keyCode];
-            if(action in GLOBAL_ACTIONS) {
-                e.preventDefault();
-                if(e.shiftKey && action == 'undo') {
-                    extra_key.innerHTML = 'Z';
-                    extra_key.classList.remove('hidden');
-                    GLOBAL_ACTIONS['redo']();
-                } else {
-                    if(e.keyCode == 32) {
-                        space_key.classList.remove('hidden');
-                    } else {
-                        extra_key.innerHTML = e.key.toUpperCase();
-                        extra_key.classList.remove('hidden');
-                    }
+    // Event handlers
+    document.addEventListener('DOMContentLoaded', function() {
+        // buttons
+        [].forEach.call(document.querySelectorAll('[data-action]'), function(el) {
+            el.addEventListener('click', function(e) {
+                var action = e.currentTarget.dataset.action;
+                if(action in GLOBAL_ACTIONS) {
+                    e.preventDefault();
                     GLOBAL_ACTIONS[action]();
                 }
-            }
-        }
-    });
-
-    document.addEventListener('keyup', function(e) {
-        if(!/hidden/i.test(shortcutWrapper.classList.toString())) {
-            shortcutWrapper.classList.add('hidden');
-        }
-        if(!/hidden/i.test(shift_key.classList.toString())) {
-            shift_key.classList.add('hidden');
-        }
-        if(!/hidden/i.test(extra_key.classList.toString())) {
-            extra_key.classList.add('hidden');
-        }
-        if(!/hidden/i.test(space_key.classList.toString())) {
-            space_key.classList.add('hidden');
-        }
-    })
-
-    document.getElementById('find').addEventListener('keyup', function() {
-        var input = this.value;
-        [].forEach.call(document.querySelectorAll('.word'), function(el) {
-            if(el.innerText.search(input) >= 0) {
-                if(!/found/i.test(el.classList.toString())) {
-                    el.classList.add('found');
-                }
-            } else {
-                if(/found/i.test(el.classList.toString())) {
-                    el.classList.remove('found');
-                }
-            }
-        });
-    });
-
-    document.getElementById('find-replace-form').addEventListener('submit', function(e) {
-        e.preventDefault();
-        var foundWord = document.getElementById('find').value;
-        var replaceWord = document.getElementById('replace').value;
-        var counter = 0;
-        [].forEach.call(document.querySelectorAll('.word'), function(el) {
-            if(el.innerText.search(foundWord) >= 0) {
-                el.innerText = el.innerText.replace(foundWord, replaceWord);
-                counter++;
-            }
-        });
-        document.getElementById('find-replace-wrapper').classList.add('hidden');
-        setTimeout(function() {
-            [].forEach.call(document.querySelectorAll('.found'), function(el) {
-                el.classList.remove('found');
             });
-        }, 1000);
-        setTimeout(function() {
-            alert('Replaced ' + counter + ' occurrences of \'' + foundWord + '\' with \'' + replaceWord + '\'.');
-        }, 100);
-    });
+        });
 
-    var range;
-    document.getElementById('audioclip').addEventListener('mousedown', function(e) {
-        setTimeout(function() {
-            var startEle = document.getElementsByClassName('read');
-            range = document.createRange();
-            try {
-                range.setStart(startEle[startEle.length - 1], 0);
-            } catch (exception) {}
-        }, 100);
-    });
+        // volume
+        document.getElementById('volumerange').addEventListener('change', function() {
+            //document.getElementById('volume').innerHTML = this.value;
+            wavesurfer.setVolume(this.value / 100);
+        });
 
-    document.getElementById('audioclip').addEventListener('mouseup', function(e) {
-        setTimeout(function() {
-            var endEle = document.getElementsByClassName('read');
-            range.setEnd(endEle[endEle.length - 1], 0);
-            var sel = window.getSelection();
-            sel.removeAllRanges();
-            sel.addRange(range);
-        }, 100);
+        // keypresses
+        var shortcutWrapper = document.getElementById('shortcut-wrapper');
+        var shift_key = document.getElementById('shift-key');
+        var space_key = document.getElementById('space-key');
+        var extra_key = document.getElementById('extra-key');
+        document.addEventListener('keydown', function(e) {
+            var map = {
+                32: 'play',         // space
+                82: 'rewind',       // R
+                72: 'highlight',    // H
+                74: 'strike',       // J
+                90: 'undo',         // Z
+                83: 'save',         // S
+            }
+            if(e.ctrlKey) {
+                shortcutWrapper.classList.remove('hidden');
+                if(e.shiftKey) {
+                    shift_key.classList.remove('hidden');
+                }
+                var action = map[e.keyCode];
+                if(action in GLOBAL_ACTIONS) {
+                    e.preventDefault();
+                    if(e.shiftKey && action == 'undo') {
+                        extra_key.innerHTML = 'Z';
+                        extra_key.classList.remove('hidden');
+                        GLOBAL_ACTIONS['redo']();
+                    } else {
+                        if(e.keyCode == 32) {
+                            space_key.classList.remove('hidden');
+                        } else {
+                            extra_key.innerHTML = e.key.toUpperCase();
+                            extra_key.classList.remove('hidden');
+                        }
+                        GLOBAL_ACTIONS[action]();
+                    }
+                }
+            }
+        });
+
+        document.addEventListener('keyup', function(e) {
+            if(!/hidden/i.test(shortcutWrapper.classList.toString())) {
+                shortcutWrapper.classList.add('hidden');
+            }
+            if(!/hidden/i.test(shift_key.classList.toString())) {
+                shift_key.classList.add('hidden');
+            }
+            if(!/hidden/i.test(extra_key.classList.toString())) {
+                extra_key.classList.add('hidden');
+            }
+            if(!/hidden/i.test(space_key.classList.toString())) {
+                space_key.classList.add('hidden');
+            }
+        })
+
+        document.getElementById('find').addEventListener('keyup', function() {
+            var input = this.value;
+            [].forEach.call(document.querySelectorAll('.word'), function(el) {
+                if(el.innerText.search(input) >= 0) {
+                    if(!/found/i.test(el.classList.toString())) {
+                        el.classList.add('found');
+                    }
+                } else {
+                    if(/found/i.test(el.classList.toString())) {
+                        el.classList.remove('found');
+                    }
+                }
+            });
+        });
+
+        document.getElementById('find-replace-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var foundWord = document.getElementById('find').value;
+            var replaceWord = document.getElementById('replace').value;
+            var counter = 0;
+            [].forEach.call(document.querySelectorAll('.word'), function(el) {
+                if(el.innerText.search(foundWord) >= 0) {
+                    el.innerText = el.innerText.replace(foundWord, replaceWord);
+                    counter++;
+                }
+            });
+            document.getElementById('find-replace-wrapper').classList.add('hidden');
+            setTimeout(function() {
+                [].forEach.call(document.querySelectorAll('.found'), function(el) {
+                    el.classList.remove('found');
+                });
+            }, 1000);
+            setTimeout(function() {
+                alert('Replaced ' + counter + ' occurrences of \'' + foundWord + '\' with \'' + replaceWord + '\'.');
+            }, 100);
+        });
+
+        var range;
+        document.getElementById('audioclip').addEventListener('mousedown', function(e) {
+            setTimeout(function() {
+                var startEle = document.getElementsByClassName('read');
+                range = document.createRange();
+                try {
+                    range.setStart(startEle[startEle.length - 1], 0);
+                } catch (exception) {}
+            }, 100);
+        });
+
+        document.getElementById('audioclip').addEventListener('mouseup', function(e) {
+            setTimeout(function() {
+                var endEle = document.getElementsByClassName('read');
+                range.setEnd(endEle[endEle.length - 1], 0);
+                var sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(range);
+            }, 100);
+        });
     });
-});
+}

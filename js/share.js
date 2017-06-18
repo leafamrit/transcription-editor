@@ -780,12 +780,7 @@ function readWords() {
     }
 }
 
-function checkDeepLink() {
-    var getVars = {};
-    window.location.search.slice(1).split('&').forEach(function(getVar) {
-        var temp = getVar.split('=');
-        getVars[temp[0]] = temp[1];
-    });
+function checkDeepLink(getVars) {
     if('t' in getVars) {
         var time = 0;
         if(getVars.t.split('h').length > 1) {
@@ -807,162 +802,197 @@ function checkDeepLink() {
     }
 }
 
+function getParameters() {
+    var getVars = {};
+    window.location.search.slice(1).split('&').forEach(function(getVar) {
+        var temp = getVar.split('=');
+        getVars[temp[0]] = temp[1];
+    });
+    return getVars;
+}
+
+function getURLs(id) {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if(this.readyState === 4 && this.status === 200) {
+            pageOptions = JSON.parse(this.responseText);
+            init();
+        }
+    }
+    xhttp.open('POST', './save.php', true);
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhttp.send('id=' + id);
+}
+
 // Initialization
-document.addEventListener('DOMContentLoaded', function() {
-    // cookies
-    if(/hints=off/i.test(document.cookie)) {
-        GLOBAL_ACTIONS['toggle-hints']();
-    }
-    if(/help=off/i.test(document.cookie)) {
-        GLOBAL_ACTIONS['toggle-help']();
-        GLOBAL_ACTIONS['close-help']();
-    }
-
-    // wavesurfer options
-    var options = {
-        container: document.querySelector('#audioclip'),
-        progressColor: '#f4364c',
-        waveColor: '#3f88c5',
-        cursorWidth: 2,
-        cursorColor: '#3f88c5',
-        barWidth: 2,
-        normalize: true,
-        backend: 'MediaElement',
-        height: 95
+var getParams = getParameters();
+//if('id' in getParams) {              // UNCOMMENT WHEN DEPLOYED
+    //getURLs(getParams['id']);        // UNCOMMENT WHEN DEPLOYED
+    pageOptions = {
+        metaURL: 'transcript/new-york-rock_meta.json',
+        transcriptURL: 'transcript/new-york-rock_prepared.json',
+        audioURL: 'audio/new-york-rock.mp3'
     };
+    init();
+//}                                    // UNCOMMENT WHEN DEPLOYED
 
-    // initialize wavesurfer with options
-    wavesurfer.init(options);
-
-    // load metadata and audio
-    loadJSON('transcript/testimony_meta.json', function(text) {
-        var metadata = JSON.parse(text);
-        silences = metadata.silences;
-        wavesurfer.load('audio/testimony.mp3', metadata.peaks, 'none');
-    });
-
-    // handle events while playing
-    wavesurfer.on('audioprocess', function() {
-        curr = wavesurfer.getCurrentTime().toFixed(1);
-        readWords();
-
-        if( curr in strikes ) {
-            wavesurfer.backend.seekTo(strikes[curr]);
+function init() {
+    document.addEventListener('DOMContentLoaded', function() {
+        // cookies
+        if(/hints=off/i.test(document.cookie)) {
+            GLOBAL_ACTIONS['toggle-hints']();
+        }
+        if(/help=off/i.test(document.cookie)) {
+            GLOBAL_ACTIONS['toggle-help']();
+            GLOBAL_ACTIONS['close-help']();
         }
 
-        if(playHighlights) {
-            if( curr in highlights ) {
-                wavesurfer.backend.seekTo(highlights[curr]);
+        // wavesurfer options
+        var options = {
+            container: document.querySelector('#audioclip'),
+            progressColor: '#f4364c',
+            waveColor: '#3f88c5',
+            cursorWidth: 2,
+            cursorColor: '#3f88c5',
+            barWidth: 2,
+            normalize: true,
+            backend: 'MediaElement',
+            height: 95
+        };
+
+        // initialize wavesurfer with options
+        wavesurfer.init(options);
+
+        // load metadata and audio
+        loadJSON(pageOptions.metaURL, function(text) {
+            var metadata = JSON.parse(text);
+            silences = metadata.silences;
+            wavesurfer.load(pageOptions.audioURL, metadata.peaks, 'none');
+        });
+
+        // handle events while playing
+        wavesurfer.on('audioprocess', function() {
+            curr = wavesurfer.getCurrentTime().toFixed(1);
+            readWords();
+
+            if( curr in strikes ) {
+                wavesurfer.backend.seekTo(strikes[curr]);
             }
-        }
 
-        if(skipSilences) {
-            if( curr in silences ) {
-                wavesurfer.backend.seekTo(silences[curr]);
-            }
-        }
-    });
-
-    wavesurfer.on('finish', function() {
-        GLOBAL_ACTIONS['stop']();
-    });
-
-    wavesurfer.on('seek', function() {
-        readWords();
-    });
-
-    // startup the page
-    wavesurfer.on('ready', function() {
-        var timeline = Object.create(WaveSurfer.Timeline);
-
-        timeline.init({
-            wavesurfer: wavesurfer,
-            container: '#audioclip-timeline',
-            primaryColor: '#3f88c5',
-            seondaryColor: '#f4364c',
-            primaryFontColor: '#f6f7eb',
-            secondaryFontColor: '#f6f7eb',
-            timeInterval: 150,
-            height: 15
-        });
-
-        wavesurfer.addRegion({
-            id: 'dummy',
-            start: 0,
-            end: 0,
-            drag: false,
-            resize: false,
-            color: 'rgba(255, 255, 0, 0)'
-        });
-
-        resizeBody();
-        enableUI();
-
-        activeSpeed();
-
-        loadJSON('transcript/testimony_prepared.json', function(text) {
-            transcript = JSON.parse(text);
-            fillWords();
-            checkDeepLink();
-        });
-    });
-});
-
-
-// Event handlers
-document.addEventListener('DOMContentLoaded', function() {
-    // buttons
-    [].forEach.call(document.querySelectorAll('[data-action]'), function(el) {
-        el.addEventListener('click', function(e) {
-            var action = e.currentTarget.dataset.action;
-            if(action in GLOBAL_ACTIONS) {
-                e.preventDefault();
-                GLOBAL_ACTIONS[action]();
-            }
-        });
-    });
-
-    // volume
-    document.getElementById('volumerange').addEventListener('change', function() {
-        //document.getElementById('volume').innerHTML = this.value;
-        wavesurfer.setVolume(this.value / 100);
-    });
-
-    // keypresses
-    var shortcutWrapper = document.getElementById('shortcut-wrapper');
-    var shift_key = document.getElementById('shift-key');
-    var space_key = document.getElementById('space-key');
-    var extra_key = document.getElementById('extra-key');
-    document.addEventListener('keydown', function(e) {
-        var map = {
-            32: 'play',         // space
-            82: 'rewind'        // R
-        }
-        if(e.ctrlKey) {
-            shortcutWrapper.classList.remove('hidden');
-            var action = map[e.keyCode];
-            if(action in GLOBAL_ACTIONS) {
-                e.preventDefault();
-                if(e.keyCode == 32) {
-                    space_key.classList.remove('hidden');
-                } else {
-                    extra_key.innerHTML = e.key.toUpperCase();
-                    extra_key.classList.remove('hidden');
+            if(playHighlights) {
+                if( curr in highlights ) {
+                    wavesurfer.backend.seekTo(highlights[curr]);
                 }
-                GLOBAL_ACTIONS[action]();
             }
-        }
+
+            if(skipSilences) {
+                if( curr in silences ) {
+                    wavesurfer.backend.seekTo(silences[curr]);
+                }
+            }
+        });
+
+        wavesurfer.on('finish', function() {
+            GLOBAL_ACTIONS['stop']();
+        });
+
+        wavesurfer.on('seek', function() {
+            readWords();
+        });
+
+        // startup the page
+        wavesurfer.on('ready', function() {
+            var timeline = Object.create(WaveSurfer.Timeline);
+
+            timeline.init({
+                wavesurfer: wavesurfer,
+                container: '#audioclip-timeline',
+                primaryColor: '#3f88c5',
+                seondaryColor: '#f4364c',
+                primaryFontColor: '#f6f7eb',
+                secondaryFontColor: '#f6f7eb',
+                timeInterval: 150,
+                height: 15
+            });
+
+            wavesurfer.addRegion({
+                id: 'dummy',
+                start: 0,
+                end: 0,
+                drag: false,
+                resize: false,
+                color: 'rgba(255, 255, 0, 0)'
+            });
+
+            resizeBody();
+            enableUI();
+
+            activeSpeed();
+
+            loadJSON(pageOptions.transcriptURL, function(text) {
+                transcript = JSON.parse(text);
+                fillWords();
+                checkDeepLink(getParams);
+            });
+        });
     });
 
-    document.addEventListener('keyup', function(e) {
-        if(!/hidden/i.test(shortcutWrapper.classList.toString())) {
-            shortcutWrapper.classList.add('hidden');
-        }
-        if(!/hidden/i.test(extra_key.classList.toString())) {
-            extra_key.classList.add('hidden');
-        }
-        if(!/hidden/i.test(space_key.classList.toString())) {
-            space_key.classList.add('hidden');
-        }
+
+    // Event handlers
+    document.addEventListener('DOMContentLoaded', function() {
+        // buttons
+        [].forEach.call(document.querySelectorAll('[data-action]'), function(el) {
+            el.addEventListener('click', function(e) {
+                var action = e.currentTarget.dataset.action;
+                if(action in GLOBAL_ACTIONS) {
+                    e.preventDefault();
+                    GLOBAL_ACTIONS[action]();
+                }
+            });
+        });
+
+        // volume
+        document.getElementById('volumerange').addEventListener('change', function() {
+            //document.getElementById('volume').innerHTML = this.value;
+            wavesurfer.setVolume(this.value / 100);
+        });
+
+        // keypresses
+        var shortcutWrapper = document.getElementById('shortcut-wrapper');
+        var shift_key = document.getElementById('shift-key');
+        var space_key = document.getElementById('space-key');
+        var extra_key = document.getElementById('extra-key');
+        document.addEventListener('keydown', function(e) {
+            var map = {
+                32: 'play',         // space
+                82: 'rewind'        // R
+            }
+            if(e.ctrlKey) {
+                shortcutWrapper.classList.remove('hidden');
+                var action = map[e.keyCode];
+                if(action in GLOBAL_ACTIONS) {
+                    e.preventDefault();
+                    if(e.keyCode == 32) {
+                        space_key.classList.remove('hidden');
+                    } else {
+                        extra_key.innerHTML = e.key.toUpperCase();
+                        extra_key.classList.remove('hidden');
+                    }
+                    GLOBAL_ACTIONS[action]();
+                }
+            }
+        });
+
+        document.addEventListener('keyup', function(e) {
+            if(!/hidden/i.test(shortcutWrapper.classList.toString())) {
+                shortcutWrapper.classList.add('hidden');
+            }
+            if(!/hidden/i.test(extra_key.classList.toString())) {
+                extra_key.classList.add('hidden');
+            }
+            if(!/hidden/i.test(space_key.classList.toString())) {
+                space_key.classList.add('hidden');
+            }
+        });
     });
-});
+}
