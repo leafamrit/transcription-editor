@@ -377,7 +377,7 @@ var GLOBAL_ACTIONS = {
                     if(words[i][3]) {
                         if(!words[i][3].strike) {
                             if(words[i][3].highlight) {
-                                sentence += '<w:r><w:t>' + words[i][0] + '</w:t></w:r>';
+                                sentence += '<w:r><w:rPr><w:highlight w:val="yellow" /></w:rPr><w:t>' + words[i][0] + '</w:t></w:r>';
                             } else {
                                 sentence += '<w:r><w:t>' + words[i][0] + '</w:t></w:r>';
                             }
@@ -790,19 +790,13 @@ function saveJSON(alertUser) {
 // generate highlight array
 function getHighlights() {
     var keys = Array();
-    var temp = Array();
 
-    // sort regions in waveform according to time
-    for(var i in wavesurfer.regions.list) {
-        if(/^h/i.test(i)) {
-            temp.push(wavesurfer.regions.list[i].start);
-        }
-    }
-    temp.sort(function(a, b) { return a - b; });
-    temp = temp.map(function(item) { return 'h' + item; });
-    // get sorted regions
-    temp.forEach(function(item) {
-        keys.push(wavesurfer.regions.list[item]);
+    // get highlighted starts and ends
+    [].forEach.call(document.getElementsByClassName('highlight'), function(el) {
+        keys.push({
+            start: Number(el.getAttribute('starttime')),
+            end: Number(el.getAttribute('endtime'))
+        });
     });
 
     // clear array to remove garbage data
@@ -833,20 +827,13 @@ function getHighlights() {
 
 function getStrikes() {
     var keys = Array();
-    var temp = Array();
 
-    // sort striked regions in waveform
-    for(var i in wavesurfer.regions.list) {
-        if(/^s/i.test(i)) {
-            temp.push(wavesurfer.regions.list[i].start);
-        }
-    }
-    temp.sort(function(a, b) { return a - b; });
-    temp = temp.map(function(item) { return 's' + item; });
-
-    // get sorted regions
-    temp.forEach(function(item) {
-        keys.push(wavesurfer.regions.list[item]);
+    // get striked starts and ends
+    [].forEach.call(document.getElementsByClassName('strike'), function(el) {
+        keys.push({
+            start: Number(el.getAttribute('starttime')),
+            end: Number(el.getAttribute('endtime'))
+        });
     });
 
     // clear array to remove garbage
