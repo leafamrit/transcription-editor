@@ -433,11 +433,11 @@ function toHHMMssmmm(seconds) {
     if( hr < 10 ) { hr = '0' + hr; }
     if( min < 10 ) { min = '0' + min; }
     if( sec < 10 ) { sec = '0' + sec; }
-    if( milliseconds < 100 ) { 
+    if( milliseconds < 100 ) {
         if( milliseconds < 10 ) {
-            milliseconds = '00' + milliseconds; 
+            milliseconds = '00' + milliseconds;
         } else {
-            milliseconds = '0' + milliseconds; 
+            milliseconds = '0' + milliseconds;
         }
     }
     return hr + ':' + min + ':' + sec + ',' + milliseconds;
@@ -482,7 +482,7 @@ function loadJSON(filepath, callback) {
 function getHighlights() {
     var keys = Array();
     var temp = Array();
-    
+
     // sort regions in waveform according to time
     for(var i in wavesurfer.regions.list) {
         if(/^h/i.test(i)) {
@@ -539,7 +539,7 @@ function getStrikes() {
     temp.forEach(function(item) {
         keys.push(wavesurfer.regions.list[item]);
     });
-    
+
     // clear array to remove garbage
     strikes = [];
 
@@ -605,19 +605,19 @@ function fillWords() {
     var maxAlternativeIndex;
     var i = 0;
     var globalspkr_i = 0;
-    
+
     var textArea = document.getElementById('transcript-area');
 
     // clear the div before adding content (helpful when undo / redo refreshes content)
     while(textArea.hasChildNodes()) {
         textArea.removeChild(textArea.lastChild);
     }
-    
+
     // for each result
     results.forEach(function(result, resultIndex) {
         var maxConfidence = 0;
         var maxAlternative;
-        
+
         // find chunk with maximum confidence
         result.alternatives.forEach(function(alternative, alternativeIndex) {
             if(alternative.confidence > maxConfidence) {
@@ -733,7 +733,7 @@ function fillWords() {
                     wavesurfer.regions.list[sWaveId].remove();
                 }
             }
-            
+
             // add current word to speaker
             div.appendChild(currWord);
 
@@ -855,7 +855,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 wavesurfer.backend.seekTo(highlights[curr]);
             }
         }
-        
+
         if(skipSilences) {
             if( curr in silences ) {
                 wavesurfer.backend.seekTo(silences[curr]);
@@ -863,7 +863,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    wavesurfer.on('finish', function() { 
+    wavesurfer.on('finish', function() {
         GLOBAL_ACTIONS['stop']();
     });
 
@@ -903,6 +903,7 @@ document.addEventListener('DOMContentLoaded', function() {
         loadJSON('transcript/testimony_prepared.json', function(text) {
             transcript = JSON.parse(text);
             fillWords();
+            checkDeepLink();
         });
     });
 });
@@ -941,6 +942,7 @@ document.addEventListener('DOMContentLoaded', function() {
             shortcutWrapper.classList.remove('hidden');
             var action = map[e.keyCode];
             if(action in GLOBAL_ACTIONS) {
+                e.preventDefault();
                 if(e.keyCode == 32) {
                     space_key.classList.remove('hidden');
                 } else {

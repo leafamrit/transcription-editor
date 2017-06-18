@@ -1,7 +1,7 @@
 'use strict';
 
-var filename, transcript;
-var audioloaded = false, transcriptloaded = false;
+var fileURL, transcript;
+var audioprocessed = false, transcriptloaded = false, audiouploaded = false;
 var metadata = {}
 
 // Create an instance
@@ -71,11 +71,11 @@ document.addEventListener('DOMContentLoaded', function () {
             // Load the file into wavesurfer
             if (e.dataTransfer.files.length == 1) {
                 if(/audio/i.test(e.dataTransfer.files[0].type)) {
-                    filename = e.dataTransfer.files[0].name;
+                    uploadFile(e.dataTransfer.files[0]);
                     wavesurfer.loadBlob(e.dataTransfer.files[0]);
                     wavesurfer.on('ready', function() {
-                        audioloaded = true;
-                        document.getElementById('audio-loaded').classList.add('loaded');
+                        audioprocessed = true;
+                        document.getElementById('audio-processed').classList.add('loaded');
                     });
                 } else if(/json/i.test(e.dataTransfer.files[0].type)) {
                     var reader = new FileReader();
@@ -120,9 +120,9 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-function getSilences(buffer) {
+function getSilences() {
     var silences = {};
-    var peaks = wavesurfer.backend.getPeaks(buffer);
+    var peaks = wavesurfer.backend.getPeaks(Math.floor(wavesurfer.backend.buffer.length / 100));
     var unit = 0.00002267573 * 100;
     var start, end;
     for(var i = 0; i < peaks.length; i++) {
@@ -131,7 +131,6 @@ function getSilences(buffer) {
             while(peaks[i] < 0.01) {i++;}
             end = Number(((unit * i)).toFixed(1));
             if(end > Number((start + 0.2).toFixed(1))) {
-                //silences[start] = Number((end - start).toFixed(1));
                 silences[(start - 0.2).toFixed(1)] = Number(end.toFixed(1));
                 silences[(start - 0.1).toFixed(1)] = Number(end.toFixed(1));
                 silences[start.toFixed(1)] = Number(end.toFixed(1));
@@ -145,10 +144,12 @@ function getSilences(buffer) {
 
 function saveJSON() {
     var xhttp = new XMLHttpRequest();
+    var form = new FormData();
+    form.append('audioclip', filename);
     xhttp.onreadystatechange = function() {
         if(this.readyState === 4 && this.status === 200) {
             console.log(this.responseText);
-            audioloaded = false; transcriptloaded = false;
+            audioprocessed = false; transcriptloaded = false;
             document.getElementById('bt-analyze').setAttribute('disabled', '');
             alert('Waveform successfully prepared.');
         } else if(this.readyState === 4 && this.status != 200) {
@@ -160,12 +161,33 @@ function saveJSON() {
     xhttp.send('metadata=' + JSON.stringify(metadata) + '&filename=' + filename + '&transcript=' + transcript);
 }
 
+function uploadFile(file) {
+    var form = new FormData();
+    form.append('audioclip', file);
+    var xhttp = new XMLHttpRequest();
+    xhttp.onprogress = function(e) {
+        var progressDiv = document.getElementById('upload-progress-bar');
+        var progressBar = progressDiv.getElementsByClassName('progress-bar')[0];
+        progressDiv.style.display = 'block';
+        progressBar.style.width = (Math.round(e.loaded / e.total) * 100) + '%';
+    }
+    xhttp.onreadystatechange = function() {
+        if(this.readyState === 4 && this.status === 200) {
+            fileURL = this.responseText;
+            audiouploaded = true;
+            document.getElementById('audio-uploaded').classList.add('loaded');
+            wavesurfer.fireEvent('ready');
+        }
+    }
+    xhttp.open('POST', './save.php');
+    xhttp.send(form);
+}
+
 function getData() {
-    var buffer = Math.floor(wavesurfer.backend.buffer.length / 100);
     metadata = '{ "peaks": [' + wavesurfer.backend.getPeaks(500).toString() + '] }';
     metadata = JSON.parse(metadata);
-    metadata.silences = getSilences(buffer);
-    document.getElementById('filename').innerHTML = '<code>Filename: ' + filename + '</code>';
+    metadata.silences = getSilences();
+    document.getElementById('filename').innerHTML = '<code>FileURL: ' + fileURL + '</code>';
     document.getElementById('result').setAttribute('style', 'overflow-x: scroll');
     document.getElementById('result').innerHTML = '<code>Metadata:<br/>' + JSON.stringify(metadata) + '</code>';
     document.getElementsByClassName('instructions')[0].setAttribute('style', 'display: block');
@@ -173,7 +195,7 @@ function getData() {
 }
 
 wavesurfer.on('ready', function() {
-    if(audioloaded && transcriptloaded) {
+    if(audioprocessed && transcriptloaded && audiouploaded) {
         document.getElementById('bt-analyze').removeAttribute('disabled');
     }
 });

@@ -30,17 +30,20 @@
                 <div class="progress progress-striped active" id="progress-bar">
                     <div class="progress-bar progress-bar-info"></div>
                 </div>
-
-                <!-- Here be the waveform -->
+            </div>
+            <div class="progress progress-striped active" id="upload-progress-bar">
+                <div class="progress-bar progress-bar-info"></div>
             </div>
         </div>
 
         <p class="lead pull-center" id="drop">
             Drag'n'drop the audio file and transcript here.
         </p>
+
         <button id="bt-analyze" onclick="getData()" disabled="">Prepare!</button>
-        <button class="load-confirm" id="json-loaded">Transcript Loaded</button>
-        <button class="load-confirm" id="audio-loaded">Audio Loaded</button>
+        <button class="load-confirm" id="json-loaded">Transcript Ready</button>
+        <button class="load-confirm" id="audio-processed">Audio Processed</button>
+        <button class="load-confirm" id="audio-uploaded">Audio Uploaded</button>
         <div class="instructions" style="display: none;">
             <p class="messagetext" id="filename"></p>
             <p class="messagetext" id="result"></p>
