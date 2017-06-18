@@ -4,7 +4,6 @@ var wavesurfer = Object.create(WaveSurfer);
 var transcript;
 var silences = Array();
 var highlights = Array();
-var strikes = Array();
 
 var skipSilences = false;
 var playHighlights = false;
@@ -12,13 +11,13 @@ var playHighlights = false;
 var GLOBAL_ACTIONS = {
 
     'play': function() {
-        wavesurfer.playPause();
         togglePlayPause();
+        wavesurfer.playPause();
     },
 
     'stop': function() {
-        wavesurfer.stop();
         togglePlayPause();
+        wavesurfer.stop();
         readWords();
     },
 
@@ -62,6 +61,7 @@ var GLOBAL_ACTIONS = {
 
     'playhighlight': function() {
         if(!playHighlights) {
+            getHighlights();
             wavesurfer.seekTo(highlights[0] / wavesurfer.getDuration());
         }
         playHighlights = !playHighlights;
@@ -80,6 +80,18 @@ var GLOBAL_ACTIONS = {
         }
     },
 
+    'toggle-help': function() {
+        var helpSwitch = document.getElementById('help-switch');
+        helpSwitch.classList.toggle('off');
+        if(/off/i.test(helpSwitch.classList.toString())) {
+            helpSwitch.innerHTML = 'Show at Startup';
+            setCookie('help', 'off');
+        } else {
+            helpSwitch.innerHTML = 'Don\'t Show at Startup';
+            setCookie('help', 'on');
+        }
+    },
+
     'close-export': function() {
         document.getElementById('export-wrapper').classList.add('invisible');
         setTimeout(function() {
@@ -95,8 +107,8 @@ var GLOBAL_ACTIONS = {
     },
 
     'export-srt': function() {
-        var results = transcript.results;
-        var speakers = transcript.speaker_labels;
+        var results = transcript.results[0].results;
+        var speakers = transcript.results[0].speaker_labels;
         var counter = 1;
         var i = 0;
         var srt = Array();
@@ -122,7 +134,7 @@ var GLOBAL_ACTIONS = {
                             if(currentSpeaker != prevSpeaker) {
                                 sentence += '(' + currentSpeaker + ')';
                             }
-                            sentence += '<b>' + word[0] + '</b> ';
+                            sentence += '<b>' + word[0] + '</b>';
                         }
                     }
                 } else {
@@ -132,13 +144,13 @@ var GLOBAL_ACTIONS = {
                     if(word[3]) {
                         if(!word[3].strike) {
                             if(word[3].highlight) {
-                                sentence += '<b>' + word[0] + '</b> ';
+                                sentence += '<b>' + word[0] + '</b>';
                             } else {
-                                sentence += word[0] + ' ';
+                                sentence += word[0];
                             }
                         }
                     } else {
-                        sentence += word[0] + ' ';
+                        sentence += word[0];
                     }
                 }
                 prevSpeaker = currentSpeaker;
@@ -157,8 +169,8 @@ var GLOBAL_ACTIONS = {
     },
 
     'export-vtt': function() {
-        var results = transcript.results;
-        var speakers = transcript.speaker_labels;
+        var results = transcript.results[0].results;
+        var speakers = transcript.results[0].speaker_labels;
         var counter = 1;
         var i = 0;
         var vtt = Array();
@@ -184,9 +196,9 @@ var GLOBAL_ACTIONS = {
                     if(word[3]) {
                         if(!word[3].strike && word[3].highlight) {
                             if(currentSpeaker != prevSpeaker) {
-                                sentence += '(' + currentSpeaker + ')';
+                                sentence += '(' + currentSpeaker + ') ';
                             }
-                            sentence += '<b>' + word[0] + '</b> ';
+                            sentence += '<b>' + word[0] + '</b>';
                         }
                     }
                 } else {
@@ -196,13 +208,13 @@ var GLOBAL_ACTIONS = {
                     if(word[3]) {
                         if(!word[3].strike) {
                             if(word[3].highlight) {
-                                sentence += '<b>' + word[0] + '</b> ';
+                                sentence += '<b>' + word[0] + '</b>';
                             } else {
-                                sentence += word[0] + ' ';
+                                sentence += word[0];
                             }
                         }
                     } else {
-                        sentence += word[0] + ' ';
+                        sentence += word[0];
                     }
                 }
                 prevSpeaker = currentSpeaker;
@@ -221,8 +233,8 @@ var GLOBAL_ACTIONS = {
     },
 
     'export-pdf': function() {
-        var results = transcript.results;
-        var speakers = transcript.speaker_labels;
+        var results = transcript.results[0].results;
+        var speakers = transcript.results[0].speaker_labels;
         var words = Array();
         var currentSpeaker, nextSpeaker;
         var sentence = '';
@@ -262,7 +274,7 @@ var GLOBAL_ACTIONS = {
                             if(words[i][3].highlight) {
                                 sentence += currentPara;
                                 currentPara = '';
-                                sentence += words[i][0] + ' ';
+                                sentence += words[i][0];
                             }
                         }
                     }
@@ -270,36 +282,39 @@ var GLOBAL_ACTIONS = {
                     if(words[i][3]) {
                         if(!words[i][3].strike) {
                             if(words[i][3].highlight) {
-                                sentence += words[i][0] + ' ';
+                                sentence += words[i][0];
                             } else {
-                                sentence += words[i][0] + ' ';
+                                sentence += words[i][0];
                             }
                         }
                     } else {
-                        sentence += words[i][0] + ' ';
+                        sentence += words[i][0];
                     }
                 }
                 i++;
             } while(currentSpeaker == nextSpeaker && i < words.length);
             if(onlyHighlight && currentPara == '') {
-                sentence += ' [' + toHHMMssmmm(words[i - 1][2]).replace(',', '.') + ']\n\n';
+                sentence += '[' + toHHMMssmmm(words[i - 1][2]).replace(',', '.') + ']\n\n';
             } else if(!onlyHighlight && !currentPara) {
-                sentence += ' [' + toHHMMssmmm(words[i - 1][2]).replace(',', '.') + ']\n\n';
+                sentence += '[' + toHHMMssmmm(words[i - 1][2]).replace(',', '.') + ']\n\n';
             }
         }
 
         var pdf = new jsPDF();
-        pdf.setFontSize(12);
+        pdf.setFontSize(10);
         var splitSentence = pdf.splitTextToSize(sentence, 160);
-        pdf.text(splitSentence, 10, 10);
+        while(splitSentence.length > 0) {
+            pdf.text(splitSentence.splice(0, 70), 10, 10);
+            pdf.addPage();
+        }
         pdf.save('transcript.pdf');
 
         GLOBAL_ACTIONS['close-export']();
     },
 
     'export-doc': function() {
-        var results = transcript.results;
-        var speakers = transcript.speaker_labels;
+        var results = transcript.results[0].results;
+        var speakers = transcript.results[0].speaker_labels;
         var words = Array();
         var currentSpeaker, nextSpeaker;
         var sentence = '';
@@ -339,7 +354,7 @@ var GLOBAL_ACTIONS = {
                             if(words[i][3].highlight) {
                                 sentence += currentPara;
                                 currentPara = '';
-                                sentence += '<w:r><w:rPr><w:highlight w:val="yellow" /></w:rPr><w:t>' + words[i][0] + ' </w:t></w:r>';
+                                sentence += '<w:r><w:rPr><w:highlight w:val="yellow" /></w:rPr><w:t>' + words[i][0] + '</w:t></w:r>';
                             }
                         }
                     }
@@ -347,13 +362,13 @@ var GLOBAL_ACTIONS = {
                     if(words[i][3]) {
                         if(!words[i][3].strike) {
                             if(words[i][3].highlight) {
-                                sentence += '<w:r><w:t>' + words[i][0] + ' </w:t></w:r>';
+                                sentence += '<w:r><w:t>' + words[i][0] + '</w:t></w:r>';
                             } else {
-                                sentence += '<w:r><w:t>' + words[i][0] + ' </w:t></w:r>';
+                                sentence += '<w:r><w:t>' + words[i][0] + '</w:t></w:r>';
                             }
                         }
                     } else {
-                        sentence += '<w:r><w:t>' + words[i][0] + ' </w:t></w:r>';
+                        sentence += '<w:r><w:t>' + words[i][0] + '</w:t></w:r>';
                     }
                 }
                 i++;
@@ -498,11 +513,11 @@ function getHighlights() {
             }
         }
         if(keys.length > 1) {
-            highlights[(keys[i].end - 0.2).toFixed(1)] = Number((wavesurfer.getDuration() - 0.1).toFixed(1));
-            highlights[(keys[i].end - 0.1).toFixed(1)] = Number((wavesurfer.getDuration() - 0.1).toFixed(1));
-            highlights[keys[i].end.toFixed(1)] = Number((wavesurfer.getDuration() - 0.1).toFixed(1));
-            highlights[(keys[i].end + 0.1).toFixed(1)] = Number((wavesurfer.getDuration() - 0.1).toFixed(1));
-            highlights[(keys[i].end + 0.2).toFixed(1)] = Number((wavesurfer.getDuration() - 0.1).toFixed(1));
+            highlights[(keys[i].end - 0.2).toFixed(1)] = highlights['0'];
+            highlights[(keys[i].end - 0.1).toFixed(1)] = highlights['0'];
+            highlights[keys[i].end.toFixed(1)] = highlights['0'];
+            highlights[(keys[i].end + 0.1).toFixed(1)] = highlights['0'];
+            highlights[(keys[i].end + 0.2).toFixed(1)] = highlights['0'];
         }
     }
 }
@@ -565,7 +580,7 @@ function showHelp(event) {
 function enableUI() {
     document.getElementById('loader').classList.toggle('spinning');
     document.getElementById('main-container-mask').classList.toggle('invisible');
-    setInterval(function() {
+    setTimeout(function() {
         document.getElementById('main-container-mask').setAttribute('style', 'display: none');
     }, 30);
 }
@@ -579,19 +594,24 @@ function resizeBody() {
     var height = window.innerHeight - off;
     document.getElementsByClassName('transcript-container')[0].setAttribute('style', 'height: ' + height + 'px');
     document.getElementById('text-options').setAttribute('style', 'margin-top: ' + off + 'px');
-    document.getElementById('help-wrapper').setAttribute('style', 'top: ' + off + 'px');
 }
 
 // fill editor with words from transcript
 function fillWords() {
-    var results = transcript.results;
-    var speakers = transcript.speaker_labels;
+    var results = transcript.results[0].results;
+    var speakers = transcript.results[0].speaker_labels;
     var words = Array();
     var toReach = Array();
     var maxAlternativeIndex;
     var i = 0;
+    var globalspkr_i = 0;
     
     var textArea = document.getElementById('transcript-area');
+
+    // clear the div before adding content (helpful when undo / redo refreshes content)
+    while(textArea.hasChildNodes()) {
+        textArea.removeChild(textArea.lastChild);
+    }
     
     // for each result
     results.forEach(function(result, resultIndex) {
@@ -632,18 +652,30 @@ function fillWords() {
                 speakerName.id = 'speaker' + (i - 1);
                 speakerName.classList.add('speaker');
                 speakerName.setAttribute('readonly', '');
+                speakerName.setAttribute('name', 'speaker');
+                speakerName.setAttribute('speakername', currentSpeaker);
+                speakerName.setAttribute('speakerindex', (i - 1));
                 speakerName.setAttribute('style', 'width: ' + ((speakerName.value.length * 8) + 20) + 'px');
                 textArea.appendChild(speakerName);
             }
 
-            // start creating span for current word
-            currWord = document.createElement('span');
-            currWord.innerText = word[0] + " ";
-            currWord.setAttribute('title', word[1] + " - " + word[2]);
-            currWord.setAttribute('tabindex', '-1');
-            currWord.addEventListener('focus', function() { seekToWord(this); });
-            currWord.id = word[1];
-            currWord.classList.add('word');
+            // start creating span for current word if word is not blank
+            if(word[0].trim() != '') {
+                currWord = document.createElement('span');
+                currWord.innerHTML = word[0];
+                currWord.setAttribute('starttime', word[1]);
+                currWord.setAttribute('endtime', word[2]);
+                currWord.setAttribute('resultindex', resultIndex);
+                currWord.setAttribute('alternativeindex', maxAlternativeIndex);
+                currWord.setAttribute('wordindex', wordIndex);
+                currWord.setAttribute('speakerindex', globalspkr_i);
+                currWord.setAttribute('title', word[1] + " - " + word[2]);
+                currWord.setAttribute('tabindex', '-1');
+                currWord.addEventListener('focus', function() { seekToWord(this); });
+                currWord.id = word[1];
+                currWord.classList.add('word');
+            }
+            globalspkr_i++;
 
             // check if word highlighted or striked
             var hWaveId = 'h' + word[1];
@@ -733,9 +765,9 @@ function readWords() {
     if(currWord.id < wavesurfer.getCurrentTime()) {
         while(currWord && currWord.id < wavesurfer.getCurrentTime()) {
             currWord.classList.add('read');
-            var divEnds = document.getElementById('transcript-area').getBoundingClientRect();
             currWord = currWord.nextSibling ? currWord.nextSibling : currWord.parentElement.nextSibling.nextSibling.nextSibling.firstChild;
         }
+        var divEnds = document.getElementById('transcript-area').getBoundingClientRect();
         if(divEnds.bottom < currWord.getBoundingClientRect().bottom || divEnds.top > currWord.getBoundingClientRect().top) {
             currWord.scrollIntoView();
         }
@@ -777,6 +809,15 @@ function checkDeepLink() {
 
 // Initialization
 document.addEventListener('DOMContentLoaded', function() {
+    // cookies
+    if(/hints=off/i.test(document.cookie)) {
+        GLOBAL_ACTIONS['toggle-hints']();
+    }
+    if(/help=off/i.test(document.cookie)) {
+        GLOBAL_ACTIONS['toggle-help']();
+        GLOBAL_ACTIONS['close-help']();
+    }
+
     // wavesurfer options
     var options = {
         container: document.querySelector('#audioclip'),
@@ -784,8 +825,9 @@ document.addEventListener('DOMContentLoaded', function() {
         waveColor: '#3f88c5',
         cursorWidth: 2,
         cursorColor: '#3f88c5',
-        hideScrollbar: true,
-        backend: 'AudioElement',
+        barWidth: 2,
+        normalize: true,
+        backend: 'MediaElement',
         height: 95
     };
 
@@ -793,15 +835,10 @@ document.addEventListener('DOMContentLoaded', function() {
     wavesurfer.init(options);
 
     // load metadata and audio
-    loadJSON('transcript/2_meta.json', function(text) {
+    loadJSON('transcript/testimony_meta.json', function(text) {
         var metadata = JSON.parse(text);
         silences = metadata.silences;
-        wavesurfer.load('audio/2.wav', metadata.peaks, 'none');
-    });
-
-    // load transcript
-    loadJSON('transcript/2.json', function(text) {
-        transcript = JSON.parse(text);
+        wavesurfer.load('audio/testimony.mp3', metadata.peaks, 'none');
     });
 
     // handle events while playing
@@ -836,6 +873,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // startup the page
     wavesurfer.on('ready', function() {
+        var timeline = Object.create(WaveSurfer.Timeline);
+
+        timeline.init({
+            wavesurfer: wavesurfer,
+            container: '#audioclip-timeline',
+            primaryColor: '#3f88c5',
+            seondaryColor: '#f4364c',
+            primaryFontColor: '#f6f7eb',
+            secondaryFontColor: '#f6f7eb',
+            timeInterval: 150,
+            height: 15
+        });
+
         wavesurfer.addRegion({
             id: 'dummy',
             start: 0,
@@ -844,14 +894,16 @@ document.addEventListener('DOMContentLoaded', function() {
             resize: false,
             color: 'rgba(255, 255, 0, 0)'
         });
+
         resizeBody();
-        if(/hints=off/i.test(document.cookie)) {
-            GLOBAL_ACTIONS['toggle-hints']();
-        }
         enableUI();
+
         activeSpeed();
-        checkDeepLink();
-        fillWords();
+
+        loadJSON('transcript/testimony_prepared.json', function(text) {
+            transcript = JSON.parse(text);
+            fillWords();
+        });
     });
 });
 
@@ -883,7 +935,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('keydown', function(e) {
         var map = {
             32: 'play',         // space
-            82: 'rewind',       // R
+            82: 'rewind'        // R
         }
         if(e.ctrlKey) {
             shortcutWrapper.classList.remove('hidden');
@@ -903,9 +955,6 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('keyup', function(e) {
         if(!/hidden/i.test(shortcutWrapper.classList.toString())) {
             shortcutWrapper.classList.add('hidden');
-        }
-        if(!/hidden/i.test(shift_key.classList.toString())) {
-            shift_key.classList.add('hidden');
         }
         if(!/hidden/i.test(extra_key.classList.toString())) {
             extra_key.classList.add('hidden');

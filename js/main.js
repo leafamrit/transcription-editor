@@ -316,9 +316,12 @@ var GLOBAL_ACTIONS = {
         }
 
         var pdf = new jsPDF();
-        pdf.setFontSize(12);
+        pdf.setFontSize(10);
         var splitSentence = pdf.splitTextToSize(sentence, 160);
-        pdf.text(splitSentence, 10, 10);
+        while(splitSentence.length > 0) {
+            pdf.text(splitSentence.splice(0, 70), 10, 10);
+            pdf.addPage();
+        }
         pdf.save('transcript.pdf');
 
         GLOBAL_ACTIONS['close-export']();
@@ -1278,6 +1281,33 @@ function closeSpeaker(caller) {
 function resizeInput(caller) {
     caller.setAttribute('style', 'width: ' + ((caller.value.length * 8) + 30) + 'px');
     changed = true;
+}
+
+function checkDeepLink() {
+    var getVars = {};
+    window.location.search.slice(1).split('&').forEach(function(getVar) {
+        var temp = getVar.split('=');
+        getVars[temp[0]] = temp[1];
+    });
+    if('t' in getVars) {
+        var time = 0;
+        if(getVars.t.split('h').length > 1) {
+            time += Number(getVars.t.split('h')[0]) * 3600;
+            getVars.t = getVars.t.split('h')[1];
+        }
+        if(getVars.t.split('m').length > 1) {
+            time += Number(getVars.t.split('m')[0]) * 60;
+            getVars.t = getVars.t.split('m')[1];
+        }
+        if(getVars.t.split('s').length > 1) {
+            time += Number(getVars.t.split('s')[0]);
+            getVars.t = getVars.t.split('s')[1];
+        }
+        var ratio = time / wavesurfer.getDuration();
+        if(ratio <= 1) {
+            wavesurfer.seekTo(ratio);
+        }
+    }
 }
 
 window.onbeforeunload = function(e) {
