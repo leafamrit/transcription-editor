@@ -71,8 +71,27 @@ span#loading-percentage {
 
 /*** AUDIO PLAYER ***/
 
-div#audioclip-timeline {
-    margin-bottom: 1.5em;
+wave {
+    cursor: pointer;
+}
+
+div#current-time {
+    margin-bottom: 2em;
+    font-size: 0.7em;
+    font-family: 'Allerta Stencil';
+    color: #f6f7eb;
+}
+
+p#elapsed-time {
+    margin: 0;
+    float: left;
+    /*color: #f4364c;*/
+}
+
+p#remaining-time {
+    margin: 0;
+    float: right;
+    /*color: #3f88c5;*/
 }
 
 div.main-container {
@@ -90,13 +109,32 @@ div.main-container {
 div#controls {
     width: 100%;
     text-align: center;
+    height: 2.5em;
+    display: inline;
 }
 
-span#speedcontrols {
+fieldset {
+    padding: 0;
+}
+
+#speedcontrols {
     border: 2px solid #282d30;
     height: 100%;
     border-radius: 0.2em;
     float: left;
+    text-align: left;
+}
+
+legend {
+    font-size: 0.7em;
+    font-family: 'Allerta Stencil';
+    color: #f6f7eb;
+    margin-left: 1em;
+}
+
+#playcontrols {
+    border: 2px solid #393e41;
+    float: none;
 }
 
 .speed {
@@ -106,7 +144,7 @@ span#speedcontrols {
 .actionbutton {
     padding: 0.2em;
     border: none;
-    background-color: #393e41;
+    background-color: rgba(0,0,0,0);
     color: #f6f7eb;
     vertical-align: middle;
     width: 3em;
@@ -119,6 +157,7 @@ span#speedcontrols {
     float: right;
     font-size: 100%;
     margin: 0.1em;
+    margin-top: 0.8em;
 }
 
 .active {
@@ -138,30 +177,7 @@ span#speedcontrols {
     border: none;
 }
 
-@media (max-width: 980px) {
-
-    .specialspan {
-        width: 100%;
-        float:right;
-    }
-
-    .highlight-area {
-        float: left;
-    }
-
-    span#speedcontrols {
-        width: 100%;
-    }
-
-    span#playcontrols {
-        width: 100%;
-        padding: 1em;
-        float: left;
-    }
-
-}
-
-@media (max-device-width: 980px) {
+@media (max-width: 990px) {
 
     .specialspan {
         width: 100%;
@@ -172,8 +188,33 @@ span#speedcontrols {
         float: left;
     }
 
-    span#speedcontrols {
+    #speedcontrols {
         width: 100%;
+        text-align: center;
+    }
+
+    span#playcontrols {
+        width: 100%;
+        padding: 1em;
+        float: left;
+    }
+
+}
+
+@media (max-device-width: 990px) {
+
+    .specialspan {
+        width: 100%;
+        float: right;
+    }
+
+    .highlight-area {
+        float: left;
+    }
+
+    #speedcontrols {
+        width: 100%;
+        text-align: center;
     }
 
     span#playcontrols {
@@ -290,6 +331,7 @@ input[type=range]:focus::-ms-fill-upper {
     position: relative;
     padding: 0.1em;
     margin: 0.5em;
+    margin-top: 1.1em;
 }
 
 .switch input { display: none; }
@@ -513,7 +555,7 @@ div.speaker-div {
     outline: none;
     color: #f6f7eb;
     background-color: rgba(0,0,0,0);
-    border-bottom: 2px solid #3f88c5; 
+    border-bottom: 2px solid #3f88c5;
 }
 
 .close-button {

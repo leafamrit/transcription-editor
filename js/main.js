@@ -1199,9 +1199,11 @@ function readWords() {
 }
 
 function changeInput(caller) {
-    if(!caller.value || caller.value.trim() === '' || caller.value === 'Remove Speaker') {
-        changed = false;
-        caller.value = 'Unknown Speaker ' + (globaluksp++);
+    pastStack.push(JSON.stringify(transcript));
+    if(!caller.value.trim() || isNaN(caller.getAttribute('speakername'))) {
+        if(!caller.value.trim()) {
+            caller.value = 'Unknown Speaker ' + (globaluksp++);
+        }
         var startIndex = caller.getAttribute('speakerindex');
         var endIndex = caller.nextSibling.nextSibling.nextSibling ? Number(caller.nextSibling.nextSibling.nextSibling.getAttribute('speakerindex')) : transcript.results[0].speaker_labels.length;
 
@@ -1212,24 +1214,25 @@ function changeInput(caller) {
         var input = caller.value;
         var oldName = caller.getAttribute('speakername');
         pastStack.push(JSON.stringify(transcript));
-        var inputLength = (caller.value.length * 8) + 30;
+        var inputLength = (caller.value.length * 8) + 20;
         transcript.results[0].speaker_labels.forEach(function(el) {
             if(el.speaker == oldName) {
                 el.speaker = input;
             }
         });
+    }
 
+    if(!/Unknown Speaker/.test(caller.value)) {
         var speakerList = document.getElementById('speakerlist');
-
         var hasInput = false;
         [].forEach.call(speakerList.childNodes, function(el) {
-            if(el.value == input) {
+            if(el.value == caller.value) {
                 hasInput = true;
             }
         });
         if(!hasInput) {
             datalistOption = document.createElement('option');
-            datalistOption.value = input;
+            datalistOption.value = caller.value;
             speakerList.appendChild(datalistOption);
         }
     }
@@ -1242,21 +1245,8 @@ function handleList(caller) {
 }
 
 function handleValue(caller) {
-    if(changed && (!caller.value || caller.value.trim() == '')) {
-        changed = false;
-        caller.value = 'Unknown Speaker ' + (globaluksp++);
-        var startIndex = caller.getAttribute('speakerindex');
-        var endIndex = caller.nextSibling.nextSibling.nextSibling ? Number(caller.nextSibling.nextSibling.nextSibling.getAttribute('speakerindex')) : transcript.results[0].speaker_labels.length;
-
-        for(var i = startIndex; i < endIndex; i++) {
-            transcript.results[0].speaker_labels[i].speaker = caller.value;
-        }
-
-        fillWords();
-    } else {
-        pastStack.push(JSON.stringify(transcript));
-        caller.value = caller.getAttribute('speakername');
-    }
+    caller.value = caller.getAttribute('speakername');
+    resizeInput(caller);
 }
 
 function closeSpeaker(caller) {
@@ -1267,8 +1257,7 @@ function closeSpeaker(caller) {
 }
 
 function resizeInput(caller) {
-    caller.setAttribute('style', 'width: ' + ((caller.value.length * 8) + 30) + 'px');
-    changed = true;
+    caller.setAttribute('style', 'width: ' + ((caller.value.length * 8) + 20) + 'px');
 }
 
 function checkDeepLink(getVars) {
@@ -1315,6 +1304,16 @@ function getURLs(id) {
     xhttp.send('id=' + id);
 }
 
+function updateTime() {
+    var currTime = wavesurfer.getCurrentTime();
+    var totalTime = wavesurfer.getDuration();
+    var currDisplayTime = toHHMMssmmm(currTime).split(',')[0];
+    var remDisplayTime = toHHMMssmmm(totalTime - currTime).split(',')[0];
+    document.getElementById('elapsed-time').innerText = currDisplayTime;
+    document.getElementsByTagName('wave')[0].title = currDisplayTime;
+    document.getElementById('remaining-time').innerText = remDisplayTime;
+}
+
 window.onbeforeunload = function(e) {
     e || window.event;
     if(e) {
@@ -1327,12 +1326,12 @@ window.onbeforeunload = function(e) {
 var getParams = getParameters();
 //if('id' in getParams) {              // UNCOMMENT WHEN DEPLOYED
     //getURLs(getParams['id']);        // UNCOMMENT WHEN DEPLOYED
-    pageOptions = {
-        metaURL: 'transcript/new-york-rock_meta.json',
-        transcriptURL: 'transcript/new-york-rock_prepared.json',
-        audioURL: 'audio/new-york-rock.mp3'
-    };
-    init();
+    pageOptions = {                                                 // COMMENT WHEN DEPLOYED
+        metaURL: 'transcript/new-york-rock_meta.json',              // COMMENT WHEN DEPLOYED
+        transcriptURL: 'transcript/new-york-rock_prepared.json',    // COMMENT WHEN DEPLOYED
+        audioURL: 'audio/new-york-rock.mp3'                         // COMMENT WHEN DEPLOYED
+    };                                                              // COMMENT WHEN DEPLOYED
+    init();                                                         // COMMENT WHEN DEPLOYED
 //}                                    // UNCOMMENT WHEN DEPLOYED
 
 function init() {
@@ -1373,6 +1372,7 @@ function init() {
         wavesurfer.on('audioprocess', function() {
             curr = wavesurfer.getCurrentTime().toFixed(1);
             readWords();
+            updateTime();
 
             if( curr in strikes ) {
                 wavesurfer.backend.seekTo(strikes[curr]);
@@ -1397,6 +1397,7 @@ function init() {
 
         wavesurfer.on('seek', function() {
             readWords();
+            updateTime();
         });
 
         // startup the page
@@ -1414,6 +1415,8 @@ function init() {
                 timeInterval: timeGap,
                 height: 15
             });
+
+            updateTime();
 
             wavesurfer.addRegion({
                 id: 'dummy',

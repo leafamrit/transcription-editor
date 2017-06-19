@@ -44,23 +44,25 @@
     </div>
     <center>
         <div class="main-container">
-            <div id="audioclip"></div>
             <div id="audioclip-timeline"></div>
+            <div id="audioclip"></div>
+
+            <div id="current-time">
+                <p id="elapsed-time"></p>
+                <p id="remaining-time"></p>
+            </div>
 
             <div id="controls">
-                <span id="speedcontrols">
+                <fieldset id="speedcontrols">
+                    <legend>Playback Speed</legend>
                     <button class="actionbutton speed" data-action="speedx05" title="Change Playback Speed">x0.5</button>
                     <button class="actionbutton speed" data-action="speedx1" title="Change Playback Speed">x1</button>
                     <button class="actionbutton speed" data-action="speedx125" title="Change Playback Speed">x1.25</button>
                     <button class="actionbutton speed" data-action="speedx15" title="Change Playback Speed">x1.5</button>
                     <button class="actionbutton speed" data-action="speedx175" title="Change Playback Speed">x1.75</button>
                     <button class="actionbutton speed" data-action="speedx2" title="Change Playback Speed">x2</button>
-                </span>
-                <span id="playcontrols">
-                    <button class="actionbutton" data-action="rewind" title="Rewind (Ctrl + R)"><i class="fa fa-step-backward fa-2x"></i></button>
-                    <button class="actionbutton" data-action="play" title="Play / Pause (Ctrl + Space)"><i class="fa fa-play fa-2x" id="playpause"></i></button>
-                    <span id="volumecontrol" class="actionbutton"><i class="fa fa-volume-up fa-lg"></i><input id="volumerange" type="range" min="0" max="100" value="100"></span>
-                </span>
+                </fieldset>
+
                 <span class="specialspan">
                     <label class="switch actionbutton specialbutton" title="Skip Silent Parts">
                         <input type="checkbox" id="skipsilence-switch" onchange="GLOBAL_ACTIONS['skipsilence']();">
@@ -73,6 +75,13 @@
                     </label>
                     <button class="actionbutton specialbutton highlight-area" id="bt-playhighlight" onclick="document.getElementById('playhighlight-switch').click();" title="Play Only Highlights">Play Highlights</button>
                 </span>
+
+                <fieldset id="playcontrols">
+                    <legend style="font-size: 0.6em">&nbsp;</legend>
+                    <button class="actionbutton" data-action="rewind" title="Rewind (Ctrl + R)"><i class="fa fa-step-backward fa-2x"></i></button>
+                    <button class="actionbutton" data-action="play" title="Play / Pause (Ctrl + Space)"><i class="fa fa-play fa-2x" id="playpause"></i></button>
+                    <span id="volumecontrol" class="actionbutton"><i class="fa fa-volume-up fa-lg"></i><input id="volumerange" type="range" min="0" max="100" value="100"></span>
+                </fieldset>
             </div>
         </div>
 
@@ -94,7 +103,7 @@
                 </span>
             </div>
 
-            <div id="transcript-area"><datalist id="speakerlist"><option value="Remove Speaker"></option></datalist></div>
+            <div id="transcript-area"><datalist id="speakerlist"></datalist>Loading...</div>
 
             <div id="find-replace-wrapper" class="extra-options-wrapper hidden invisible">
                 <div class="close-bt-wrapper">
