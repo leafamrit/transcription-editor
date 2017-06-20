@@ -255,6 +255,7 @@ var GLOBAL_ACTIONS = {
         var currentSpeaker, nextSpeaker;
         var sentence = '';
         var onlyHighlight = document.getElementById('export-highlight').checked;
+        var noTimestamps = document.getElementById('no-timestamps').checked;
 
         results.forEach(function(result, resultIndex) {
             var maxConfidence = 0;
@@ -274,9 +275,11 @@ var GLOBAL_ACTIONS = {
             currentSpeaker = speakers[i].speaker;
             nextSpeaker = speakers[i + 1].speaker;
             if(onlyHighlight){
-                var currentPara = currentSpeaker + ': [' + toHHMMssmmm(words[i][1]).replace(',', '.') + '] ';
+                var currentPara = currentSpeaker + ': ';
+                if(!noTimestamps) { currentPara += '[' + toHHMMssmmm(words[i][1]).replace(',', '.') + ']'; }
             } else {
-                sentence += currentSpeaker + ': [' + toHHMMssmmm(words[i][1]).replace(',', '.') + '] ';
+                sentence += currentSpeaker + ': ';
+                if(!noTimestamps) { sentence += '[' + toHHMMssmmm(words[i][1]).replace(',', '.') + '] '; }
             }
             do {
                 try {
@@ -310,9 +313,11 @@ var GLOBAL_ACTIONS = {
                 i++;
             } while(currentSpeaker == nextSpeaker && i < words.length);
             if(onlyHighlight && currentPara == '') {
-                sentence += '[' + toHHMMssmmm(words[i - 1][2]).replace(',', '.') + ']\n\n';
+                if(!noTimestamps) { sentence += '[' + toHHMMssmmm(words[i - 1][2]).replace(',', '.') + ']'; }
+                sentence += '\n\n';
             } else if(!onlyHighlight && !currentPara) {
-                sentence += '[' + toHHMMssmmm(words[i - 1][2]).replace(',', '.') + ']\n\n';
+                if(!noTimestamps) { sentence += '[' + toHHMMssmmm(words[i - 1][2]).replace(',', '.') + ']'; }
+                sentence += '\n\n';
             }
         }
 
@@ -335,6 +340,7 @@ var GLOBAL_ACTIONS = {
         var currentSpeaker, nextSpeaker;
         var sentence = '';
         var onlyHighlight = document.getElementById('export-highlight').checked;
+        var noTimestamps = document.getElementById('no-timestamps').checked;
 
         results.forEach(function(result, resultIndex) {
             var maxConfidence = 0;
@@ -354,9 +360,13 @@ var GLOBAL_ACTIONS = {
             currentSpeaker = speakers[i].speaker;
             nextSpeaker = speakers[i + 1].speaker;
             if(onlyHighlight){
-                var currentPara = '<w:p><w:r><w:t>' + currentSpeaker + ': [' + toHHMMssmmm(words[i][1]).replace(',', '.') + '] </w:t></w:r>';
+                var currentPara = '<w:p><w:r><w:t>' + currentSpeaker + ': ';
+                if(!noTimestamps) { currentPara += '[' + toHHMMssmmm(words[i][1]).replace(',', '.') + ']'; }
+                currentPara += ' </w:t></w:r>';
             } else {
-                sentence += '<w:p><w:r><w:t>' + currentSpeaker + ': [' + toHHMMssmmm(words[i][1]).replace(',', '.') + '] </w:t></w:r>';
+                sentence += '<w:p><w:r><w:t>' + currentSpeaker + ': ';
+                if(!noTimestamps) { sentence += '[' + toHHMMssmmm(words[i][1]).replace(',', '.') + ']'; }
+                sentence += ' </w:t></w:r>';
             }
             do {
                 try {
@@ -390,9 +400,13 @@ var GLOBAL_ACTIONS = {
                 i++;
             } while(currentSpeaker == nextSpeaker && i < words.length);
             if(onlyHighlight && currentPara == '') {
-                sentence += '<w:r><w:t> [' + toHHMMssmmm(words[i - 1][2]).replace(',', '.') + ']\n\n</w:t></w:r></w:p>';
+                sentence += '<w:r><w:t> ';
+                if(!noTimestamps) { sentence += '[' + toHHMMssmmm(words[i - 1][2]).replace(',', '.') + ']'; }
+                sentence += '\n\n</w:t></w:r></w:p>';
             } else if(!onlyHighlight && !currentPara) {
-                sentence += '<w:r><w:t> [' + toHHMMssmmm(words[i - 1][2]).replace(',', '.') + ']\n\n</w:t></w:r></w:p>';
+                sentence += '<w:r><w:t> ';
+                if(!noTimestamps) { sentence += '[' + toHHMMssmmm(words[i - 1][2]).replace(',', '.') + ']'; }
+                sentence += '\n\n</w:t></w:r></w:p>';
             }
         }
 
@@ -775,7 +789,8 @@ function saveJSON(alertUser) {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if(this.readyState === 4 && this.status === 200) {
-            console.log(this.responseText);
+            // console.log(this.responseText);
+            console.log('Saved');
             if(alertUser) {
                 alert('Changes successfully saved.');
             }
@@ -1180,21 +1195,52 @@ function readWords() {
     } catch (exception) {
         currWord = document.getElementsByClassName('word')[0];
     }
+
+    var divEnds = document.getElementById('transcript-area').getBoundingClientRect();
+
     if(currWord.id < wavesurfer.getCurrentTime()) {
         while(currWord && currWord.id < wavesurfer.getCurrentTime()) {
             currWord.classList.add('read');
             currWord = currWord.nextSibling ? currWord.nextSibling : currWord.parentElement.nextSibling.nextSibling.nextSibling.firstChild;
         }
-        var divEnds = document.getElementById('transcript-area').getBoundingClientRect();
         if(divEnds.bottom < currWord.getBoundingClientRect().bottom || divEnds.top > currWord.getBoundingClientRect().top) {
             currWord.scrollIntoView();
         }
+        if(divEnds.top + 150 < currWord.getBoundingClientRect().top) {
+            var goDown = setInterval(scrollStep, 10);
+            function scrollStep() {
+                if(divEnds.top + 150 >= currWord.getBoundingClientRect().top) {
+                    clearInterval(goDown);
+                } else {
+                    document.getElementById('transcript-area').scrollTop += 5;
+                }
+            }
+        }
+
     } else {
         [].forEach.call(document.querySelectorAll('.read'), function(el) {
             if(el.id > wavesurfer.getCurrentTime()) {
                 el.classList.remove('read');
             }
-        })
+        });
+
+        readWord = document.getElementsByClassName('read');
+        currWord = readWord[readWord.length - 1];
+        if(currWord) {
+            if(divEnds.bottom < currWord.getBoundingClientRect().bottom || divEnds.top > currWord.getBoundingClientRect().top) {
+                currWord.scrollIntoView();
+            }
+            if(divEnds.top + 100 > currWord.getBoundingClientRect().top) {
+                var goUp = setInterval(scrollStep, 10);
+                function scrollStep() {
+                    if(divEnds.top + 100 <= currWord.getBoundingClientRect().top) {
+                        clearInterval(goUp);
+                    } else {
+                        document.getElementById('transcript-area').scrollTop -= 5;
+                    }
+                }
+            }
+        }
     }
 }
 
