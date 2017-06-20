@@ -1480,6 +1480,7 @@ function init() {
                     globaluksp++;
                 }
             });
+            
             activeSpeed();
 
             nodeObserver = new MutationObserver(function(mutation) {

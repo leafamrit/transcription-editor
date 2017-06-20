@@ -4,6 +4,8 @@ var wavesurfer = Object.create(WaveSurfer);
 var transcript;
 var silences = Array();
 var highlights = Array();
+var strikes = Array();
+var pageOptions;
 
 var skipSilences = false;
 var playHighlights = false;
@@ -239,6 +241,7 @@ var GLOBAL_ACTIONS = {
         var currentSpeaker, nextSpeaker;
         var sentence = '';
         var onlyHighlight = document.getElementById('export-highlight').checked;
+        var noTimestamps = document.getElementById('no-timestamps').checked;
 
         results.forEach(function(result, resultIndex) {
             var maxConfidence = 0;
@@ -258,9 +261,11 @@ var GLOBAL_ACTIONS = {
             currentSpeaker = speakers[i].speaker;
             nextSpeaker = speakers[i + 1].speaker;
             if(onlyHighlight){
-                var currentPara = currentSpeaker + ': [' + toHHMMssmmm(words[i][1]).replace(',', '.') + '] ';
+                var currentPara = currentSpeaker + ': ';
+                if(!noTimestamps) { currentPara += '[' + toHHMMssmmm(words[i][1]).replace(',', '.') + ']'; }
             } else {
-                sentence += currentSpeaker + ': [' + toHHMMssmmm(words[i][1]).replace(',', '.') + '] ';
+                sentence += currentSpeaker + ': ';
+                if(!noTimestamps) { sentence += '[' + toHHMMssmmm(words[i][1]).replace(',', '.') + '] '; }
             }
             do {
                 try {
@@ -294,9 +299,11 @@ var GLOBAL_ACTIONS = {
                 i++;
             } while(currentSpeaker == nextSpeaker && i < words.length);
             if(onlyHighlight && currentPara == '') {
-                sentence += '[' + toHHMMssmmm(words[i - 1][2]).replace(',', '.') + ']\n\n';
+                if(!noTimestamps) { sentence += '[' + toHHMMssmmm(words[i - 1][2]).replace(',', '.') + ']'; }
+                sentence += '\n\n';
             } else if(!onlyHighlight && !currentPara) {
-                sentence += '[' + toHHMMssmmm(words[i - 1][2]).replace(',', '.') + ']\n\n';
+                if(!noTimestamps) { sentence += '[' + toHHMMssmmm(words[i - 1][2]).replace(',', '.') + ']'; }
+                sentence += '\n\n';
             }
         }
 
@@ -319,6 +326,7 @@ var GLOBAL_ACTIONS = {
         var currentSpeaker, nextSpeaker;
         var sentence = '';
         var onlyHighlight = document.getElementById('export-highlight').checked;
+        var noTimestamps = document.getElementById('no-timestamps').checked;
 
         results.forEach(function(result, resultIndex) {
             var maxConfidence = 0;
@@ -338,9 +346,13 @@ var GLOBAL_ACTIONS = {
             currentSpeaker = speakers[i].speaker;
             nextSpeaker = speakers[i + 1].speaker;
             if(onlyHighlight){
-                var currentPara = '<w:p><w:r><w:t>' + currentSpeaker + ': [' + toHHMMssmmm(words[i][1]).replace(',', '.') + '] </w:t></w:r>';
+                var currentPara = '<w:p><w:r><w:t>' + currentSpeaker + ': ';
+                if(!noTimestamps) { currentPara += '[' + toHHMMssmmm(words[i][1]).replace(',', '.') + ']'; }
+                currentPara += ' </w:t></w:r>';
             } else {
-                sentence += '<w:p><w:r><w:t>' + currentSpeaker + ': [' + toHHMMssmmm(words[i][1]).replace(',', '.') + '] </w:t></w:r>';
+                sentence += '<w:p><w:r><w:t>' + currentSpeaker + ': ';
+                if(!noTimestamps) { sentence += '[' + toHHMMssmmm(words[i][1]).replace(',', '.') + ']'; }
+                sentence += ' </w:t></w:r>';
             }
             do {
                 try {
@@ -362,7 +374,7 @@ var GLOBAL_ACTIONS = {
                     if(words[i][3]) {
                         if(!words[i][3].strike) {
                             if(words[i][3].highlight) {
-                                sentence += '<w:r><w:t>' + words[i][0] + '</w:t></w:r>';
+                                sentence += '<w:r><w:rPr><w:highlight w:val="yellow" /></w:rPr><w:t>' + words[i][0] + '</w:t></w:r>';
                             } else {
                                 sentence += '<w:r><w:t>' + words[i][0] + '</w:t></w:r>';
                             }
@@ -374,9 +386,13 @@ var GLOBAL_ACTIONS = {
                 i++;
             } while(currentSpeaker == nextSpeaker && i < words.length);
             if(onlyHighlight && currentPara == '') {
-                sentence += '<w:r><w:t> [' + toHHMMssmmm(words[i - 1][2]).replace(',', '.') + ']\n\n</w:t></w:r></w:p>';
+                sentence += '<w:r><w:t> ';
+                if(!noTimestamps) { sentence += '[' + toHHMMssmmm(words[i - 1][2]).replace(',', '.') + ']'; }
+                sentence += '\n\n</w:t></w:r></w:p>';
             } else if(!onlyHighlight && !currentPara) {
-                sentence += '<w:r><w:t> [' + toHHMMssmmm(words[i - 1][2]).replace(',', '.') + ']\n\n</w:t></w:r></w:p>';
+                sentence += '<w:r><w:t> ';
+                if(!noTimestamps) { sentence += '[' + toHHMMssmmm(words[i - 1][2]).replace(',', '.') + ']'; }
+                sentence += '\n\n</w:t></w:r></w:p>';
             }
         }
 
@@ -481,19 +497,13 @@ function loadJSON(filepath, callback) {
 // generate highlight array
 function getHighlights() {
     var keys = Array();
-    var temp = Array();
 
-    // sort regions in waveform according to time
-    for(var i in wavesurfer.regions.list) {
-        if(/^h/i.test(i)) {
-            temp.push(wavesurfer.regions.list[i].start);
-        }
-    }
-    temp.sort(function(a, b) { return a - b; });
-    temp = temp.map(function(item) { return 'h' + item; });
-    // get sorted regions
-    temp.forEach(function(item) {
-        keys.push(wavesurfer.regions.list[item]);
+    // get highlighted starts and ends
+    [].forEach.call(document.getElementsByClassName('highlight'), function(el) {
+        keys.push({
+            start: Number(el.getAttribute('starttime')),
+            end: Number(el.getAttribute('endtime'))
+        });
     });
 
     // clear array to remove garbage data
@@ -524,20 +534,13 @@ function getHighlights() {
 
 function getStrikes() {
     var keys = Array();
-    var temp = Array();
 
-    // sort striked regions in waveform
-    for(var i in wavesurfer.regions.list) {
-        if(/^s/i.test(i)) {
-            temp.push(wavesurfer.regions.list[i].start);
-        }
-    }
-    temp.sort(function(a, b) { return a - b; });
-    temp = temp.map(function(item) { return 's' + item; });
-
-    // get sorted regions
-    temp.forEach(function(item) {
-        keys.push(wavesurfer.regions.list[item]);
+    // get striked starts and ends
+    [].forEach.call(document.getElementsByClassName('strike'), function(el) {
+        keys.push({
+            start: Number(el.getAttribute('starttime')),
+            end: Number(el.getAttribute('endtime'))
+        });
     });
 
     // clear array to remove garbage
@@ -762,21 +765,52 @@ function readWords() {
     } catch (exception) {
         currWord = document.getElementsByClassName('word')[0];
     }
+
+    var divEnds = document.getElementById('transcript-area').getBoundingClientRect();
+
     if(currWord.id < wavesurfer.getCurrentTime()) {
         while(currWord && currWord.id < wavesurfer.getCurrentTime()) {
             currWord.classList.add('read');
             currWord = currWord.nextSibling ? currWord.nextSibling : currWord.parentElement.nextSibling.nextSibling.nextSibling.firstChild;
         }
-        var divEnds = document.getElementById('transcript-area').getBoundingClientRect();
         if(divEnds.bottom < currWord.getBoundingClientRect().bottom || divEnds.top > currWord.getBoundingClientRect().top) {
             currWord.scrollIntoView();
         }
+        if(divEnds.top + 150 < currWord.getBoundingClientRect().top) {
+            var goDown = setInterval(scrollStep, 10);
+            function scrollStep() {
+                if(divEnds.top + 150 >= currWord.getBoundingClientRect().top) {
+                    clearInterval(goDown);
+                } else {
+                    document.getElementById('transcript-area').scrollTop += 5;
+                }
+            }
+        }
+
     } else {
         [].forEach.call(document.querySelectorAll('.read'), function(el) {
             if(el.id > wavesurfer.getCurrentTime()) {
                 el.classList.remove('read');
             }
-        })
+        });
+
+        readWord = document.getElementsByClassName('read');
+        currWord = readWord[readWord.length - 1];
+        if(currWord) {
+            if(divEnds.bottom < currWord.getBoundingClientRect().bottom || divEnds.top > currWord.getBoundingClientRect().top) {
+                currWord.scrollIntoView();
+            }
+            if(divEnds.top + 100 > currWord.getBoundingClientRect().top) {
+                var goUp = setInterval(scrollStep, 10);
+                function scrollStep() {
+                    if(divEnds.top + 100 <= currWord.getBoundingClientRect().top) {
+                        clearInterval(goUp);
+                    } else {
+                        document.getElementById('transcript-area').scrollTop -= 5;
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -824,16 +858,26 @@ function getURLs(id) {
     xhttp.send('id=' + id);
 }
 
+function updateTime() {
+    var currTime = wavesurfer.getCurrentTime();
+    var totalTime = wavesurfer.getDuration();
+    var currDisplayTime = toHHMMssmmm(currTime).split(',')[0];
+    var remDisplayTime = toHHMMssmmm(totalTime - currTime).split(',')[0];
+    document.getElementById('elapsed-time').innerText = currDisplayTime;
+    document.getElementsByTagName('wave')[0].title = currDisplayTime;
+    document.getElementById('remaining-time').innerText = remDisplayTime;
+}
+
 // Initialization
 var getParams = getParameters();
 //if('id' in getParams) {              // UNCOMMENT WHEN DEPLOYED
     //getURLs(getParams['id']);        // UNCOMMENT WHEN DEPLOYED
-    pageOptions = {
-        metaURL: 'transcript/new-york-rock_meta.json',
-        transcriptURL: 'transcript/new-york-rock_prepared.json',
-        audioURL: 'audio/new-york-rock.mp3'
-    };
-    init();
+    pageOptions = {                                                 // COMMENT WHEN DEPLOYED
+        metaURL: 'transcript/new-york-rock_meta.json',              // COMMENT WHEN DEPLOYED
+        transcriptURL: 'transcript/new-york-rock_prepared.json',    // COMMENT WHEN DEPLOYED
+        audioURL: 'audio/new-york-rock.mp3'                         // COMMENT WHEN DEPLOYED
+    };                                                              // COMMENT WHEN DEPLOYED
+    init();                                                         // COMMENT WHEN DEPLOYED
 //}                                    // UNCOMMENT WHEN DEPLOYED
 
 function init() {
@@ -874,6 +918,7 @@ function init() {
         wavesurfer.on('audioprocess', function() {
             curr = wavesurfer.getCurrentTime().toFixed(1);
             readWords();
+            updateTime();
 
             if( curr in strikes ) {
                 wavesurfer.backend.seekTo(strikes[curr]);
@@ -898,12 +943,14 @@ function init() {
 
         wavesurfer.on('seek', function() {
             readWords();
+            updateTime();
         });
 
         // startup the page
         wavesurfer.on('ready', function() {
             var timeline = Object.create(WaveSurfer.Timeline);
 
+            var timeGap = (Math.floor(wavesurfer.getDuration() / 1000) * 100) / 2;
             timeline.init({
                 wavesurfer: wavesurfer,
                 container: '#audioclip-timeline',
@@ -911,9 +958,11 @@ function init() {
                 seondaryColor: '#f4364c',
                 primaryFontColor: '#f6f7eb',
                 secondaryFontColor: '#f6f7eb',
-                timeInterval: 150,
+                timeInterval: timeGap,
                 height: 15
             });
+
+            updateTime();
 
             wavesurfer.addRegion({
                 id: 'dummy',
