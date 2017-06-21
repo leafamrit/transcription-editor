@@ -1401,6 +1401,7 @@ function init() {
             barWidth: 2,
             normalize: true,
             backend: 'MediaElement',
+	    hideScrollbar: true,
             height: 95
         };
 
