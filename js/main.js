@@ -17,6 +17,7 @@ var playHighlights = false;
 var undoAction = false;
 
 // mutation observers
+var wordChildObserver;
 var wordObserver;
 var nodeObserver;
 
@@ -1083,6 +1084,7 @@ function fillWords() {
     // add observer for each word
     [].forEach.call(document.querySelectorAll('.word'), function(el) {
         wordObserver.observe(el, {characterData: true, subtree: true});
+        wordChildObserver.observe(el, {childList: true});
     });
 
     // add oobserver for removed nodes
@@ -1093,6 +1095,17 @@ function fillWords() {
     // get highlights and strike arrays for skipping playback
     getHighlights();
     getStrikes();
+}
+
+function wordChildMutation(mutation) {
+    wordObserver.disconnect();
+    currWord = mutation[mutation.length - 1].target;
+    globaluksp++;
+    while(currWord) {
+        transcript.results[0].speaker_labels[currWord.getAttribute('speakerindex')].speaker = 'Unknown Speaker ' + globaluksp;
+        currWord = currWord.nextSibling;
+    }
+    fillWords();
 }
 
 function wordMutation(mutation) {
@@ -1481,7 +1494,7 @@ function init() {
                     globaluksp++;
                 }
             });
-            
+
             activeSpeed();
 
             nodeObserver = new MutationObserver(function(mutation) {
@@ -1490,6 +1503,10 @@ function init() {
             wordObserver = new MutationObserver(function(mutation) {
                 wordMutation(mutation);
             });
+            wordChildObserver = new MutationObserver(function(mutation) {
+                wordChildMutation(mutation);
+            });
+
             loadJSON(pageOptions.transcriptURL, function(text) {
                 transcript = JSON.parse(text);
                 pastStack.push(JSON.stringify(transcript));
