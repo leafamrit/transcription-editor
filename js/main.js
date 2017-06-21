@@ -997,6 +997,7 @@ function fillWords() {
                 currWord.setAttribute('starttime', word[1]);
                 currWord.setAttribute('endtime', word[2]);
                 currWord.setAttribute('resultindex', resultIndex);
+                currWord.setAttribute('oldval', word[0]);
                 currWord.setAttribute('alternativeindex', maxAlternativeIndex);
                 currWord.setAttribute('wordindex', wordIndex);
                 currWord.setAttribute('speakerindex', globalspkr_i);
@@ -1097,16 +1098,10 @@ function fillWords() {
     getStrikes();
 }
 
-function wordChildMutation(mutation) {
-    wordObserver.disconnect();
-    currWord = mutation[mutation.length - 1].target;
-    globaluksp++;
-    while(currWord) {
-        transcript.results[0].speaker_labels[currWord.getAttribute('speakerindex')].speaker = 'Unknown Speaker ' + globaluksp;
-        currWord = currWord.nextSibling;
-    }
-    fillWords();
+function addSpeaker(nodes) {
+
 }
+
 
 function wordMutation(mutation) {
     mutation.forEach(function(m) {
@@ -1174,20 +1169,137 @@ function wordMutation(mutation) {
     });
 }
 
-function nodeMutation(mutation) {
+function wordChildMutation(mutation) {
+    pastStack.push(JSON.stringify(transcript));
+
     if(mutation[0].addedNodes.length > 0) {
+        // stop mutations
         wordObserver.disconnect();
+        nodeObserver.disconnect();
+        wordChildObserver.disconnect();
+
+        currWord = mutation[mutation.length - 1].target;
+        var nodes = Array();
+        globaluksp++;
+        while(currWord) {
+            nodes.push(currWord);
+            transcript.results[0].speaker_labels[currWord.getAttribute('speakerindex')].speaker = 'Unknown Speaker ' + globaluksp;
+            currWord = currWord.nextSibling;
+        }
+
+        var refNode = nodes[0].parentNode.nextSibling;
+        nodes[0].innerText = nodes[0].getAttribute('oldval');
+        var parent = document.getElementById('transcript-area');
+        var specialBreak = document.createElement('br');
+        specialBreak.classList.add('special-break');
+
+        // start creating div for surrent speaker
+        div = document.createElement('div');
+        div.setAttribute('title', 'Unknown Speaker ' + globaluksp);
+        div.setAttribute('contenteditable', 'true');
+        div.classList.add('speaker-div');
+
+        // input field for speaker name
+        speakerName = document.createElement('input');
+        speakerName.value = 'Unknown Speaker ' + globaluksp;
+        speakerName.classList.add('speaker');
+        speakerName.setAttribute('list', 'speakerlist');
+        speakerName.setAttribute('name', 'speaker');
+        speakerName.setAttribute('speakername', 'Unknown Speaker ' + globaluksp);
+        speakerName.setAttribute('style', 'width: ' + ((speakerName.value.length * 8) + 20) + 'px');
+        speakerName.setAttribute('onkeyup', 'resizeInput(this);');
+        speakerName.setAttribute('onclick', 'handleList(this)');
+        speakerName.setAttribute('onblur', 'handleValue(this)');
+        speakerName.setAttribute('onchange', 'changeInput(this);');
+
+        // add words to div
+        nodes.forEach(function(node) {
+            div.appendChild(node);
+        });
+
+        // insert before next speaker
+        parent.insertBefore(specialBreak, refNode);
+        parent.insertBefore(speakerName, refNode);
+        parent.insertBefore(div, refNode);
+
+        nodes.forEach(function(node) {
+            wordObserver.observe(node, {characterData: true, subtree: true});
+            wordChildObserver.observe(node, {childList: true});
+        });
+    } else {
+        mutation.forEach(function(m) {
+            m.removedNodes.forEach(function(node) {
+                // get position of current word in transcript json
+                var r_i = node.getAttribute('resultindex');
+                var a_i = node.getAttribute('alternativeindex');
+                var w_i = node.getAttribute('wordindex');
+
+                transcript.results[0].results[r_i].alternatives[a_i].timestamps[w_i][0] = '';
+            });
+        });
+    }
+}
+
+function nodeMutation(mutation) {
+    pastStack.push(JSON.stringify(transcript));
+    if(mutation[0].addedNodes.length > 0) {
+
+        // stop other mutations
+        wordObserver.disconnect();
+        wordChildObserver.disconnect();
+
+        var nodes = Array();
         globaluksp++;
         mutation.forEach(function(m) {
             m.removedNodes.forEach(function(node) {
                 if(node.innerText.trim() != '') {
+                    nodes.push(node);
                     index = node.getAttribute('speakerindex');
                     transcript.results[0].speaker_labels[index].speaker = 'Unknown Speaker ' + globaluksp;
                 }
             });
         });
-        fillWords();
-    } else {
+
+        var refNode = nodes[0].parentNode.parentNode.nextSibling;
+        var parent = document.getElementById('transcript-area');
+        var specialBreak = document.createElement('br');
+        specialBreak.classList.add('special-break');
+
+        // start creating div for surrent speaker
+        div = document.createElement('div');
+        div.setAttribute('title', 'Unknown Speaker ' + globaluksp);
+        div.setAttribute('contenteditable', 'true');
+        div.classList.add('speaker-div');
+
+        // input field for speaker name
+        speakerName = document.createElement('input');
+        speakerName.value = 'Unknown Speaker ' + globaluksp;
+        speakerName.classList.add('speaker');
+        speakerName.setAttribute('list', 'speakerlist');
+        speakerName.setAttribute('name', 'speaker');
+        speakerName.setAttribute('speakername', 'Unknown Speaker ' + globaluksp);
+        speakerName.setAttribute('style', 'width: ' + ((speakerName.value.length * 8) + 20) + 'px');
+        speakerName.setAttribute('onkeyup', 'resizeInput(this);');
+        speakerName.setAttribute('onclick', 'handleList(this)');
+        speakerName.setAttribute('onblur', 'handleValue(this)');
+        speakerName.setAttribute('onchange', 'changeInput(this);');
+
+        // add words to div
+        nodes.forEach(function(node) {
+            div.appendChild(node);
+        });
+
+        // insert before next speaker
+        parent.insertBefore(specialBreak, refNode);
+        parent.insertBefore(speakerName, refNode);
+        parent.insertBefore(div, refNode);
+
+        // add oobserver for new node
+        nodes.forEach(function(node) {
+            wordObserver.observe(node, {childList: true});
+        });
+        nodeObserver.observe(div, {childList: true});
+    } else { // if node deleted
         mutation.forEach(function(m) {
             m.removedNodes.forEach(function(node) {
                 // get position of current word in transcript json
