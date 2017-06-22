@@ -790,7 +790,6 @@ function saveJSON(alertUser) {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if(this.readyState === 4 && this.status === 200) {
-            // console.log(this.responseText);
             console.log('Saved');
             if(alertUser) {
                 alert('Changes successfully saved.');
@@ -1098,11 +1097,6 @@ function fillWords() {
     getStrikes();
 }
 
-function addSpeaker(nodes) {
-
-}
-
-
 function wordMutation(mutation) {
     mutation.forEach(function(m) {
         var word = m.target.parentElement;
@@ -1205,6 +1199,7 @@ function wordChildMutation(mutation) {
         speakerName.classList.add('speaker');
         speakerName.setAttribute('list', 'speakerlist');
         speakerName.setAttribute('name', 'speaker');
+        speakerName.setAttribute('speakerindex', nodes[0].getAttribute('speakerindex'));
         speakerName.setAttribute('speakername', 'Unknown Speaker ' + globaluksp);
         speakerName.setAttribute('style', 'width: ' + ((speakerName.value.length * 8) + 20) + 'px');
         speakerName.setAttribute('onkeyup', 'resizeInput(this);');
@@ -1222,9 +1217,10 @@ function wordChildMutation(mutation) {
         parent.insertBefore(speakerName, refNode);
         parent.insertBefore(div, refNode);
 
-        nodes.forEach(function(node) {
-            wordObserver.observe(node, {characterData: true, subtree: true});
-            wordChildObserver.observe(node, {childList: true});
+        // add observer for each word
+        [].forEach.call(document.querySelectorAll('.word'), function(el) {
+            wordObserver.observe(el, {characterData: true, subtree: true});
+            wordChildObserver.observe(el, {childList: true});
         });
     } else {
         mutation.forEach(function(m) {
@@ -1247,6 +1243,7 @@ function nodeMutation(mutation) {
         // stop other mutations
         wordObserver.disconnect();
         wordChildObserver.disconnect();
+        nodeObserver.disconnect();
 
         var nodes = Array();
         globaluksp++;
@@ -1278,6 +1275,7 @@ function nodeMutation(mutation) {
         speakerName.setAttribute('list', 'speakerlist');
         speakerName.setAttribute('name', 'speaker');
         speakerName.setAttribute('speakername', 'Unknown Speaker ' + globaluksp);
+        speakerName.setAttribute('speakerindex', nodes[0].getAttribute('speakerindex'));
         speakerName.setAttribute('style', 'width: ' + ((speakerName.value.length * 8) + 20) + 'px');
         speakerName.setAttribute('onkeyup', 'resizeInput(this);');
         speakerName.setAttribute('onclick', 'handleList(this)');
@@ -1294,11 +1292,23 @@ function nodeMutation(mutation) {
         parent.insertBefore(speakerName, refNode);
         parent.insertBefore(div, refNode);
 
-        // add oobserver for new node
-        nodes.forEach(function(node) {
-            wordObserver.observe(node, {childList: true});
+        oldDiv = mutation[0].target;
+        oldDiv.removeChild(oldDiv.lastChild);
+        if(!nodes[0].id) {
+            nodes[0].id = oldDiv.lastChild.id;
+            nodes[0].innerText = nodes[0].getAttribute('oldval');
+            oldDiv.removeChild(oldDiv.lastChild);
+        }
+
+        // add observer for each word
+        [].forEach.call(document.querySelectorAll('.word'), function(el) {
+            wordObserver.observe(el, {characterData: true, subtree: true});
         });
-        nodeObserver.observe(div, {childList: true});
+
+        // add observer for nodes
+        [].forEach.call(document.querySelectorAll('.speaker-div'), function(el) {
+            nodeObserver.observe(el, {childList: true});
+        });
     } else { // if node deleted
         mutation.forEach(function(m) {
             m.removedNodes.forEach(function(node) {
@@ -1374,6 +1384,9 @@ function changeInput(caller) {
     if(!caller.value.trim() || isNaN(caller.getAttribute('speakername'))) {
         if(!caller.value.trim()) {
             caller.value = 'Unknown Speaker ' + (globaluksp++);
+            caller.setAttribute('speakername', 'Unknown Speaker ' + globaluksp);
+        } else {
+            caller.setAttribute('speakername', caller.value);
         }
         var startIndex = caller.getAttribute('speakerindex');
         var endIndex = caller.nextSibling.nextSibling.nextSibling ? Number(caller.nextSibling.nextSibling.nextSibling.getAttribute('speakerindex')) : transcript.results[0].speaker_labels.length;
@@ -1389,6 +1402,13 @@ function changeInput(caller) {
         transcript.results[0].speaker_labels.forEach(function(el) {
             if(el.speaker == oldName) {
                 el.speaker = input;
+            }
+        });
+        [].forEach.call(document.querySelectorAll('.speaker'), function(el) {
+            if(el.getAttribute('speakername') === oldName) {
+                el.value = input;
+                el.setAttribute('speakername', input);
+                resizeInput(el);
             }
         });
     }
@@ -1407,8 +1427,6 @@ function changeInput(caller) {
             speakerList.appendChild(datalistOption);
         }
     }
-
-    fillWords();
 }
 
 function handleList(caller) {
