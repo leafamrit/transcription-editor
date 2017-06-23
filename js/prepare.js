@@ -3,6 +3,7 @@
 var fileURL, transcript;
 var audioprocessed = false, transcriptloaded = false, audiouploaded = false;
 var metadata = {}
+var lock = false;
 
 // Create an instance
 var wavesurfer = Object.create(WaveSurfer);
@@ -33,6 +34,16 @@ wavesurfer.on('finish', function () {
     console.log('Finished playing');
 });
 
+// to prevent closing window while uploading
+window.onbeforeunload = function(e) {
+    if(lock) {
+        e || window.event;
+        if(e) {
+            return '';
+        }
+        return '';
+    }
+}
 
 /* Progress bar */
 document.addEventListener('DOMContentLoaded', function () {
@@ -70,6 +81,7 @@ document.addEventListener('DOMContentLoaded', function () {
             toggleActive(e, false);
             // Load the file into wavesurfer
             if (e.dataTransfer.files.length == 1) {
+                lock = true;
                 if(/audio/i.test(e.dataTransfer.files[0].type)) {
                     uploadFile(e.dataTransfer.files[0]);
                     wavesurfer.loadBlob(e.dataTransfer.files[0]);
@@ -152,6 +164,7 @@ function saveJSON() {
             audioprocessed = false; transcriptloaded = false;
             document.getElementById('bt-analyze').setAttribute('disabled', '');
             alert('Waveform successfully prepared.');
+            lock = false;
         } else if(this.readyState === 4 && this.status != 200) {
             alert('Could not save changes, please check your internet connection or try again later.');
         }

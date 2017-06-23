@@ -17,7 +17,7 @@ var playHighlights = false;
 var undoAction = false;
 
 // mutation observers
-var wordChildObserver;
+var wordChildObserver; // firefox
 var wordObserver;
 var nodeObserver;
 
@@ -773,7 +773,7 @@ function activeSpeed() {
     speedButtons[map[wavesurfer.backend.playbackRate]].classList.add('activespeed');
 }
 
-// load JSON
+// load JSON files from url
 function loadJSON(filepath, callback) {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
@@ -841,6 +841,7 @@ function getHighlights() {
     }
 }
 
+// get strikes array
 function getStrikes() {
     var keys = Array();
 
@@ -872,6 +873,7 @@ function getStrikes() {
     }
 }
 
+// show find replace dialog
 function showFindReplace(event) {
     var ele = document.getElementById('find-replace-wrapper');
     ele.setAttribute('style', 'top: ' + event.clientY + 'px; left: ' + event.clientX + 'px;');
@@ -881,6 +883,7 @@ function showFindReplace(event) {
     }, 50);
 }
 
+// show export dialog
 function showExport(event) {
     var ele = document.getElementById('export-wrapper');
     ele.setAttribute('style', 'top: ' + event.clientY + 'px; left: ' + event.clientX + 'px;');
@@ -890,6 +893,7 @@ function showExport(event) {
     }, 50);
 }
 
+// show help dialog
 function showHelp(event) {
     var ele = document.getElementById('help-wrapper');
     ele.classList.remove('hidden');
@@ -898,6 +902,7 @@ function showHelp(event) {
     }, 50);
 }
 
+// show UI (disable loading mask)
 function enableUI() {
     document.getElementById('loader').classList.toggle('spinning');
     document.getElementById('main-container-mask').classList.toggle('invisible');
@@ -906,10 +911,12 @@ function enableUI() {
     }, 30);
 }
 
+// seek audio to word
 function seekToWord(caller) {
     wavesurfer.seekTo(caller.id / wavesurfer.getDuration());
 }
 
+// resize container if body size is changed
 function resizeBody() {
     var off = document.getElementsByClassName('main-container')[0].offsetHeight;
     var height = window.innerHeight - off;
@@ -1097,6 +1104,7 @@ function fillWords() {
     getStrikes();
 }
 
+// when a word is changed
 function wordMutation(mutation) {
     mutation.forEach(function(m) {
         var word = m.target.parentElement;
@@ -1163,6 +1171,7 @@ function wordMutation(mutation) {
     });
 }
 
+// when enter is pressed in firefox
 function wordChildMutation(mutation) {
     pastStack.push(JSON.stringify(transcript));
 
@@ -1236,6 +1245,7 @@ function wordChildMutation(mutation) {
     }
 }
 
+// when enter is pressed in other browsers
 function nodeMutation(mutation) {
     pastStack.push(JSON.stringify(transcript));
     if(mutation[0].addedNodes.length > 0) {
@@ -1323,6 +1333,7 @@ function nodeMutation(mutation) {
     }
 }
 
+// mark words as read
 function readWords() {
     readWord = document.getElementsByClassName('read');
     try {
@@ -1379,6 +1390,7 @@ function readWords() {
     }
 }
 
+// change speaker label
 function changeInput(caller) {
     pastStack.push(JSON.stringify(transcript));
     if(!caller.value.trim() || isNaN(caller.getAttribute('speakername'))) {
@@ -1429,26 +1441,23 @@ function changeInput(caller) {
     }
 }
 
+// change value of speaker to blank on click to show drop down
 function handleList(caller) {
     caller.value = '';
 }
 
+// change value back to normal if no change happens
 function handleValue(caller) {
     caller.value = caller.getAttribute('speakername');
     resizeInput(caller);
 }
 
-function closeSpeaker(caller) {
-    caller.parentElement.parentElement.classList.add('invisible');
-    setTimeout(function() {
-        caller.parentElement.parentElement.classList.add('hidden');
-    }, 50);
-}
-
+// resize input size as name changes
 function resizeInput(caller) {
     caller.setAttribute('style', 'width: ' + ((caller.value.length * 8) + 20) + 'px');
 }
 
+// seek to deep link if GET variable 't' is set [&t=xxhxxmxxs]
 function checkDeepLink(getVars) {
     if('t' in getVars) {
         var time = 0;
@@ -1471,6 +1480,7 @@ function checkDeepLink(getVars) {
     }
 }
 
+// extract GET parameters from URL
 function getParameters() {
     var getVars = {};
     window.location.search.slice(1).split('&').forEach(function(getVar) {
@@ -1480,6 +1490,7 @@ function getParameters() {
     return getVars;
 }
 
+// get URL of data from database using id from GET parameter
 function getURLs(id) {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
@@ -1493,16 +1504,17 @@ function getURLs(id) {
     xhttp.send('id=' + id);
 }
 
+// update elapsed time and remaining time
 function updateTime() {
     var currTime = wavesurfer.getCurrentTime();
     var totalTime = wavesurfer.getDuration();
     var currDisplayTime = toHHMMssmmm(currTime).split(',')[0];
     var remDisplayTime = toHHMMssmmm(totalTime - currTime).split(',')[0];
     document.getElementById('elapsed-time').innerText = currDisplayTime;
-    document.getElementsByTagName('wave')[0].title = currDisplayTime;
     document.getElementById('remaining-time').innerText = remDisplayTime;
 }
 
+// if user tries to close the browser
 window.onbeforeunload = function(e) {
     e || window.event;
     if(e) {
@@ -1513,15 +1525,21 @@ window.onbeforeunload = function(e) {
 
 // Initialization
 var getParams = getParameters();
+
+/*** COMMENT WHEN DEPLOYED ***/
+pageOptions = {                                                 // COMMENT WHEN DEPLOYED
+    metaURL: 'transcript/new-york-rock_meta.json',              // COMMENT WHEN DEPLOYED
+    transcriptURL: 'transcript/new-york-rock_prepared.json',    // COMMENT WHEN DEPLOYED
+    audioURL: 'audio/new-york-rock.mp3'                         // COMMENT WHEN DEPLOYED
+};                                                              // COMMENT WHEN DEPLOYED
+init();                                                         // COMMENT WHEN DEPLOYED
+/*** END ***/
+
+/*** UNCOMMENT WHEN DEPLOYED ***/
 //if('id' in getParams) {              // UNCOMMENT WHEN DEPLOYED
     //getURLs(getParams['id']);        // UNCOMMENT WHEN DEPLOYED
-    pageOptions = {                                                 // COMMENT WHEN DEPLOYED
-        metaURL: 'transcript/new-york-rock_meta.json',              // COMMENT WHEN DEPLOYED
-        transcriptURL: 'transcript/new-york-rock_prepared.json',    // COMMENT WHEN DEPLOYED
-        audioURL: 'audio/new-york-rock.mp3'                         // COMMENT WHEN DEPLOYED
-    };                                                              // COMMENT WHEN DEPLOYED
-    init();                                                         // COMMENT WHEN DEPLOYED
 //}                                    // UNCOMMENT WHEN DEPLOYED
+/*** END ***/
 
 function init() {
     document.addEventListener('DOMContentLoaded', function() {
@@ -1585,6 +1603,7 @@ function init() {
             GLOBAL_ACTIONS['stop']();
         });
 
+        // read words and update time when seek occurs
         wavesurfer.on('seek', function() {
             readWords();
             updateTime();
@@ -1709,6 +1728,7 @@ function init() {
             }
         });
 
+        // hide hints on key up
         document.addEventListener('keyup', function(e) {
             if(!/hidden/i.test(shortcutWrapper.classList.toString())) {
                 shortcutWrapper.classList.add('hidden');
@@ -1724,6 +1744,7 @@ function init() {
             }
         })
 
+        // find matches
         document.getElementById('find').addEventListener('keyup', function() {
             var input = this.value;
             [].forEach.call(document.querySelectorAll('.word'), function(el) {
@@ -1739,6 +1760,7 @@ function init() {
             });
         });
 
+        // replace
         document.getElementById('find-replace-form').addEventListener('submit', function(e) {
             e.preventDefault();
             var foundWord = document.getElementById('find').value;
@@ -1761,7 +1783,9 @@ function init() {
             }, 100);
         });
 
+        // to highlight using waveform
         var range;
+        // highlight start
         document.getElementById('audioclip').addEventListener('mousedown', function(e) {
             setTimeout(function() {
                 var startEle = document.getElementsByClassName('read');
@@ -1772,6 +1796,7 @@ function init() {
             }, 100);
         });
 
+        // highlight end
         document.getElementById('audioclip').addEventListener('mouseup', function(e) {
             setTimeout(function() {
                 var endEle = document.getElementsByClassName('read');
