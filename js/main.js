@@ -918,6 +918,8 @@ function seekToWord(caller) {
 
 // resize container if body size is changed
 function resizeBody() {
+    wavesurfer.drawBuffer();
+    wavesurfer.drawer.progress(wavesurfer.backend.getPlayedPercents());
     var off = document.getElementsByClassName('main-container')[0].offsetHeight;
     var height = window.innerHeight - off;
     document.getElementsByClassName('transcript-container')[0].setAttribute('style', 'height: ' + height + 'px');
