@@ -1538,6 +1538,7 @@ init();                                                         // COMMENT WHEN 
 /*** UNCOMMENT WHEN DEPLOYED ***/
 //if('id' in getParams) {              // UNCOMMENT WHEN DEPLOYED
     //getURLs(getParams['id']);        // UNCOMMENT WHEN DEPLOYED
+    
 //}                                    // UNCOMMENT WHEN DEPLOYED
 /*** END ***/
 
@@ -1562,7 +1563,7 @@ function init() {
             barWidth: 2,
             normalize: true,
             backend: 'MediaElement',
-	    hideScrollbar: true,
+            hideScrollbar: true,
             height: 95
         };
 
