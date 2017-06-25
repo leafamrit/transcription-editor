@@ -75,6 +75,19 @@ wave {
     cursor: pointer;
 }
 
+p#tooltip {
+    background-color: #f6f7eb;
+    color: #393e41;
+    font-family: 'Allerta Stencil';
+    position: fixed;
+    display: none;
+    z-index: 10001;
+    opacity: 0.7;
+    padding: 0.1em;
+    font-size: 0.7em;
+    transition: none;
+}
+
 div#current-time {
     margin-bottom: 2em;
     font-size: 0.7em;
@@ -85,13 +98,11 @@ div#current-time {
 p#elapsed-time {
     margin: 0;
     float: left;
-    /*color: #f4364c;*/
 }
 
 p#remaining-time {
     margin: 0;
     float: right;
-    /*color: #3f88c5;*/
 }
 
 div.main-container {

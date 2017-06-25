@@ -1784,6 +1784,18 @@ function init() {
             }, 100);
         });
 
+        document.getElementById('audioclip').addEventListener('mousemove', function(e) {
+            var tooltip = document.getElementById('tooltip');
+            tooltip.style.top = e.clientY + 'px';
+            tooltip.style.left = e.clientX + 'px';
+            tooltip.innerText = toHHMMssmmm((e.layerX / wavesurfer.drawer.width) * wavesurfer.getDuration()).split(',')[0];
+            tooltip.style.display = 'block';
+        });
+
+        document.getElementById('audioclip').addEventListener('mouseleave', function() {
+            document.getElementById('tooltip').style.display = 'none';
+        });
+
         // to highlight using waveform
         var range;
         // highlight start

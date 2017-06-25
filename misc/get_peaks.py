@@ -38,7 +38,7 @@ def get_silences(peak_slice, peak_duration, silence_threshold):
     return silences
 
 meta = {}
-meta["peaks"] = get_peaks(length / 1000, 0.05)
+meta["peaks"] = get_peaks(length / 500, 0.05)
 meta["silences"] = get_silences(0.2, 0.2, 0.009)
 
 print(str(meta).replace("\'", "\""))
