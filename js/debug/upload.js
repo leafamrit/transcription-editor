@@ -15,6 +15,27 @@ window.onbeforeunload = function(e) {
 
 // Drag'n'drop
 document.addEventListener('DOMContentLoaded', function () {
+    var uploadFile = function(file) {
+        var form = new FormData();
+        form.append('audioclip', file);
+        var xhttp = new XMLHttpRequest();
+        xhttp.onprogress = function(e) {
+            var progressDiv = document.getElementById('upload-progress-bar');
+            var progressBar = progressDiv.getElementsByClassName('progress-bar')[0];
+            progressDiv.style.display = 'block';
+            progressBar.style.width = (Math.round(e.loaded / e.total) * 100) + '%';
+        }
+        xhttp.onreadystatechange = function() {
+            if(this.readyState === 4 && this.status === 200) {
+                document.getElementById('audio-uploaded').classList.add('loaded');
+                document.getElementById('bt-analyze').removeAttribute('disabled');
+                alert('Uploaded Successfully');
+            }
+        }
+        xhttp.open('POST', './save.php');
+        xhttp.send(form);
+    }
+
     var toggleActive = function (e, toggle) {
         e.stopPropagation();
         e.preventDefault();
@@ -28,8 +49,8 @@ document.addEventListener('DOMContentLoaded', function () {
             toggleActive(e, false);
             // Load the file into wavesurfer
             if (e.dataTransfer.files.length == 1) {
-                lock = true;
                 if(/audio/i.test(e.dataTransfer.files[0].type)) {
+                    lock = true;
                     uploadFile(e.dataTransfer.files[0]);
                 } else {
                     alert('Please drop a valid audio file.');
@@ -55,27 +76,6 @@ document.addEventListener('DOMContentLoaded', function () {
         dropTarget.addEventListener(event, handlers[event]);
     });
 });
-
-function uploadFile(file) {
-    var form = new FormData();
-    form.append('audioclip', file);
-    var xhttp = new XMLHttpRequest();
-    xhttp.onprogress = function(e) {
-        var progressDiv = document.getElementById('upload-progress-bar');
-        var progressBar = progressDiv.getElementsByClassName('progress-bar')[0];
-        progressDiv.style.display = 'block';
-        progressBar.style.width = (Math.round(e.loaded / e.total) * 100) + '%';
-    }
-    xhttp.onreadystatechange = function() {
-        if(this.readyState === 4 && this.status === 200) {
-            document.getElementById('audio-uploaded').classList.add('loaded');
-            document.getElementById('bt-analyze').removeAttribute('disabled');
-            alert('Uploaded Successfully');
-        }
-    }
-    xhttp.open('POST', './save.php');
-    xhttp.send(form);
-}
 
 function requestTranscript() {
     alert('request received');

@@ -901,15 +901,6 @@ function updateTime() {
 }
 
 function init() {
-    // if user tries to close the browser
-    window.onbeforeunload = function(e) {
-        e || window.event;
-        if(e) {
-            return '';
-        }
-        return '';
-    }
-
     // cookies
     if(/hints=off/i.test(document.cookie)) {
         GLOBAL_ACTIONS['toggle-hints']();
