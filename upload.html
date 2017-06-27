@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en_US">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Upload Audio</title>
+
+    <link rel="stylesheet" href="css/style.min.css" />
+
+    <!-- JS -->
+    <script src="js/upload.min.js"></script>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebApplication">
+    <div class="container">
+        <div id="demo">
+            <div class="progress progress-striped active" id="upload-progress-bar">
+                <div class="progress-bar progress-bar-info"></div>
+            </div>
+        </div>
+
+        <p class="lead pull-center" id="drop">
+            Drag'n'drop the audio file here.
+        </p>
+
+        <button id="bt-analyze" onclick="requestTranscript()" disabled="">Prepare Transcript!</button>
+        <button class="load-confirm" id="audio-uploaded">Audio Uploaded</button>
+    </div>
+</body>
+</html>

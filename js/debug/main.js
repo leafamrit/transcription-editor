@@ -2,24 +2,21 @@ var wavesurfer = Object.create(WaveSurfer);
 
 // global variables
 var transcript;
-var silences = Array();
-var highlights = Array();
-var strikes = Array();
+var silences;
+var highlights;
+var strikes;
 var pastStack = Array();
 var futureStack = Array();
-var globaluksp = 0;
-var changed = false;
 var pageOptions;
+var getParams;
 
 var skipSilences = false;
 var playHighlights = false;
 
-var undoAction = false;
-
 // mutation observers
 var wordChildObserver; // firefox
-var wordObserver;
 var nodeObserver;
+var wordObserver;
 
 var GLOBAL_ACTIONS = {
 
@@ -147,7 +144,7 @@ var GLOBAL_ACTIONS = {
                 currentSpeaker = speakers[i++].speaker;
                 if(onlyHighlight) {
                     if(word[3]) {
-                        if(!word[3].strike && word[3].highlight) {
+                        if(word[3].highlight) {
                             if(currentSpeaker != prevSpeaker) {
                                 sentence += '(' + currentSpeaker + ')';
                             }
@@ -211,7 +208,7 @@ var GLOBAL_ACTIONS = {
                 currentSpeaker = speakers[i++].speaker;
                 if(onlyHighlight) {
                     if(word[3]) {
-                        if(!word[3].strike && word[3].highlight) {
+                        if(word[3].highlight) {
                             if(currentSpeaker != prevSpeaker) {
                                 sentence += '(' + currentSpeaker + ') ';
                             }
@@ -290,12 +287,10 @@ var GLOBAL_ACTIONS = {
                 }
                 if(onlyHighlight) {
                     if(words[i][3]) {
-                        if(!words[i][3].strike) {
-                            if(words[i][3].highlight) {
-                                sentence += currentPara;
-                                currentPara = '';
-                                sentence += words[i][0];
-                            }
+                        if(words[i][3].highlight) {
+                            sentence += currentPara;
+                            currentPara = '';
+                            sentence += words[i][0];
                         }
                     }
                 } else {
@@ -445,7 +440,7 @@ var GLOBAL_ACTIONS = {
     },
 
     'close-find-replace': function() {
-        document.getElementById('export-wrapper').classList.add('invisible');
+        document.getElementById('find-replace-wrapper').classList.add('invisible');
         setTimeout(function() {
             document.getElementById('find-replace-wrapper').classList.add('hidden');
         }, 50);
@@ -816,7 +811,7 @@ function getHighlights() {
     });
 
     // clear array to remove garbage data
-    highlights = [];
+    highlights = {};
 
     // generate highlight array
     if(keys.length > 0) {
@@ -854,7 +849,7 @@ function getStrikes() {
     });
 
     // clear array to remove garbage
-    strikes = [];
+    strikes = {};
 
     // generate array
     var start, end;
@@ -984,10 +979,8 @@ function fillWords() {
                 // input field for speaker name
                 speakerName = document.createElement('input');
                 speakerName.value = currentSpeaker;
-                speakerName.id = 'speaker' + (i - 1);
                 speakerName.classList.add('speaker');
                 speakerName.setAttribute('list', 'speakerlist');
-                speakerName.setAttribute('name', 'speaker');
                 speakerName.setAttribute('speakername', currentSpeaker);
                 speakerName.setAttribute('speakerindex', (i - 1));
                 speakerName.setAttribute('style', 'width: ' + ((speakerName.value.length * 8) + 20) + 'px');
@@ -1004,8 +997,8 @@ function fillWords() {
                 currWord.innerHTML = word[0];
                 currWord.setAttribute('starttime', word[1]);
                 currWord.setAttribute('endtime', word[2]);
-                currWord.setAttribute('resultindex', resultIndex);
                 currWord.setAttribute('oldval', word[0]);
+                currWord.setAttribute('resultindex', resultIndex);
                 currWord.setAttribute('alternativeindex', maxAlternativeIndex);
                 currWord.setAttribute('wordindex', wordIndex);
                 currWord.setAttribute('speakerindex', globalspkr_i);
@@ -1014,44 +1007,52 @@ function fillWords() {
                 currWord.addEventListener('focus', function() { seekToWord(this); });
                 currWord.id = word[1];
                 currWord.classList.add('word');
-            }
-            globalspkr_i++;
+                
+                // check if word highlighted or striked
+                var hWaveId = 'h' + word[1];
+                var sWaveId = 's' + word[1];
+                if(word[3]) {
+                    if(word[3].highlight) {
+                        // add highlighting to text
+                        currWord.classList.add('highlight');
 
-            // check if word highlighted or striked
-            var hWaveId = 'h' + word[1];
-            var sWaveId = 's' + word[1];
-            if(word[3]) {
-                if(word[3].highlight) {
-                    // add highlighting to text
-                    currWord.classList.add('highlight');
+                        // check if highlighted region already present in waveform (helpful on undo / redo)
+                        if(!(hWaveId in wavesurfer.regions.list)) {
+                            // create highlighted region
+                            wavesurfer.addRegion({
+                                id: hWaveId,
+                                start: currWord.getAttribute('starttime'),
+                                end: currWord.getAttribute('endtime'),
+                                color: 'rgba(255, 255, 0, 0.3)',
+                                drag: false,
+                                resize: false
+                            });
+                        }
+                    } else if(word[3].strike) {
+                        // add strike to text
+                        currWord.classList.add('strike');
 
-                    // check if highlighted region already present in waveform (helpful on undo / redo)
-                    if(!(hWaveId in wavesurfer.regions.list)) {
-                        // create highlighted region
-                        wavesurfer.addRegion({
-                            id: hWaveId,
-                            start: currWord.getAttribute('starttime'),
-                            end: currWord.getAttribute('endtime'),
-                            color: 'rgba(255, 255, 0, 0.3)',
-                            drag: false,
-                            resize: false
-                        });
-                    }
-                } else if(word[3].strike) {
-                    // add strike to text
-                    currWord.classList.add('strike');
-
-                    // check if striked region already present in waveform (helpful on undo / redo)
-                    if(!(sWaveId in wavesurfer.regions.list)) {
-                        // create striked region
-                        wavesurfer.addRegion({
-                            id: sWaveId,
-                            start: currWord.getAttribute('starttime'),
-                            end: currWord.getAttribute('endtime'),
-                            color: 'rgba(100, 100, 100, 0.5)',
-                            drag: false,
-                            resize: false
-                        });
+                        // check if striked region already present in waveform (helpful on undo / redo)
+                        if(!(sWaveId in wavesurfer.regions.list)) {
+                            // create striked region
+                            wavesurfer.addRegion({
+                                id: sWaveId,
+                                start: currWord.getAttribute('starttime'),
+                                end: currWord.getAttribute('endtime'),
+                                color: 'rgba(100, 100, 100, 0.5)',
+                                drag: false,
+                                resize: false
+                            });
+                        }
+                    } else {
+                        // remove highlight if present
+                        if(hWaveId in wavesurfer.regions.list) {
+                            wavesurfer.regions.list[hWaveId].remove();
+                        }
+                        // remove strike region if present
+                        if(sWaveId in wavesurfer.regions.list) {
+                            wavesurfer.regions.list[sWaveId].remove();
+                        }
                     }
                 } else {
                     // remove highlight if present
@@ -1063,19 +1064,11 @@ function fillWords() {
                         wavesurfer.regions.list[sWaveId].remove();
                     }
                 }
-            } else {
-                // remove highlight if present
-                if(hWaveId in wavesurfer.regions.list) {
-                    wavesurfer.regions.list[hWaveId].remove();
-                }
-                // remove strike region if present
-                if(sWaveId in wavesurfer.regions.list) {
-                    wavesurfer.regions.list[sWaveId].remove();
-                }
-            }
 
-            // add current word to speaker
-            div.appendChild(currWord);
+                // add current word to speaker
+                div.appendChild(currWord);
+            }
+            globalspkr_i++;
 
             // go to next speaker
             prevSpeaker = currentSpeaker;
@@ -1185,10 +1178,9 @@ function wordChildMutation(mutation) {
 
         currWord = mutation[mutation.length - 1].target;
         var nodes = Array();
-        globaluksp++;
         while(currWord) {
             nodes.push(currWord);
-            transcript.results[0].speaker_labels[currWord.getAttribute('speakerindex')].speaker = 'Unknown Speaker ' + globaluksp;
+            transcript.results[0].speaker_labels[currWord.getAttribute('speakerindex')].speaker = 'Unknown Speaker';
             currWord = currWord.nextSibling;
         }
 
@@ -1198,20 +1190,19 @@ function wordChildMutation(mutation) {
         var specialBreak = document.createElement('br');
         specialBreak.classList.add('special-break');
 
-        // start creating div for surrent speaker
+        // start creating div for current speaker
         div = document.createElement('div');
-        div.setAttribute('title', 'Unknown Speaker ' + globaluksp);
+        div.setAttribute('title', 'Unknown Speaker');
         div.setAttribute('contenteditable', 'true');
         div.classList.add('speaker-div');
 
         // input field for speaker name
         speakerName = document.createElement('input');
-        speakerName.value = 'Unknown Speaker ' + globaluksp;
+        speakerName.value = 'Unknown Speaker';
         speakerName.classList.add('speaker');
         speakerName.setAttribute('list', 'speakerlist');
-        speakerName.setAttribute('name', 'speaker');
         speakerName.setAttribute('speakerindex', nodes[0].getAttribute('speakerindex'));
-        speakerName.setAttribute('speakername', 'Unknown Speaker ' + globaluksp);
+        speakerName.setAttribute('speakername', 'Unknown Speaker');
         speakerName.setAttribute('style', 'width: ' + ((speakerName.value.length * 8) + 20) + 'px');
         speakerName.setAttribute('onkeyup', 'resizeInput(this);');
         speakerName.setAttribute('onclick', 'handleList(this)');
@@ -1258,13 +1249,12 @@ function nodeMutation(mutation) {
         nodeObserver.disconnect();
 
         var nodes = Array();
-        globaluksp++;
         mutation.forEach(function(m) {
             m.removedNodes.forEach(function(node) {
                 if(node.innerText.trim() != '') {
                     nodes.push(node);
                     index = node.getAttribute('speakerindex');
-                    transcript.results[0].speaker_labels[index].speaker = 'Unknown Speaker ' + globaluksp;
+                    transcript.results[0].speaker_labels[index].speaker = 'Unknown Speaker';
                 }
             });
         });
@@ -1274,19 +1264,19 @@ function nodeMutation(mutation) {
         var specialBreak = document.createElement('br');
         specialBreak.classList.add('special-break');
 
-        // start creating div for surrent speaker
+        // start creating div for current speaker
         div = document.createElement('div');
-        div.setAttribute('title', 'Unknown Speaker ' + globaluksp);
+        div.setAttribute('title', 'Unknown Speaker');
         div.setAttribute('contenteditable', 'true');
         div.classList.add('speaker-div');
 
         // input field for speaker name
         speakerName = document.createElement('input');
-        speakerName.value = 'Unknown Speaker ' + globaluksp;
+        speakerName.value = 'Unknown Speaker';
         speakerName.classList.add('speaker');
         speakerName.setAttribute('list', 'speakerlist');
         speakerName.setAttribute('name', 'speaker');
-        speakerName.setAttribute('speakername', 'Unknown Speaker ' + globaluksp);
+        speakerName.setAttribute('speakername', 'Unknown Speaker');
         speakerName.setAttribute('speakerindex', nodes[0].getAttribute('speakerindex'));
         speakerName.setAttribute('style', 'width: ' + ((speakerName.value.length * 8) + 20) + 'px');
         speakerName.setAttribute('onkeyup', 'resizeInput(this);');
@@ -1338,6 +1328,7 @@ function nodeMutation(mutation) {
 // mark words as read
 function readWords() {
     readWord = document.getElementsByClassName('read');
+    
     try {
         currWord = readWord[0] ? (readWord[readWord.length - 1].nextSibling ? readWord[readWord.length - 1].nextSibling : readWord[readWord.length - 1].parentElement.nextSibling.nextSibling.nextSibling.firstChild) : document.getElementsByClassName('word')[0];
     } catch (exception) {
@@ -1351,20 +1342,19 @@ function readWords() {
             currWord.classList.add('read');
             currWord = currWord.nextSibling ? currWord.nextSibling : currWord.parentElement.nextSibling.nextSibling.nextSibling.firstChild;
         }
-        if(divEnds.bottom < currWord.getBoundingClientRect().bottom || divEnds.top > currWord.getBoundingClientRect().top) {
-            currWord.scrollIntoView();
-        }
         if(divEnds.top + 150 < currWord.getBoundingClientRect().top) {
-            var goDown = setInterval(scrollStep, 10);
-            function scrollStep() {
+            var scrollStep = function() {
                 if(divEnds.top + 150 >= currWord.getBoundingClientRect().top) {
                     clearInterval(goDown);
                 } else {
                     document.getElementById('transcript-area').scrollTop += 5;
                 }
             }
+            var goDown = setInterval(scrollStep, 10);
         }
-
+        if(divEnds.bottom < currWord.getBoundingClientRect().bottom || divEnds.top > currWord.getBoundingClientRect().top) {
+            currWord.scrollIntoView();
+        }
     } else {
         [].forEach.call(document.querySelectorAll('.read'), function(el) {
             if(el.id > wavesurfer.getCurrentTime()) {
@@ -1379,14 +1369,14 @@ function readWords() {
                 currWord.scrollIntoView();
             }
             if(divEnds.top + 100 > currWord.getBoundingClientRect().top) {
-                var goUp = setInterval(scrollStep, 10);
-                function scrollStep() {
+                var scrollStep = function() {
                     if(divEnds.top + 100 <= currWord.getBoundingClientRect().top) {
                         clearInterval(goUp);
                     } else {
                         document.getElementById('transcript-area').scrollTop -= 5;
                     }
                 }
+                var goUp = setInterval(scrollStep, 10);
             }
         }
     }
@@ -1397,11 +1387,9 @@ function changeInput(caller) {
     pastStack.push(JSON.stringify(transcript));
     if(!caller.value.trim() || isNaN(caller.getAttribute('speakername'))) {
         if(!caller.value.trim()) {
-            caller.value = 'Unknown Speaker ' + (globaluksp++);
-            caller.setAttribute('speakername', 'Unknown Speaker ' + globaluksp);
-        } else {
-            caller.setAttribute('speakername', caller.value);
+            caller.value = 'Unknown Speaker';
         }
+        caller.setAttribute('speakername', caller.value);
         var startIndex = caller.getAttribute('speakerindex');
         var endIndex = caller.nextSibling.nextSibling.nextSibling ? Number(caller.nextSibling.nextSibling.nextSibling.getAttribute('speakerindex')) : transcript.results[0].speaker_labels.length;
 
@@ -1411,7 +1399,6 @@ function changeInput(caller) {
     } else {
         var input = caller.value;
         var oldName = caller.getAttribute('speakername');
-        pastStack.push(JSON.stringify(transcript));
         var inputLength = (caller.value.length * 8) + 20;
         transcript.results[0].speaker_labels.forEach(function(el) {
             if(el.speaker == oldName) {
@@ -1463,6 +1450,7 @@ function resizeInput(caller) {
 function checkDeepLink(getVars) {
     if('t' in getVars) {
         var time = 0;
+        getVars.t = getVars.t.toLowerCase();
         if(getVars.t.split('h').length > 1) {
             time += Number(getVars.t.split('h')[0]) * 3600;
             getVars.t = getVars.t.split('h')[1];
@@ -1498,7 +1486,13 @@ function getURLs(id) {
     xhttp.onreadystatechange = function() {
         if(this.readyState === 4 && this.status === 200) {
             pageOptions = JSON.parse(this.responseText);
-            init();
+            if(pageOptions.metaURL && pageOptions.transcriptURL && pageOptions.audioURL) {
+                init();
+            } else {
+                alert('Missing parameters. Please try later.');
+            }
+        } else if(this.readyState === 4 && this.status != 200) {
+            alert('Server response invalid. Please try later.');
         }
     }
     xhttp.open('POST', './save.php', true);
@@ -1516,310 +1510,298 @@ function updateTime() {
     document.getElementById('remaining-time').innerText = remDisplayTime;
 }
 
-// if user tries to close the browser
-window.onbeforeunload = function(e) {
-    e || window.event;
-    if(e) {
-        return '';
-    }
-    return '';
-}
-
-// Initialization
-var getParams = getParameters();
-
-/*** COMMENT WHEN DEPLOYED ***/
-pageOptions = {                                                 // COMMENT WHEN DEPLOYED
-    metaURL: 'transcript/new-york-rock_meta.json',              // COMMENT WHEN DEPLOYED
-    transcriptURL: 'transcript/new-york-rock_prepared.json',    // COMMENT WHEN DEPLOYED
-    audioURL: 'audio/new-york-rock.mp3'                         // COMMENT WHEN DEPLOYED
-};                                                              // COMMENT WHEN DEPLOYED
-init();                                                         // COMMENT WHEN DEPLOYED
-/*** END ***/
-
-/*** UNCOMMENT WHEN DEPLOYED ***/
-//if('id' in getParams) {              // UNCOMMENT WHEN DEPLOYED
-    //getURLs(getParams['id']);        // UNCOMMENT WHEN DEPLOYED
-    
-//}                                    // UNCOMMENT WHEN DEPLOYED
-/*** END ***/
 
 function init() {
-    document.addEventListener('DOMContentLoaded', function() {
-        // cookies
-        if(/hints=off/i.test(document.cookie)) {
-            GLOBAL_ACTIONS['toggle-hints']();
+    // if user tries to close the browser
+    window.onbeforeunload = function(e) {
+        e || window.event;
+        if(e) {
+            return '';
         }
-        if(/help=off/i.test(document.cookie)) {
-            GLOBAL_ACTIONS['toggle-help']();
-            GLOBAL_ACTIONS['close-help']();
+        return '';
+    }
+
+    // cookies
+    if(/hints=off/i.test(document.cookie)) {
+        GLOBAL_ACTIONS['toggle-hints']();
+    }
+    if(/help=off/i.test(document.cookie)) {
+        GLOBAL_ACTIONS['toggle-help']();
+        GLOBAL_ACTIONS['close-help']();
+    }
+
+    // wavesurfer options
+    var options = {
+        container: document.querySelector('#audioclip'),
+        progressColor: '#f4364c',
+        waveColor: '#3f88c5',
+        cursorWidth: 2,
+        cursorColor: '#3f88c5',
+        barWidth: 2,
+        normalize: true,
+        backend: 'MediaElement',
+        hideScrollbar: true,
+        height: 95
+    };
+
+    // initialize wavesurfer with options
+    wavesurfer.init(options);
+
+    // load metadata and audio
+    loadJSON(pageOptions.metaURL, function(text) {
+        var metadata = JSON.parse(text);
+        silences = metadata.silences;
+        wavesurfer.load(pageOptions.audioURL, metadata.peaks, 'none');
+    });
+
+    // handle events while playing
+    wavesurfer.on('audioprocess', function() {
+        curr = wavesurfer.getCurrentTime().toFixed(1);
+        readWords();
+        updateTime();
+
+        if( curr in strikes ) {
+            wavesurfer.backend.seekTo(strikes[curr]);
         }
 
-        // wavesurfer options
-        var options = {
-            container: document.querySelector('#audioclip'),
-            progressColor: '#f4364c',
-            waveColor: '#3f88c5',
-            cursorWidth: 2,
-            cursorColor: '#3f88c5',
-            barWidth: 2,
-            normalize: true,
-            backend: 'MediaElement',
-            hideScrollbar: true,
-            height: 95
-        };
-
-        // initialize wavesurfer with options
-        wavesurfer.init(options);
-
-        // load metadata and audio
-        loadJSON(pageOptions.metaURL, function(text) {
-            var metadata = JSON.parse(text);
-            silences = metadata.silences;
-            wavesurfer.load(pageOptions.audioURL, metadata.peaks, 'none');
-        });
-
-        // handle events while playing
-        wavesurfer.on('audioprocess', function() {
-            curr = wavesurfer.getCurrentTime().toFixed(1);
-            readWords();
-            updateTime();
-
-            if( curr in strikes ) {
-                wavesurfer.backend.seekTo(strikes[curr]);
+        if(playHighlights) {
+            if( curr in highlights ) {
+                wavesurfer.backend.seekTo(highlights[curr]);
             }
+        }
 
-            if(playHighlights) {
-                if( curr in highlights ) {
-                    wavesurfer.backend.seekTo(highlights[curr]);
-                }
+        if(skipSilences) {
+            if( curr in silences ) {
+                wavesurfer.backend.seekTo(silences[curr]);
             }
+        }
+    });
 
-            if(skipSilences) {
-                if( curr in silences ) {
-                    wavesurfer.backend.seekTo(silences[curr]);
-                }
-            }
+    wavesurfer.on('finish', function() {
+        GLOBAL_ACTIONS['stop']();
+    });
+
+    // read words and update time when seek occurs
+    wavesurfer.on('seek', function() {
+        readWords();
+        updateTime();
+    });
+
+    // startup the page
+    wavesurfer.on('ready', function() {
+        var timeline = Object.create(WaveSurfer.Timeline);
+
+        var timeGap = (Math.floor(wavesurfer.getDuration() / 1000) * 100) / 2;
+        timeline.init({
+            wavesurfer: wavesurfer,
+            container: '#audioclip-timeline',
+            primaryColor: '#3f88c5',
+            seondaryColor: '#f4364c',
+            primaryFontColor: '#f6f7eb',
+            secondaryFontColor: '#f6f7eb',
+            timeInterval: timeGap,
+            height: 15
         });
 
-        wavesurfer.on('finish', function() {
-            GLOBAL_ACTIONS['stop']();
+        updateTime();
+
+        wavesurfer.addRegion({
+            id: 'dummy',
+            start: 0,
+            end: 0,
+            drag: false,
+            resize: false,
+            color: 'rgba(255, 255, 0, 0)'
         });
 
-        // read words and update time when seek occurs
-        wavesurfer.on('seek', function() {
-            readWords();
-            updateTime();
+        resizeBody();
+        enableUI();
+
+        activeSpeed();
+
+        nodeObserver = new MutationObserver(function(mutation) {
+            nodeMutation(mutation);
+        });
+        wordObserver = new MutationObserver(function(mutation) {
+            wordMutation(mutation);
+        });
+        wordChildObserver = new MutationObserver(function(mutation) {
+            wordChildMutation(mutation);
         });
 
-        // startup the page
-        wavesurfer.on('ready', function() {
-            var timeline = Object.create(WaveSurfer.Timeline);
-
-            var timeGap = (Math.floor(wavesurfer.getDuration() / 1000) * 100) / 2;
-            timeline.init({
-                wavesurfer: wavesurfer,
-                container: '#audioclip-timeline',
-                primaryColor: '#3f88c5',
-                seondaryColor: '#f4364c',
-                primaryFontColor: '#f6f7eb',
-                secondaryFontColor: '#f6f7eb',
-                timeInterval: timeGap,
-                height: 15
-            });
-
-            updateTime();
-
-            wavesurfer.addRegion({
-                id: 'dummy',
-                start: 0,
-                end: 0,
-                drag: false,
-                resize: false,
-                color: 'rgba(255, 255, 0, 0)'
-            });
-
-            resizeBody();
-            enableUI();
-            [].forEach.call(document.querySelectorAll('.speaker'), function(el) {
-                if(/Unknown Speaker/i.test(el.value)) {
-                    globaluksp++;
-                }
-            });
-
-            activeSpeed();
-
-            nodeObserver = new MutationObserver(function(mutation) {
-                nodeMutation(mutation);
-            });
-            wordObserver = new MutationObserver(function(mutation) {
-                wordMutation(mutation);
-            });
-            wordChildObserver = new MutationObserver(function(mutation) {
-                wordChildMutation(mutation);
-            });
-
-            loadJSON(pageOptions.transcriptURL, function(text) {
-                transcript = JSON.parse(text);
-                pastStack.push(JSON.stringify(transcript));
-                fillWords();
-                checkDeepLink(getParams);
-            });
-
-            setInterval(function() {
-                saveJSON(false);
-            }, 60000)
+        loadJSON(pageOptions.transcriptURL, function(text) {
+            transcript = JSON.parse(text);
+            pastStack.push(JSON.stringify(transcript));
+            fillWords();
+            checkDeepLink(getParams);
         });
+
+        setInterval(function() {
+            saveJSON(false);
+        }, 60000)
     });
 
 
     // Event handlers
-    document.addEventListener('DOMContentLoaded', function() {
-        // buttons
-        [].forEach.call(document.querySelectorAll('[data-action]'), function(el) {
-            el.addEventListener('click', function(e) {
-                var action = e.currentTarget.dataset.action;
-                if(action in GLOBAL_ACTIONS) {
-                    e.preventDefault();
-                    GLOBAL_ACTIONS[action]();
-                }
-            });
-        });
-
-        // volume
-        document.getElementById('volumerange').addEventListener('change', function() {
-            //document.getElementById('volume').innerHTML = this.value;
-            wavesurfer.setVolume(this.value / 100);
-        });
-
-        // keypresses
-        var shortcutWrapper = document.getElementById('shortcut-wrapper');
-        var shift_key = document.getElementById('shift-key');
-        var space_key = document.getElementById('space-key');
-        var extra_key = document.getElementById('extra-key');
-        document.addEventListener('keydown', function(e) {
-            var map = {
-                32: 'play',         // space
-                82: 'rewind',       // R
-                72: 'highlight',    // H
-                74: 'strike',       // J
-                90: 'undo',         // Z
-                83: 'save',         // S
+    // buttons
+    [].forEach.call(document.querySelectorAll('[data-action]'), function(el) {
+        el.addEventListener('click', function(e) {
+            var action = e.currentTarget.dataset.action;
+            if(action in GLOBAL_ACTIONS) {
+                e.preventDefault();
+                GLOBAL_ACTIONS[action]();
             }
-            if(e.ctrlKey) {
-                shortcutWrapper.classList.remove('hidden');
-                if(e.shiftKey) {
-                    shift_key.classList.remove('hidden');
-                }
-                var action = map[e.keyCode];
-                if(action in GLOBAL_ACTIONS) {
-                    e.preventDefault();
-                    if(e.shiftKey && action == 'undo') {
-                        extra_key.innerHTML = 'Z';
-                        extra_key.classList.remove('hidden');
-                        GLOBAL_ACTIONS['redo']();
-                    } else {
-                        if(e.keyCode == 32) {
-                            space_key.classList.remove('hidden');
-                        } else {
-                            extra_key.innerHTML = e.key.toUpperCase();
-                            extra_key.classList.remove('hidden');
-                        }
-                        GLOBAL_ACTIONS[action]();
-                    }
-                }
-            }
-        });
-
-        // hide hints on key up
-        document.addEventListener('keyup', function(e) {
-            if(!/hidden/i.test(shortcutWrapper.classList.toString())) {
-                shortcutWrapper.classList.add('hidden');
-            }
-            if(!/hidden/i.test(shift_key.classList.toString())) {
-                shift_key.classList.add('hidden');
-            }
-            if(!/hidden/i.test(extra_key.classList.toString())) {
-                extra_key.classList.add('hidden');
-            }
-            if(!/hidden/i.test(space_key.classList.toString())) {
-                space_key.classList.add('hidden');
-            }
-        })
-
-        // find matches
-        document.getElementById('find').addEventListener('keyup', function() {
-            var input = this.value;
-            [].forEach.call(document.querySelectorAll('.word'), function(el) {
-                if(el.innerText.search(input) >= 0) {
-                    if(!/found/i.test(el.classList.toString())) {
-                        el.classList.add('found');
-                    }
-                } else {
-                    if(/found/i.test(el.classList.toString())) {
-                        el.classList.remove('found');
-                    }
-                }
-            });
-        });
-
-        // replace
-        document.getElementById('find-replace-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            var foundWord = document.getElementById('find').value;
-            var replaceWord = document.getElementById('replace').value;
-            var counter = 0;
-            [].forEach.call(document.querySelectorAll('.word'), function(el) {
-                if(el.innerText.search(foundWord) >= 0) {
-                    el.innerText = el.innerText.replace(foundWord, replaceWord);
-                    counter++;
-                }
-            });
-            document.getElementById('find-replace-wrapper').classList.add('hidden');
-            setTimeout(function() {
-                [].forEach.call(document.querySelectorAll('.found'), function(el) {
-                    el.classList.remove('found');
-                });
-            }, 1000);
-            setTimeout(function() {
-                alert('Replaced ' + counter + ' occurrences of \'' + foundWord + '\' with \'' + replaceWord + '\'.');
-            }, 100);
-        });
-
-        document.getElementById('audioclip').addEventListener('mousemove', function(e) {
-            var tooltip = document.getElementById('tooltip');
-            tooltip.style.top = e.clientY + 'px';
-            tooltip.style.left = e.clientX + 'px';
-            tooltip.innerText = toHHMMssmmm((e.layerX / wavesurfer.drawer.width) * wavesurfer.getDuration()).split(',')[0];
-            tooltip.style.display = 'block';
-        });
-
-        document.getElementById('audioclip').addEventListener('mouseleave', function() {
-            document.getElementById('tooltip').style.display = 'none';
-        });
-
-        // to highlight using waveform
-        var range;
-        // highlight start
-        document.getElementById('audioclip').addEventListener('mousedown', function(e) {
-            setTimeout(function() {
-                var startEle = document.getElementsByClassName('read');
-                range = document.createRange();
-                try {
-                    range.setStart(startEle[startEle.length - 1], 0);
-                } catch (exception) {}
-            }, 100);
-        });
-
-        // highlight end
-        document.getElementById('audioclip').addEventListener('mouseup', function(e) {
-            setTimeout(function() {
-                var endEle = document.getElementsByClassName('read');
-                range.setEnd(endEle[endEle.length - 1], 0);
-                var sel = window.getSelection();
-                sel.removeAllRanges();
-                sel.addRange(range);
-            }, 100);
         });
     });
+
+    // volume
+    document.getElementById('volumerange').addEventListener('change', function() {
+        wavesurfer.setVolume(this.value / 100);
+    });
+
+    // keypresses
+    var shortcutWrapper = document.getElementById('shortcut-wrapper');
+    var shift_key = document.getElementById('shift-key');
+    var space_key = document.getElementById('space-key');
+    var extra_key = document.getElementById('extra-key');
+    document.addEventListener('keydown', function(e) {
+        var map = {
+            32: 'play',         // space
+            82: 'rewind',       // R
+            72: 'highlight',    // H
+            74: 'strike',       // J
+            90: 'undo',         // Z
+            83: 'save',         // S
+        }
+        if(e.ctrlKey) {
+            shortcutWrapper.classList.remove('hidden');
+            if(e.shiftKey) {
+                shift_key.classList.remove('hidden');
+            }
+            var action = map[e.keyCode];
+            if(action in GLOBAL_ACTIONS) {
+                e.preventDefault();
+                if(e.shiftKey && action == 'undo') {
+                    extra_key.innerHTML = 'Z';
+                    extra_key.classList.remove('hidden');
+                    GLOBAL_ACTIONS['redo']();
+                } else {
+                    if(e.keyCode == 32) {
+                        space_key.classList.remove('hidden');
+                    } else {
+                        extra_key.innerHTML = e.key.toUpperCase();
+                        extra_key.classList.remove('hidden');
+                    }
+                    GLOBAL_ACTIONS[action]();
+                }
+            }
+        }
+    });
+
+    // hide hints on key up
+    document.addEventListener('keyup', function(e) {
+        if(!/hidden/i.test(shortcutWrapper.classList.toString())) {
+            shortcutWrapper.classList.add('hidden');
+        }
+        if(!/hidden/i.test(shift_key.classList.toString())) {
+            shift_key.classList.add('hidden');
+        }
+        if(!/hidden/i.test(extra_key.classList.toString())) {
+            extra_key.classList.add('hidden');
+        }
+        if(!/hidden/i.test(space_key.classList.toString())) {
+            space_key.classList.add('hidden');
+        }
+    })
+
+    // find matches
+    document.getElementById('find').addEventListener('keyup', function() {
+        var input = this.value;
+        [].forEach.call(document.querySelectorAll('.word'), function(el) {
+            if(el.innerText.search(input) >= 0) {
+                if(!/found/i.test(el.classList.toString())) {
+                    el.classList.add('found');
+                }
+            } else {
+                if(/found/i.test(el.classList.toString())) {
+                    el.classList.remove('found');
+                }
+            }
+        });
+    });
+
+    // replace
+    document.getElementById('find-replace-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        var foundWord = document.getElementById('find').value;
+        var replaceWord = document.getElementById('replace').value;
+        var counter = 0;
+        [].forEach.call(document.querySelectorAll('.found'), function(el) {
+            if(el.innerText.search(foundWord) >= 0) {
+                el.innerText = el.innerText.replace(foundWord, replaceWord);
+                counter++;
+            }
+        });
+        document.getElementById('find-replace-wrapper').classList.add('hidden');
+        setTimeout(function() {
+            [].forEach.call(document.querySelectorAll('.found'), function(el) {
+                el.classList.remove('found');
+            });
+        }, 1000);
+        setTimeout(function() {
+            alert('Replaced ' + counter + ' occurrences of \'' + foundWord + '\' with \'' + replaceWord + '\'.');
+        }, 100);
+    });
+
+    document.getElementById('audioclip').addEventListener('mousemove', function(e) {
+        var tooltip = document.getElementById('tooltip');
+        tooltip.style.top = e.clientY + 'px';
+        tooltip.style.left = e.clientX + 'px';
+        tooltip.innerText = toHHMMssmmm((e.layerX / wavesurfer.drawer.width) * wavesurfer.getDuration()).split(',')[0];
+        tooltip.style.display = 'block';
+    });
+
+    document.getElementById('audioclip').addEventListener('mouseleave', function() {
+        document.getElementById('tooltip').style.display = 'none';
+    });
+
+    // to highlight using waveform
+    var range;
+    // highlight start
+    document.getElementById('audioclip').addEventListener('mousedown', function(e) {
+        setTimeout(function() {
+            var startEle = document.getElementsByClassName('read');
+            range = document.createRange();
+            try {
+                range.setStart(startEle[startEle.length - 1], 0);
+            } catch (exception) {}
+        }, 100);
+    });
+
+    // highlight end
+    document.getElementById('audioclip').addEventListener('mouseup', function(e) {
+        setTimeout(function() {
+            var endEle = document.getElementsByClassName('read');
+            range.setEnd(endEle[endEle.length - 1], 0);
+            var sel = window.getSelection();
+            sel.removeAllRanges();
+            sel.addRange(range);
+        }, 100);
+    });
 }
+
+// Initialization
+document.addEventListener('DOMContentLoaded', function() {
+    getParams = getParameters();
+    // if id present in GET request
+    if('id' in getParams) {
+        getURLs(getParams['id']);
+    } else { // only for testing
+        pageOptions = {
+            metaURL: 'transcript/new-york-rock_meta.json',
+            transcriptURL: 'transcript/new-york-rock_prepared.json',
+            audioURL: 'audio/new-york-rock.mp3'
+        };
+        init();
+    }
+});

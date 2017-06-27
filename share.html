@@ -1,58 +1,71 @@
 <!doctype html>
-<html>
+<html lang="en_US">
 
 <head>
     <title>Transcription Editor</title>
 
     <!-- CSS -->
-    <link rel="stylesheet" href="css/main.css" />
+    <link rel="stylesheet" href="css/main.min.css" />
     <link rel="stylesheet" href="css/font-awesome.min.css" />
     <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Allerta+Stencil" />
 
     <!-- wavesurfer -->
-    <script src="src/wavesurfer.js"></script>
-    <script src="src/util.js"></script>
-    <script src="src/drawer.js"></script>
-    <script src="src/drawer.multicanvas.js"></script>
-    <script src="src/webaudio.js"></script>
-    <script src="src/mediaelement.js"></script>
-    <script src="src/wavesurfer.regions.js"></script>
-    <script src="src/wavesurfer.timeline.js"></script>
+    <script src="src/wavesurfer.min.js"></script>
+    <script src="src/util.min.js"></script>
+    <script src="src/drawer.min.js"></script>
+    <script src="src/drawer.multicanvas.min.js"></script>
+    <script src="src/webaudio.min.js"></script>
+    <script src="src/mediaelement.min.js"></script>
+    <script src="src/wavesurfer.regions.min.js"></script>
+    <script src="src/wavesurfer.timeline.min.js"></script>
 
     <!-- FileSaver -->
-    <script src="src/FileSaver.js"></script>
+    <script src="src/FileSaver.min.js"></script>
 
     <!-- jsPDF -->
     <script src="src/jspdf.min.js"></script>
 
     <!-- docxtemplater -->
-    <script src="src/docxtemplater.js"></script>
+    <script src="src/docxtemplater.min.js"></script>
     <script src="src/jszip.min.js"></script>
-    <script src="src/jszip-utils.js"></script>
+    <script src="src/jszip-utils.min.js"></script>
 
     <!-- JS -->
-    <script src="js/share.js"></script>
+    <script src="js/share.min.js"></script>
 </head>
 
 <body onresize="resizeBody();">
+
+    <!-- loading -->
     <div id="main-container-mask">
         <i id="loader" class="fa fa-refresh fa-2x spinning"></i>
-        <br /><br /><br />
-        <span id="loading-percentage"></span>
-        <br /><br /><br />
-        <span id="loading-text"></span>
     </div>
+
+    <!-- main -->
     <center>
+
+        <!-- audio player -->
         <div class="main-container">
+
+            <!-- waveform timeline-->
             <div id="audioclip-timeline"></div>
+
+            <!-- waveform -->
             <div id="audioclip"></div>
 
+            <!-- tooltip -->
+            <p id="tooltip"></p>
+
+            <!-- current time indicator -->
             <div id="current-time">
                 <p id="elapsed-time"></p>
                 <p id="remaining-time"></p>
             </div>
 
+            <!-- player controls -->
             <div id="controls">
+
+                <!-- playback speed controls -->
                 <fieldset id="speedcontrols">
                     <legend>Playback Speed</legend>
                     <button class="actionbutton speed" data-action="speedx05" title="Change Playback Speed">x0.5</button>
@@ -63,30 +76,39 @@
                     <button class="actionbutton speed" data-action="speedx2" title="Change Playback Speed">x2</button>
                 </fieldset>
 
+                <!-- play highlights and skip silences -->
                 <span class="specialspan">
+
                     <label class="switch actionbutton specialbutton" title="Skip Silent Parts">
                         <input type="checkbox" id="skipsilence-switch" onchange="GLOBAL_ACTIONS['skipsilence']();">
                         <div class="slider"></div>
                     </label>
                     <button class="actionbutton specialbutton" id="bt-skipsilence" onclick="document.getElementById('skipsilence-switch').click();" title="Skip Silent Parts">Skip Silence</button>
+
                     <label class="switch actionbutton specialbutton highlight-area" title="Play Only Highlights">
                         <input type="checkbox" id="playhighlight-switch" onchange="GLOBAL_ACTIONS['playhighlight']();">
                         <div class="slider"></div>
                     </label>
                     <button class="actionbutton specialbutton highlight-area" id="bt-playhighlight" onclick="document.getElementById('playhighlight-switch').click();" title="Play Only Highlights">Play Highlights</button>
+
                 </span>
 
+                <!-- play / pause / volume -->
                 <fieldset id="playcontrols">
                     <legend style="font-size: 0.6em">&nbsp;</legend>
                     <button class="actionbutton" data-action="rewind" title="Rewind (Ctrl + R)"><i class="fa fa-step-backward fa-2x"></i></button>
                     <button class="actionbutton" data-action="play" title="Play / Pause (Ctrl + Space)"><i class="fa fa-play fa-2x" id="playpause"></i></button>
                     <span id="volumecontrol" class="actionbutton"><i class="fa fa-volume-up fa-lg"></i><input id="volumerange" type="range" min="0" max="100" value="100"></span>
                 </fieldset>
+
             </div>
+
         </div>
 
+        <!-- transcript section -->
         <div class="transcript-container">
 
+            <!-- editing buttons -->
             <div id="text-options">
                 <span id="upper-half-actions">
                 </span>
@@ -97,8 +119,10 @@
                 </span>
             </div>
 
-            <div id="transcript-area" style="cursor: pointer"><datalist id="speakerlist"></datalist>Loading...</div>
+            <!-- transcript -->
+            <div id="transcript-area">Loading...</div>
 
+            <!-- export dialog -->
             <div id="export-wrapper" class="extra-options-wrapper hidden invisible">
                 <div class="close-bt-wrapper">
                     <button class="close-button" data-action="close-export"><i class="fa fa-close"></i></button>
@@ -119,6 +143,7 @@
                 </div>
             </div>
 
+            <!-- shortcut hints -->
             <div id="shortcut-wrapper" class="shortcut-wrapper hidden">
                 <center>
                     <div class="shortcuts">
@@ -136,6 +161,7 @@
                 </center>
             </div>
 
+            <!-- help dialog -->
             <div id="help-wrapper" class="help-wrapper">
                 <center>
                     <div class="help">
@@ -152,6 +178,7 @@
             </div>
 
         </div>
+
     </center>
 </body>
 
