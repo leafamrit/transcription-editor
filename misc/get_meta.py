@@ -1,9 +1,11 @@
 from subprocess import run, PIPE
 import sys
 
-audioURL = str(sys.argv[1])
-
-length = float(run(['sox', audioURL, '-n', 'stat'], stderr=PIPE).stderr.decode('UTF-8').split('\n')[1][17:].strip())
+def get_length():
+    options = run(['sox', audioURL, '-n', 'stat'], stderr=PIPE).stderr.decode('UTF-8').split('\n')
+    for option in options:
+        if option.find('Length') > -1:
+            return float(option[17:].strip())
 
 def get_peaks(timeslice, duration):
     peaks = []
@@ -11,9 +13,9 @@ def get_peaks(timeslice, duration):
 
     while current < length:
         options = run(['sox', audioURL, '-n', 'trim', str(current), str(duration), 'stat'], stderr=PIPE).stderr.decode('UTF-8').split('\n')
-        for i in range(len(options)):
-            if options[i].find('Maximum amplitude:') > -1:
-                peaks.append(float(options[i][18:].strip()))
+        for option in options:
+            if option.find('Maximum amplitude:') > -1:
+                peaks.append(float(option[18:].strip()))
                 break
         current += timeslice
 
@@ -37,8 +39,11 @@ def get_silences(peak_slice, peak_duration, silence_threshold):
 
     return silences
 
+audioURL = str(sys.argv[1])
+length = get_length()
+
 meta = {}
-meta["peaks"] = get_peaks(length / 500, 0.05)
+meta["peaks"] = get_peaks(length / 500, 0.05) # extract maximum amplitude at every (length / 500)s while testing for 0.05s
 meta["silences"] = get_silences(0.2, 0.2, 0.009)
 
 print(str(meta).replace("\'", "\""))
