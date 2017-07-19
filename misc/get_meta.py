@@ -1,8 +1,13 @@
-from subprocess import run, PIPE
+from subprocess import Popen, PIPE
 import sys
 
+def byte_to_str(ele):
+    return ele.decode('utf-8')
+
 def get_length():
-    options = run(['sox', audioURL, '-n', 'stat'], stderr=PIPE).stderr.decode('UTF-8').split('\n')
+    p = Popen(['sox', audioURL, '-n', 'stat'], stderr=PIPE)
+    options = list(map(byte_to_str, list(p.stderr)))
+    p.communicate("\n\n")[0]
     for option in options:
         if option.find('Length') > -1:
             return float(option[17:].strip())
@@ -12,7 +17,9 @@ def get_peaks(timeslice, duration):
     current = 0
 
     while current < length:
-        options = run(['sox', audioURL, '-n', 'trim', str(current), str(duration), 'stat'], stderr=PIPE).stderr.decode('UTF-8').split('\n')
+        p = Popen(['sox', audioURL, '-n', 'trim', str(current), str(duration), 'stat'], stderr=PIPE)
+        options = list(map(byte_to_str, list(p.stderr)))
+        p.communicate("\n\n")[0]
         for option in options:
             if option.find('Maximum amplitude:') > -1:
                 peaks.append(float(option[18:].strip()))
