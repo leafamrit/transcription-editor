@@ -72,7 +72,8 @@ var GLOBAL_ACTIONS = {
     'playhighlight': function() {
         if(!playHighlights) {
             getHighlights();
-            wavesurfer.seekTo(highlights[0] / wavesurfer.getDuration());
+            if (highlights.length>0)
+                wavesurfer.seekTo(highlights[0] / wavesurfer.getDuration());
         }
         playHighlights = !playHighlights;
     },
@@ -425,7 +426,6 @@ var GLOBAL_ACTIONS = {
                     stack: error.stack,
                     properties: error.properties,
                 }
-                console.log(JSON.stringify( { error: e} ));
                 throw error;
             }
 
@@ -785,9 +785,8 @@ function saveJSON(alertUser) {
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if(this.readyState === 4 && this.status === 200) {
-            console.log('Saved');
             if(alertUser) {
-                alert('Changes successfully saved.');
+                alert(JSON.parse(this.responseText).message);
             }
         } else if(this.readyState === 4 && this.status != 200) {
             alert('Could not save changes, please check your internet connection or try again later.');
@@ -930,6 +929,7 @@ function fillWords() {
     var maxAlternativeIndex;
     var i = 0;
     var globalspkr_i = 0;
+    var startingWordCounter = 0;
 
     var textArea = document.getElementById('transcript-area');
     var datalist = document.getElementById('speakerlist');
@@ -994,7 +994,7 @@ function fillWords() {
             // start creating span for current word if word is not blank
             if(word[0].trim() != '') {
                 currWord = document.createElement('span');
-                currWord.innerHTML = word[0];
+                currWord.innerHTML = (startingWordCounter==0) ? capitalizeFirstLetter(word[0]) : word[0];
                 currWord.setAttribute('starttime', word[1]);
                 currWord.setAttribute('endtime', word[2]);
                 currWord.setAttribute('oldval', word[0]);
@@ -1067,12 +1067,14 @@ function fillWords() {
 
                 // add current word to speaker
                 div.appendChild(currWord);
+                ++startingWordCounter;
             }
             globalspkr_i++;
 
             // go to next speaker
             prevSpeaker = currentSpeaker;
         });
+        startingWordCounter = 0;
 
         // add speaker to editor
         textArea.appendChild(div);
@@ -1097,6 +1099,10 @@ function fillWords() {
     // get highlights and strike arrays for skipping playback
     getHighlights();
     getStrikes();
+}
+
+function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
 // when a word is changed
@@ -1332,54 +1338,70 @@ function readWords() {
     try {
         currWord = readWord[0] ? (readWord[readWord.length - 1].nextSibling ? readWord[readWord.length - 1].nextSibling : readWord[readWord.length - 1].parentElement.nextSibling.nextSibling.nextSibling.firstChild) : document.getElementsByClassName('word')[0];
     } catch (exception) {
-        currWord = document.getElementsByClassName('word')[0];
+        var allWords = document.getElementsByClassName('word');
+        currWord = allWords[allWords.length - 1];
     }
 
     var divEnds = document.getElementById('transcript-area').getBoundingClientRect();
 
-    if(currWord.id < wavesurfer.getCurrentTime()) {
-        while(currWord && currWord.id < wavesurfer.getCurrentTime()) {
-            currWord.classList.add('read');
-            currWord = currWord.nextSibling ? currWord.nextSibling : currWord.parentElement.nextSibling.nextSibling.nextSibling.firstChild;
-        }
-        if(divEnds.top + 150 < currWord.getBoundingClientRect().top) {
-            var scrollStep = function() {
-                if(divEnds.top + 150 >= currWord.getBoundingClientRect().top) {
-                    clearInterval(goDown);
+    if (currWord)
+        if(currWord.id < wavesurfer.getCurrentTime()) {
+            while(currWord && currWord.id < wavesurfer.getCurrentTime()) {
+                currWord.classList.add('read');
+                //currWord = currWord.nextSibling ? currWord.nextSibling : currWord.parentElement.nextSibling.nextSibling.nextSibling.firstChild;
+                if(currWord.nextSibling) {
+                    currWord = currWord.nextSibling;
                 } else {
-                    document.getElementById('transcript-area').scrollTop += 5;
-                }
-            }
-            var goDown = setInterval(scrollStep, 10);
-        }
-        if(divEnds.bottom < currWord.getBoundingClientRect().bottom || divEnds.top > currWord.getBoundingClientRect().top) {
-            currWord.scrollIntoView();
-        }
-    } else {
-        [].forEach.call(document.querySelectorAll('.read'), function(el) {
-            if(el.id > wavesurfer.getCurrentTime()) {
-                el.classList.remove('read');
-            }
-        });
-
-        readWord = document.getElementsByClassName('read');
-        currWord = readWord[readWord.length - 1];
-        if(currWord) {
-            if(divEnds.bottom < currWord.getBoundingClientRect().bottom || divEnds.top > currWord.getBoundingClientRect().top) {
-                currWord.scrollIntoView();
-            }
-            if(divEnds.top + 100 > currWord.getBoundingClientRect().top) {
-                var scrollStep = function() {
-                    if(divEnds.top + 100 <= currWord.getBoundingClientRect().top) {
-                        clearInterval(goUp);
+                    if(currWord.parentElement.nextSibling.nextSibling) {
+                        currWord = currWord.parentElement.nextSibling.nextSibling.nextSibling.firstChild;
                     } else {
-                        document.getElementById('transcript-area').scrollTop -= 5;
+                        var allWords = document.getElementsByClassName('word');
+                        currWord = allWords[allWords.length - 1];
+                        break;
                     }
                 }
-                var goUp = setInterval(scrollStep, 10);
+            }
+            if(divEnds.top + 150 < currWord.getBoundingClientRect().top) {
+                var scrollStep = function() {
+                    if(divEnds.top + 150 >= currWord.getBoundingClientRect().top) {
+                        clearInterval(goDown);
+                    } else {
+                        document.getElementById('transcript-area').scrollTop += 5;
+                    }
+                }
+                var goDown = setInterval(scrollStep, 10);
+            }
+            if(divEnds.bottom < currWord.getBoundingClientRect().bottom || divEnds.top > currWord.getBoundingClientRect().top) {
+                //currWord.scrollIntoView();
+                document.getElementById('transcript-area').scrollTop = currWord.offsetTop - 500;
+            }
+        } else {
+            [].forEach.call(document.querySelectorAll('.read'), function(el) {
+                if(el.id > wavesurfer.getCurrentTime()) {
+                    el.classList.remove('read');
+                }
+            });
+
+            readWord = document.getElementsByClassName('read');
+            currWord = readWord[readWord.length - 1];
+            if(currWord) {
+                if(divEnds.bottom < currWord.getBoundingClientRect().bottom || divEnds.top > currWord.getBoundingClientRect().top) {
+                    //currWord.scrollIntoView();
+                    document.getElementById('transcript-area').scrollTop = currWord.offsetTop - 500;
+                }
+                if(divEnds.top + 100 > currWord.getBoundingClientRect().top) {
+                    var scrollStep = function() {
+                        if (currWord)
+                            if(divEnds.top + 100 <= currWord.getBoundingClientRect().top) {
+                                clearInterval(goUp);
+                            } else {
+                                document.getElementById('transcript-area').scrollTop -= 5;
+                            }
+                    }
+                    var goUp = setInterval(scrollStep, 10);
+                }
             }
         }
-    }
 }
 
 // change speaker label
@@ -1486,13 +1508,15 @@ function getURLs(id) {
     xhttp.onreadystatechange = function() {
         if(this.readyState === 4 && this.status === 200) {
             pageOptions = JSON.parse(this.responseText);
+
             if(pageOptions.metaURL && pageOptions.transcriptURL && pageOptions.audioURL) {
                 init();
             } else {
-                alert('Missing parameters. Please try later.');
+                alert('The URL is not correct. Please go back to your Call Recordings and start again.');
             }
         } else if(this.readyState === 4 && this.status != 200) {
             alert('Server response invalid. Please try later.');
+            // window.parent.location = base_url + "user/call_log";
         }
     }
     xhttp.open('POST', './save.php', true);
@@ -1514,11 +1538,7 @@ function updateTime() {
 function init() {
     // if user tries to close the browser
     window.onbeforeunload = function(e) {
-        e || window.event;
-        if(e) {
-            return '';
-        }
-        return '';
+        // saveJSON(true);
     }
 
     // cookies
@@ -1540,7 +1560,7 @@ function init() {
         barWidth: 2,
         normalize: true,
         backend: 'MediaElement',
-        hideScrollbar: true,
+        hideScrollbar: false,
         height: 95
     };
 
@@ -1549,13 +1569,23 @@ function init() {
 
     // load metadata and audio
     loadJSON(pageOptions.metaURL, function(text) {
-        var metadata = JSON.parse(text);
+        metadata = JSON.parse(text);
         silences = metadata.silences;
+        
+        wavesurfer.loadCount = 1;
         wavesurfer.load(pageOptions.audioURL, metadata.peaks, 'none');
+    });
+
+    
+    wavesurfer.on('loading', function(progress,callback) {
+
+        document.getElementById('loading-percent').innerText = "Loaded " + progress + "%";
+
     });
 
     // handle events while playing
     wavesurfer.on('audioprocess', function() {
+        
         curr = wavesurfer.getCurrentTime().toFixed(1);
         readWords();
         updateTime();
@@ -1589,8 +1619,14 @@ function init() {
 
     // startup the page
     wavesurfer.on('ready', function() {
-        var timeline = Object.create(WaveSurfer.Timeline);
+        
+        waveFormReady();
+        
+    });
 
+    function waveFormReady() {
+        
+        var timeline = Object.create(WaveSurfer.Timeline);
         var timeGap = (Math.floor(wavesurfer.getDuration() / 1000) * 100) / 2;
         timeline.init({
             wavesurfer: wavesurfer,
@@ -1603,7 +1639,7 @@ function init() {
             height: 15
         });
 
-        updateTime();
+        // updateTime();
 
         wavesurfer.addRegion({
             id: 'dummy',
@@ -1634,12 +1670,27 @@ function init() {
             pastStack.push(JSON.stringify(transcript));
             fillWords();
             checkDeepLink(getParams);
+            // fill speaker name options at load
+            var speakerList = document.getElementById('speakerlist');
+            var speakerArray = [];
+            [].forEach.call(document.querySelectorAll('.speaker'), function(el) {
+                if(isNaN(el.value) && !/Unknown Speaker/i.test(el.value)) {
+                    if(speakerArray.indexOf(el.value) <= -1) {
+                        speakerArray = speakerArray.concat(el.value);
+                    }
+                }
+            });
+            speakerArray.forEach(function(speaker) {
+                var dataOption = document.createElement('option');
+                dataOption.value = speaker;
+                speakerList.appendChild(dataOption);
+            });
         });
 
         setInterval(function() {
             saveJSON(false);
         }, 60000)
-    });
+    }
 
 
     // Event handlers
@@ -1782,10 +1833,12 @@ function init() {
     document.getElementById('audioclip').addEventListener('mouseup', function(e) {
         setTimeout(function() {
             var endEle = document.getElementsByClassName('read');
-            range.setEnd(endEle[endEle.length - 1], 0);
-            var sel = window.getSelection();
-            sel.removeAllRanges();
-            sel.addRange(range);
+            if (endEle.length>0) {
+                range.setEnd(endEle[endEle.length - 1], 0);
+                var sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(range);
+            }
         }, 100);
     });
 }

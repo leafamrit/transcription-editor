@@ -1,5 +1,5 @@
 <?php
-$audioURL = "new-york-rock.mp3";
+$audioURL = "../audio/new-york-rock.flac";
 $meta = shell_exec("python get_meta.py ".$audioURL);
 echo $meta;
 ?>
